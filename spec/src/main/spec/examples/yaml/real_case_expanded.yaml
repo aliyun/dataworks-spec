@@ -1,0 +1,154 @@
+version: 1.1.0
+kind: CycleWorkflow
+metadata:
+  owner: 064152
+  description: real case example
+spec:
+  # node list
+  nodes:
+    - id: base_tenant_user_alibaba
+      reference:
+        output: dataworks_analyze.8674738_out
+    - id: sls_full_access_log
+      name: sls_full_access_log
+      script:
+        path: /DataIntegration
+        language: json
+        code: |
+          {
+            "extend": {"mode": "wizard"},
+            "steps": [
+             ]
+          }
+        runtime:
+          engine: DataIntegration
+          command: DI
+        parameters:
+          - name: bizdate
+            value: $bizdate
+            scope: NodeParameter
+            type: System
+          - name: startTime
+            value: $[yyyymmddhh24miss-1/24]
+            scope: NodeParameter
+            type: System
+          - name: endTime
+            value: $[yyyymmddhh24miss-30/24/60]
+            scope: NodeParameter
+            type: System
+          - name: ds
+            value: $[yyyymmddhh24mi-30/24/60]
+            scope: NodeParameter
+            type: System
+      recurrence: Normal
+      priority: 7
+      timeout: 4
+      instanceMode: T+1
+      rerunMode: Allowed
+      inputs:
+        tables:
+          - type: table
+            guid: loghub.pop_sls.pop_rpc_trace_log
+      outputs:
+        tables:
+          - type: table
+            guid: odps.dataworks_analyze.dw_openapi_invoke_log_details
+      # cron trigger
+      trigger:
+        type: Scheduler
+        cron: 00 */30 00-23 * * ?
+        startTime: 2023-01-01 00:00:00
+        endTime: 2024-01-01 00:00:00
+      # runtime resource
+      runtimeResource:
+        resourceGroup: # default_resource_group
+    - id: analyze_region_api_access_log
+      name: # analyze_region_api_access_log
+      script:
+        path: /MaxCompute/DataAnalytic
+        code: |
+          --odps sql 
+          --********************************************************************--
+          --author: sx
+          --create time:2023-03-28 17:59:42
+          -- projectName:autotest
+          --********************************************************************--
+          SELECT CONCAT(${bizdate}, "--", ${BIZDATE});
+          select * from autotest.lineage_demo_u02_02_20210407 ;
+        runtime:
+          engine: MaxCompute
+          command: ODPS_SQL
+        language: sql
+        parameters:
+          - name: bizdate
+            value: $bizdate
+            scope: NodeParameter
+            type: System
+          - name: ds
+            value: $[yyyymmddhh24mi-30/24/60]
+            scope: NodeParameter
+            type: System
+      # cron trigger
+      trigger:
+        type: Scheduler
+        cron: 00 */30 00-23 * * ?
+        startTime: 2023-01-01 00:00:00
+        endTime: 2024-01-01 00:00:00
+      # runtime resource
+      runtimeResource:
+        resourceGroup: # default_resource_group
+      inputs:
+        tables:
+          - type: table
+            guid: odps.dataworks_analyze.dw_openapi_invoke_log_details
+      outputs:
+        tables:
+          - type: table
+            guid: odps.dataworks_analyze.dw_open_api_invoke_log_details_analyse
+    - id: cn_shanghai_api_access_detail
+      name: cn_shanghai_api_access_detail
+      script:
+        path: /MaxCompute/DataAnalytic
+        code: "show tables;"
+        runtime:
+          engine: MaxCompute
+          command: ODPS_SQL
+        language: sql
+        parameters:
+          - name: bizdate
+            value: $bizdate
+            scope: NodeParameter
+            type: System
+          - name: ds
+            value: $[yyyymmddhh24mi-30/24/60]
+            scope: NodeParameter
+            type: System
+      # cron trigger
+      trigger:
+        type: Scheduler
+        cron: 00 */30 00-23 * * ?
+        startTime: 2023-01-01 00:00:00
+        endTime: 2024-01-01 00:00:00
+      # runtime resource
+      runtimeResource:
+        resourceGroup: # default_resource_group
+      inputs:
+        tables:
+          - type: table
+            guid: odps.dataworks_analyze.dw_open_api_invoke_log_details_analyse
+      outputs:
+        tables:
+          - type: table
+            guid: odps.dataworks_analyze.dw_open_api_invoke_log_details_business
+  # node dependencies
+  flow:
+    # normal dependencies
+    - nodeId: "{{analyze_region_api_access_log}}"
+      depends:
+        - nodeId: "{{sls_full_access_log}}"
+          type: Normal
+    - nodeId: "{{cn_shanghai_api_access_detail}}"
+      depends:
+        - nodeId: "{{analyze_region_api_access_log}}"
+        - nodeId: "{{base_tenant_user_alibaba}}"
+          type: Normal

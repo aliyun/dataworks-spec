@@ -1,0 +1,46 @@
+{
+  "version": "1.1.0",
+  "kind": "CycleWorkflow",
+  "spec": {
+    "nodes": [
+      {
+        "id": "c6a3bbe198fd4031bbe71ad3e66ceb91",
+        "name": "hive1",
+        "recurrence": "Normal",
+        "timeout": 3,
+        "instanceMode": "T+1",
+        "rerunMode": "Allowed",
+        "rerunTimes": 3,
+        "rerunInterval": 180000,
+        "script": {
+          "path": "test/EMR_test_biz/EMR/hive1",
+          "language": "hive-sql",
+          "content": "select 1",
+          "runtime": {
+            "engine": "Hive",
+            "command": "EMR_HIVE",
+            "sparkConf": {
+              "spark.executor.memory": "1024m",
+              "spark.executor.cores": 1,
+              "spark.executor.instances": 1,
+              "spark.yarn.maxAppAttempts": 1,
+              "spark.yarn.queue": "default",
+              "spark.yarn.maxExecutorRetries": 1
+            },
+            "emrJobConfig": {
+              "submitMode": "Local",
+              "submitter": "root",
+              "executeMode": "Single",
+              "priority": 1,
+              "queue": "default",
+              "cores": 1,
+              "memory": 1024
+            }
+          }
+        },
+        "inputs": null,
+        "outputs": null
+      }
+    ]
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "ErrorCode.UnknownEnumType": "unknown enumeration type: {0}, value: {1}",
+  "ErrorCode.ParameterNotSet": "parameter not set: {0}",
+  "ErrorCode.ParameterInvalid": "parameter invalid: {0}",
+  "ErrorCode.ProjectNotFound": "project not found: {0}",
+  "ErrorCode.ProcedureCanceled": "process procedure canceled",
+  "ErrorCode.NoPermission": "no permission: {0}",
+  "ErrorCode.NoPermissionProjectAdmin": "user {0} has no admin permission of project: {1}",
+  "ErrorCode.NoPermissionProjectMember": "user {0} is not member of project: {1}",
+  "ErrorCode.TranslateNodeError": "translate node error: {0}",
+  "ErrorCode.PackageAnalyzeError": "analyze package error: {0}",
+  "ErrorCode.PackageConvertError": "convert package error: {0}",
+  "ErrorCode.PackageNotLoaded": "package file not loaded",
+  "ErrorCode.UnsupportedPackage": "unsupported package: {0}",
+  "ErrorCode.UnknownCommandApp": "unknown command app: {0}"
+}

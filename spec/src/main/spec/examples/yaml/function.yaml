@@ -1,0 +1,47 @@
+version: 1.1.0
+kind: CycleWorkflow
+spec:
+  # function example
+  fileResources:
+    - id: res_2
+      name: file2.jar
+      type: jar
+      calcEngineType: MaxCompute
+      registerToCalcEngine: true
+      file:
+        storage:
+          type: oss
+        objectKey: /path/to/file2.jar
+        extension: .jar
+  functions:
+    - id: geo_loc
+      name: geo_loc
+      type: MATH
+      className: com.aliyun.odps.udf.example.GeoLocation
+      calcEngine:
+        type: MaxCompute
+        project: test_project
+        schema: default
+      fileResources: [ "{{res_2}}" ]
+      usageDescription: |
+        This function is used to calculate the geographic location of the IP address.
+        The input is the IP address, and the output is the geographic location.
+      argumentDescription: |
+        - name: ip
+          desc: The IP address to be calculated.
+          type: STRING
+        - name: city
+          desc: The city name corresponding to the IP address.
+          type: STRING
+        - name: province
+          desc:
+      returnValueDescription: |
+        - name: city
+          desc: The city name corresponding to the IP address.
+          type: STRING
+        - name: province
+          desc: The province name corresponding to the IP address.
+          type: STRING
+      usageExample: |
+        # The input is the IP address, and the output is the geographic location.
+        SELECT geo_loc('127.0.0.1', city, province) FROM table1;

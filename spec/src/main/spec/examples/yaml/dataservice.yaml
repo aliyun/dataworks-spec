@@ -1,0 +1,135 @@
+version: 1.1.0
+kind: DataserviceOrchestrationSpec
+spec:
+  orchestrations:
+    - id: orchestration_1
+      name: orchestration_1
+      dag:
+        nodes:
+          - label: api_1
+            api: {{api_1}}
+          - label: api_2
+            api: {{api_2}}
+        edges:
+          - source: api_1
+            target: api_2
+  functions:
+    - id: func_1
+      metadata:
+        owner: 123123
+        description: desc
+      name: func_1
+      type: function
+      folder: /test/func_1
+      clazz: com.aliyun.odps.udf.example.TestFunction
+      resource: /test/func_1/func_1.jar
+      command: func_1
+      arguments:
+      returnValue:
+      example:
+      datasource:
+        name: datasource_1
+        type: datasource
+      isOdps: true
+    - id: func_2
+      metadata:
+        owner: 123123
+        description: desc
+      name: func_2
+      type: function
+      folder: /test/func_2
+      clazz: com.aliyun.odps.udf.example.TestFunction
+      resource: /test/func_2/func_2.jar
+      command: func_2
+      arguments:
+      returnValue:
+      example:
+      datasource:
+        name: datasource_1
+  apis:
+    - id: api_1
+      metadata:
+        creator: 1245
+        createTime: 2020-01-01 00:00:00
+        modifier: 1245
+        modifyTime: 2020-01-01 00:00:00
+        description: desc
+      apiName: api_1
+      group: groupId
+      apiPath: /api/v1/api_1
+      relatedFunctions:
+        - {{func_1}}
+        - {{func_2}}
+      apiSql: select * from test_table
+      apiProtocol: HTTP
+      apiMode: WIZARD
+      apiConfig: | # api config
+        {
+          "apiType": "HTTP",
+          "apiMethod": "GET",
+          "apiPath": "/api/v1/api_1",
+          "apiProtocol": "HTTP",
+          "apiMode": "SYNC",
+          "apiSyncMode": "SYNC",
+          "requestParams": [
+            {
+              "paramName": "param1",
+              "paramType": "string",
+              "paramDesc": "param1 desc"
+            }
+          ]
+        }
+      errCodeList:
+      resultSample: | # result sample
+        {
+          "code": 0,
+          "message": "success",
+          "data": [
+            {
+              "id": 1,
+              "name": "name1"
+          }
+        ]
+        }
+      failResultSample: | # fail result sample
+        {
+          "code": 1,
+          "message": "fail",
+          "data": [
+            {
+              "id": 1,
+              "name": "name1"
+            }
+          ]
+        }
+      apiProtocolList: [ HTTP, HTTPS ]
+      preFilterEnable: true
+      preFilters:
+      filterEnable: true
+      filter:
+      apiSyncMode: SYNC
+      request: [ ]
+      response: [ ]
+      orderBy: [ ]
+      tableNames:
+      connections:
+      isPage: true
+      resourceSpec:
+        resourceGroup: group_1
+        resourceGroupId: '1'
+      sqlDynamic: true
+      optParamMode: true
+      resultType: ARRAY
+      autoGenerate: true
+      sqlMode: SQL
+    - id: api_2
+      metadata:
+        creator: 1245
+        createTime: 2020-01-01 00:00:00
+        modifier: 1245
+        modifyTime: 2020-01-01 00:00:00
+        description: desc
+      apiName: api_2
+      group: groupId
+      apiPath: /api/v1/api_2
+      relatedFunctions:

@@ -1,0 +1,24 @@
+version: 1.1.0
+kind: CycleWorkflow
+spec:
+  # table example
+  artifacts:
+    tables:
+      - id: table1
+        metadata:
+          owner: 123124124
+          description: description of table1
+        name: table1
+        guid: odps.test_project.default.test_table1
+        calcEngine:
+          type: MaxCompute
+          project: test_project
+          schema: default
+        ddl: |
+          CREATE TABLE IF NOT EXISTS table1 (
+            id STRING,
+            name STRING,
+            dt STRING
+          ) PARTITIONED BY (
+            dt STRING
+          ) LOCATION 'oss://test-bucket/test-table1'

@@ -1,0 +1,144 @@
+{
+    "$id": "https://dataworks.data.aliyun.com/schemas/1.1.0/node.schema.json",
+    "title": "Node",
+    "description": "工作流节点的定义描述",
+    "type":"object",
+    "properties": {
+        "script": {
+            "title": "Script",
+            "description": "节点所需的脚本定义或者引用",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "description": "唯一标识",
+                    "type": "string"
+                },
+                "path": {
+                    "description": "脚本路径",
+                    "type": "string"
+                },
+                "language": {
+                    "description": "脚本语言",
+                    "type": "string"
+                },
+                "runtime": {
+                    "title": "Runtime",
+                    "description": "脚本语言",
+                    "type": "object",
+                    "properties": {
+                        "engine": {
+                            "description": "运行时引擎",
+                            "type": "string"
+                        },
+                        "command": {
+                            "description": "运行时环境的命令标识",
+                            "type": "string"
+                        }
+                    }
+                },
+                "parameters": {
+                    "title": "Script Parameters",
+                    "description": "脚本参数列表",
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "functions": {
+            "title": "Functions",
+            "description": "节点所需的函数定义或者引用",
+            "type": "array",
+            "items": {
+                "title": "Functions Item",
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "description": "唯一标识",
+                        "type": "string"
+                    },
+                    "name": {
+                        "description": "函数名称",
+                        "type": "string"
+                    },
+                    "script": {
+                        "description": "使用的脚本",
+                        "type": "string"
+                    },
+                    "fileResources": {
+                        "description": "使用的资源列表",
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "fileResources": {
+            "title": "FileResources",
+            "description": "节点所需的文件资源定义或者引用",
+            "type": "array",
+            "items": {
+                "title": "FileResources Item",
+                "type": "object",
+                "properties": {
+                    "id": {
+                        "description": "唯一标识",
+                        "type": "string"
+                    },
+                    "name": {
+                        "description": "资源名称",
+                        "type": "string"
+                    },
+                    "script": {
+                        "description": "资源文件",
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "inputs": {
+            "description": "节点的输入"
+        },
+        "outputs": {
+            "description": "节点的输出"
+        },
+        "runtimeResource": {
+            "title": "RuntimeResource",
+            "description": "节点的运行时资源定义或引用",
+            "type": "object",
+            "properties": {
+                "id": {
+                    "description": "唯一标识符",
+                    "type": "string"
+                },
+                "resourceGroup": {
+                    "description": "资源组唯一标识",
+                    "type": "string"
+                }
+            }
+        },
+        "recurrence": {
+            "description": "定义周期调度节点的调度状态",
+            "type": "string",
+            "enum": [ "Normal", "Skip", "Pause" ]
+        },
+        "priority": {
+            "description": "定义节点的优先级, 数值越大优先级越高",
+            "type": "integer"
+        },
+        "timeout": {
+            "description": "定义节点的超时时间, 运行超过指定时间后, 节点将会被kill掉, 单位为秒",
+            "type": "integer"
+        },
+        "instanceMode": {
+            "description": "节点的实例化模式",
+            "type": "string",
+            "enum": [ "T+1", "Immediately" ]
+        },
+        "rerunMode": {
+            "description": "节点重试策略",
+            "type": "string",
+            "enum": [ "Allowed", "Denied", "FailureAllowed" ]
+        }
+    }
+}

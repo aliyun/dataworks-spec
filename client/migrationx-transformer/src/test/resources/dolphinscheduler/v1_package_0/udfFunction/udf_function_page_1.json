@@ -1,0 +1,14 @@
+[
+  {
+    "id": 1,
+    "userId": 1,
+    "funcName": "test_udf_0",
+    "className": "test.Main",
+    "description": "",
+    "resourceId": 1,
+    "resourceName": "/aliyun-java-sdk-dataworks-public-1.0.0.jar",
+    "type": "HIVE",
+    "createTime": "2022-10-18T17:59:06.286+0800",
+    "updateTime": "2022-10-18T17:59:06.286+0800"
+  }
+]

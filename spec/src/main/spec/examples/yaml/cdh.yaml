@@ -1,0 +1,32 @@
+version: 1.1.0
+kind: CycleWorkflow
+spec:
+  nodes:
+    - id: c6a3bbe198fd4031bbe71ad3e66ceb91
+      name: hive1
+      recurrence: Normal
+      timeout: 3
+      instanceMode: T+1
+      rerunMode: Allowed
+      script:
+        path: test/CDH_test_biz/CDH/hive1
+        language: hive-sql # hive sql language
+        content: select 1 # code content
+        runtime:
+          engine: Hive
+          command: CDH_HIVE # Node type
+          sparkConf:
+            spark.driver.memory: 1g
+            spark.executor.memory: 1g
+            spark.executor.cores: 1
+          cdhJobConfig: # CDH Job Runtime config advanced settings
+            submitMode: Local # Local|Yarn, use gateway or header
+            submitter: root # submit user
+            executeMode: Single # Batch|Single FLOW_SKIP_SQL_ANALYZE
+            priority: 1
+            queue: default
+            cores: 1
+            memory: 1024 # MB
+      # other configs
+      inputs:
+      outputs:

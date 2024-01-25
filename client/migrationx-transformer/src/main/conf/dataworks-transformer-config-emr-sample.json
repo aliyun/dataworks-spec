@@ -1,0 +1,17 @@
+{
+  "format": "SPEC",
+  "locale": "zh_CN",
+  "settings": {
+    "workflow.converter.shellNodeType": "EMR_SHELL",
+    "workflow.converter.commandSqlAs": "EMR_HIVE",
+    "workflow.converter.sparkSubmitAs": "EMR_SPARK",
+    "workflow.converter.target.unknownNodeTypeAs": "DIDE_SHELL",
+    "workflow.converter.mrNodeType": "EMR_MR",
+    "workflow.converter.target.engine.type": "EMR",
+    "workflow.converter.dolphinscheduler.sqlNodeTypeMapping": {
+      "POSTGRESQL": "EMR_HIVE",
+      "MYSQL": "EMR_HIVE",
+      "HIVE": "EMR_HIVE"
+    }
+  }
+}

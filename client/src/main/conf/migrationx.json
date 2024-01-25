@@ -1,0 +1,35 @@
+{
+  "reader": {
+    "name": "dolphinscheduler",
+    "params": [
+      "-a dolphinscheduler",
+      "-e ${DOLPHINSCHEDULER_API_ENDPOINT}",
+      "-t ${DOLPHINSCHEDULER_API_TOKEN}",
+      "-v ${DOLPHINSCHEDULER_VERSION}",
+      "-p ${DOLPHINSCHEDULER_PROJECT_NAME}",
+      "-f ${PWD}/${DOLPHINSCHEDULER_PROJECT_NAME}.zip"
+    ]
+  },
+  "transformer": {
+    "name": "dolphinscheduler_to_dataworks",
+    "params": [
+      "-a dolphinscheduler_to_dataworks",
+      "-c ${MIGRATIONX_HOME}/conf/dataworks-transformer-config.json",
+      "-s ${PWD}/${DOLPHINSCHEDULER_PROJECT_NAME}.zip",
+      "-t ${PWD}/${DOLPHINSCHEDULER_PROJECT_NAME}_dw.zip"
+    ]
+  },
+  "writer": {
+    "name": "dataworks",
+    "params": [
+      "-a dataworks",
+      "-e dataworks.${ALIYUN_REGION_ID}.aliyuncs.com",
+      "-i ${ALIYUN_ACCESS_KEY_ID}",
+      "-k ${ALIYUN_ACCESS_KEY_SECRET}",
+      "-p ${ALIYUN_DATAWORKS_WORKSPACE_ID}",
+      "-r ${ALIYUN_REGION_ID}",
+      "-f ${PWD}/${DOLPHINSCHEDULER_PROJECT_NAME}_dw.zip",
+      "-t SPEC"
+    ]
+  }
+}

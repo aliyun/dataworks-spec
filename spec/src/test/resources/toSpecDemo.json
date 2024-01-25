@@ -1,0 +1,42 @@
+{
+  "version": "1.0.0",
+  "kind": "CycleWorkflow",
+  "metadata": {
+    "owner": 123124124,
+    "description": "desc"
+  },
+  "variables": [
+    {
+      "id": "global_var_0",
+      "name": "global_var_0",
+      "scope": "Workspace",
+      "type": "Constant",
+      "value": "global_value",
+      "node": {
+        "priority": 9,
+        "recurrence": "Normal",
+        "name": "node_2"
+      }
+    },
+    {
+      "id": "ctx_output_1",
+      "name": "ctx_output_1",
+      "scope": "Tenant",
+      "value": "output_value"
+    },
+    {
+      "id": "my_output",
+      "name": "my_output",
+      "scope": "Tenant",
+      "value": "input_value"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "node_1",
+      "priority": 7,
+      "recurrence": "Normal",
+      "name": "node_1"
+    }
+  ]
+}

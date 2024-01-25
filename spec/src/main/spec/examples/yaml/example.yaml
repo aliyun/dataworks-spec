@@ -1,0 +1,122 @@
+version: 1.1.0
+kind: CycleWorkflow
+metadata:
+  owner: 123124124
+  description: desc
+spec:
+  # 定义每种实体类型
+  # 定义变量
+  variables:
+    # Spec描述文件内部的唯一键code定义
+    - id: global_var_0
+      name: global_var_0
+      scope: Workspace
+      type: Constant
+      value: global_value
+    - id: bizdate
+      name: bizdate
+      scope: NodeParameter
+      type: System
+      value: ${yyyymmdd}
+    - id: hour
+      name: hour
+      scope: NodeParameter
+      type: System
+      value: ${hi24mmss}
+    - id: region
+      name: region
+      scope: NodeParameter
+      type: Constant
+      value: cn-shanghai
+    - id: ctx_output_1
+      name: output
+      scope: Workspace
+      type: Constant
+      value: ""
+  # 脚本文件
+  scripts:
+    - id: script_file1
+      path: /path/to/file1.sql
+      language: sql
+      runtime:
+        engine: MaxCompute
+        command: ODPS_SQL
+      parameters:
+        - "{{variables.bizdate}}"
+        - "{{variables.hour}}"
+        - "{{variables.region}}"
+    - id: script_file2
+      path: /path/to/file2.py
+      runtime:
+        engine: MaxCompute
+        command: PY_ODPS
+      language: python
+  # 执行资源
+  runtimeResources:
+    - id: resgroup_1
+      resourceGroup: S_xxx_yyy
+  # 调度触发器定义
+  triggers:
+    - id: daily
+      type: Scheduler
+      cron: 00 00 00 * * ?
+      startTime: 2023-01-01 00:00:00
+      endTime: 2024-01-01 00:00:00
+  # 引用表
+  artifacts:
+    tables: # table作为一种artifact
+      - id: table1
+        guid: odps.autotest.table_1
+      - id: table2
+        guid: odps.autotest.table_2
+      - id: table3
+        guid: odps.autotest.table_3
+    nodeOutputs: # 调度输出串作为一种artifact
+      - id: artifact_1
+        data: autotest.output_1
+        refTableName: autotest.table_1
+  # 节点
+  nodes:
+    - id: node_existed_xx
+      # identifier: autotest.table_1
+      reference:
+        output: autotest.table_1
+    # define some fresh new node
+    - id: node_1
+      # 脚本内容
+      script: "{{script_file1}}"
+      recurrence: Normal
+      priority: 7
+      timeout: 4
+      instanceMode: T+1
+      rerunMode: Allowed
+      # 输入：表，上下文输入变量
+      inputs:
+        tables:
+          - "{{artifacts.table1}}"
+          - "{{artifacts.table2}}"
+      # 输出: 表，上下文输出变量
+      outputs:
+        tables:
+          - "{{artifacts.table3}}"
+      trigger: "{{triggers.daily}}"
+      # 运行资源组
+      runtimeResource: "{{runtimeResources.resgroup_1}}"
+    - id: node_2
+      script: "{{scripts.script_file2}}"
+      trigger: "{{triggers.daily}}"
+      runtimeResource: "{{runtimeResources.resgroup_1}}"
+  # 工作流
+  flow:
+    # 普通依赖
+    - nodeId: "{{node_1}}"
+      depends:
+        - nodeId: "{{node_existed_xx}}"
+          type: Normal # Normal情况type字段可不写
+    # 跨周期依赖定义示例
+    - nodeId: "{{node_2}}"
+      depends:
+        - nodeId: "{{node_existed_xx}}"
+          type: CrossCycleDependsOnOtherNode # 指定节点跨周期依赖
+        - type: CrossCycleDependsOnSelf # 自依赖
+        - type: CrossCycleDependsOnChildren # 跨周期依赖一层子节点

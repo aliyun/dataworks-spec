@@ -1,0 +1,25 @@
+{
+  "version": "1.0.0",
+  "kind": "CycleWorkflow",
+  "nodes": [
+    {
+      "id": "param_1",
+      "outputs": {
+        "variables": [
+          {
+            "name": "my_const",
+            "type": "Constant",
+            "scope": "NodeContext",
+            "value": "cn-shanghai"
+          },
+          {
+            "name": "my_var",
+            "type": "System",
+            "scope": "NodeContext",
+            "value": "${yyyymmdd}"
+          }
+        ]
+      }
+    }
+  ]
+}

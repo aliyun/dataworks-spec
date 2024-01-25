@@ -1,0 +1,70 @@
+{
+  "version": "1.1.0",
+  "kind": "CycleWorkflow",
+  "spec": {
+    "nodes": [
+      {
+        "id": "join_branch_1"
+      },
+      {
+        "id": "join_branch_2"
+      },
+      {
+        "id": "join_branch_3"
+      },
+      {
+        "id": "join_branch_4"
+      },
+      {
+        "id": "join_1",
+        "join": {
+          "branches": [
+            {
+              "nodeId": "join_branch_1",
+              "assertion": {
+                "field": "status",
+                "in": [
+                  "SUCCESS"
+                ]
+              },
+              "name": "b1"
+            },
+            {
+              "nodeId": "join_branch_2",
+              "assertion": {
+                "field": "status",
+                "in": [
+                  "SUCCESS"
+                ]
+              },
+              "name": "b2"
+            },
+            {
+              "nodeId": "join_branch_3",
+              "assertion": {
+                "field": "status",
+                "in": [
+                  "SUCCESS"
+                ]
+              },
+              "name": "b3"
+            },
+            {
+              "nodeId": "join_branch_4",
+              "assertion": {
+                "field": "status",
+                "in": [
+                  "SUCCESS"
+                ]
+              },
+              "name": "b4"
+            }
+          ],
+          "logic": {
+            "expression": "b1 and b2 or b3 or b4"
+          }
+        }
+      }
+    ]
+  }
+}

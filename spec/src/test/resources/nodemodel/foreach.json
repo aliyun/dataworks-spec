@@ -1,0 +1,205 @@
+{
+  "version": "1.1.0",
+  "kind": "CycleWorkflow",
+  "spec": {
+    "nodes": [
+      {
+        "id": "9b36fa25387945339d4ab42cffb11d62",
+        "recurrence": "Normal",
+        "timeout": 12,
+        "instanceMode": "T+1",
+        "rerunMode": "Allowed",
+        "rerunTimes": 3,
+        "rerunInterval": 18000,
+        "script": {
+          "path": "/遍历节点0",
+          "runtime": {
+            "engine": "General",
+            "command": "CONTROLLER_TRAVERSE"
+          },
+          "parameters": [
+            {
+              "artifactType": "Variable",
+              "name": "loopDataArray",
+              "scope": "NodeParameter",
+              "type": "System",
+              "value": "[]"
+            }
+          ]
+        },
+        "trigger": {
+          "type": "Scheduler",
+          "cron": "00 00 00 * * ?",
+          "startTime": "1970-01-01 00:00:00",
+          "endTime": "9999-01-01 00:00:00",
+          "timezone": "Asia/Shanghai"
+        },
+        "runtimeResource": {
+          "resourceGroup": "res_group_1"
+        },
+        "name": "遍历节点0",
+        "owner": "WORKER_1482465063962",
+        "inputs": {},
+        "outputs": {
+          "nodeOutputs": [
+            {
+              "artifactType": "NodeOutput",
+              "data": "9b36fa25387945339d4ab42cffb11d62",
+              "refTableName": "遍历节点0"
+            }
+          ]
+        },
+        "functions": [],
+        "fileResources": [],
+        "for-each": {
+          "nodes": [
+            {
+              "id": "d0e36d269ed0414d9acd08149f360129",
+              "recurrence": "Normal",
+              "timeout": 12,
+              "instanceMode": "T+1",
+              "rerunMode": "Allowed",
+              "rerunTimes": 3,
+              "rerunInterval": 18000,
+              "script": {
+                "path": "/遍历节点0/traverse_start",
+                "runtime": {
+                  "engine": "GENERAL",
+                  "command": "CONTROLLER_TRAVERSE_START"
+                },
+                "parameters": []
+              },
+              "trigger": {
+                "type": "Scheduler",
+                "cron": "00 00 00 * * ?",
+                "startTime": "1970-01-01 00:00:00",
+                "endTime": "9999-01-01 00:00:00",
+                "timezone": "Asia/Shanghai"
+              },
+              "runtimeResource": {
+                "resourceGroup": "res_group_1"
+              },
+              "name": "traverse_start",
+              "owner": "WORKER_1482465063962",
+              "inputs": {},
+              "outputs": {
+                "nodeOutputs": [
+                  {
+                    "artifactType": "NodeOutput",
+                    "data": "d0e36d269ed0414d9acd08149f360129",
+                    "refTableName": "traverse_start"
+                  }
+                ]
+              },
+              "functions": [],
+              "fileResources": []
+            },
+            {
+              "id": "8401efef76224eacbf28cc284b11a788",
+              "recurrence": "Normal",
+              "timeout": 12,
+              "instanceMode": "T+1",
+              "rerunMode": "Allowed",
+              "rerunTimes": 3,
+              "rerunInterval": 18000,
+              "script": {
+                "path": "/遍历节点0/shell",
+                "runtime": {
+                  "engine": "GENERAL",
+                  "command": "DIDE_SHELL"
+                },
+                "parameters": []
+              },
+              "trigger": {
+                "type": "Scheduler",
+                "cron": "00 00 00 * * ?",
+                "startTime": "1970-01-01 00:00:00",
+                "endTime": "9999-01-01 00:00:00",
+                "timezone": "Asia/Shanghai"
+              },
+              "runtimeResource": {
+                "resourceGroup": "res_group_1"
+              },
+              "name": "shell",
+              "owner": "WORKER_1482465063962",
+              "inputs": {},
+              "outputs": {
+                "nodeOutputs": [
+                  {
+                    "artifactType": "NodeOutput",
+                    "data": "8401efef76224eacbf28cc284b11a788",
+                    "refTableName": "shell"
+                  }
+                ]
+              },
+              "functions": [],
+              "fileResources": []
+            },
+            {
+              "id": "227b06c3ab0549e3b77731b0c828dcec",
+              "recurrence": "Normal",
+              "timeout": 12,
+              "instanceMode": "T+1",
+              "rerunMode": "Allowed",
+              "rerunTimes": 3,
+              "rerunInterval": 18000,
+              "script": {
+                "path": "/遍历节点0/traverse_end",
+                "runtime": {
+                  "engine": "GENERAL",
+                  "command": "CONTROLLER_TRAVERSE_END"
+                },
+                "parameters": []
+              },
+              "trigger": {
+                "type": "Scheduler",
+                "cron": "00 00 00 * * ?",
+                "startTime": "1970-01-01 00:00:00",
+                "endTime": "9999-01-01 00:00:00",
+                "timezone": "Asia/Shanghai"
+              },
+              "runtimeResource": {
+                "resourceGroup": "res_group_1"
+              },
+              "name": "traverse_end",
+              "owner": "WORKER_1482465063962",
+              "inputs": {},
+              "outputs": {
+                "nodeOutputs": [
+                  {
+                    "artifactType": "NodeOutput",
+                    "data": "227b06c3ab0549e3b77731b0c828dcec",
+                    "refTableName": "traverse_end"
+                  }
+                ]
+              },
+              "functions": [],
+              "fileResources": []
+            }
+          ],
+          "flow": [
+            {
+              "nodeId": "8401efef76224eacbf28cc284b11a788",
+              "depends": [
+                {
+                  "nodeId": "d0e36d269ed0414d9acd08149f360129",
+                  "type": "Normal"
+                }
+              ]
+            },
+            {
+              "nodeId": "227b06c3ab0549e3b77731b0c828dcec",
+              "depends": [
+                {
+                  "nodeId": "8401efef76224eacbf28cc284b11a788",
+                  "type": "Normal"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "flow": []
+  }
+}

@@ -1,0 +1,35 @@
+version: 1.1.0
+kind: CycleWorkflow
+spec:
+  dqcRules:
+    - id: rule1
+      name: rule1
+      description: rule1 description
+      calcEngine:
+        type: MaxCompute
+      table:
+        name: test_table
+        guid: test_project.default.test_table
+      partitionExpression: dt=$[yyyyMMdd]
+      schedulerNode:
+        output: autotest.1234_out
+      ruleConfig: | # 规则配置
+        {
+          "rules": [
+            {
+              "ruleType": "check_null",
+              "ruleConfig": {
+                "column": "id",
+                "threshold": 0.9,
+                "thresholdType": "percentage"
+              }
+            },
+            {
+              "ruleType": "check_null",
+              "ruleConfig": {
+                "column": "name",
+                "threshold": 0.9,
+                "thresholdType": "percentage"
+            }
+          ]
+        }

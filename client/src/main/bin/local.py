@@ -1,0 +1,5 @@
+#!/usr/bin/env python
+
+import common
+
+common.run_command("writer", "com.aliyun.dataworks.migrationx.local.DataWorksSpecLocalCommandApp")

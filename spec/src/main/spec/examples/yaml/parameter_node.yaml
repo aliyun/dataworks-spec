@@ -1,0 +1,35 @@
+version: 1.1.0
+kind: CycleWorkflow
+spec:
+  # parameter node example
+  variables:
+    - id: ctx_cst_1
+      name: region
+      scope: NodeContext
+      type: Constant
+      value: ch-shanghai
+    - id: ctx_var_2
+      name: bizdate
+      scope: NodeParameter
+      type: System
+      value: ${yyyymmdd}
+    - id: ctx_var_upstream_1
+      name: upstream_var
+      scope: NodeContext
+      type: System
+      value: from upstream
+    - id: ctx_var_3
+      name: pass_param_1 # parameter name
+      scope: NodeContext
+      type: PassThrough # pass through parameter
+      value: "{{ctx_var_upstream_1}}" # pass through parameter value
+  nodes:
+    - id: param_1
+      inputs:
+        variables:
+          - "{{variables.ctx_var_upstream_1}}" # context variable
+      outputs:
+        variables:
+          - "{{variables.ctx_cst_1}}"
+          - "{{variables.ctx_var_2}}"
+          - "{{variables.ctx_var_3}}"

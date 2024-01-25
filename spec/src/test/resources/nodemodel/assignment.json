@@ -1,0 +1,113 @@
+{
+  "version": "1.1.0",
+  "kind": "CycleWorkflow",
+  "spec": {
+    "nodes": [
+      {
+        "id": "c6a3bbe198fd4031bbe71ad3e66ceb91",
+        "recurrence": "Normal",
+        "timeout": 3,
+        "instanceMode": "T+1",
+        "rerunMode": "Allowed",
+        "rerunTimes": 3,
+        "rerunInterval": 180000,
+        "script": {
+          "path": "聿剑测试/通用节点测试/sql_assign_1",
+          "language": "odps",
+          "content": "select 1",
+          "runtime": {
+            "engine": "MaxCompute",
+            "command": "CONTROLLER_ASSIGNMENT"
+          },
+          "parameters": [
+            {
+              "artifactType": "Variable",
+              "name": "sql_assign_0",
+              "scope": "NodeContext",
+              "type": "NodeOutput",
+              "value": "${outputs}",
+              "referenceVariable": {
+                "artifactType": "Variable",
+                "name": "sql_assign_0",
+                "scope": "NodeContext",
+                "type": "NodeOutput",
+                "value": "${outputs}",
+                "node": {
+                  "output": "cd0a7f7e21ef49e6bebeb98438c9ebe9"
+                }
+              },
+              "node": {
+                "output": "cd0a7f7e21ef49e6bebeb98438c9ebe9"
+              }
+            }
+          ]
+        },
+        "trigger": {
+          "type": "Scheduler",
+          "cron": "00 00 00 * * ?",
+          "startTime": "1970-01-01 00:00:00",
+          "endTime": "9999-01-01 00:00:00",
+          "timezone": "Asia/Shanghai"
+        },
+        "runtimeResource": {
+          "resourceGroup": "group_2",
+          "resourceGroupId": "2"
+        },
+        "name": "sql_assign_1",
+        "owner": "064152",
+        "inputs": {
+          "variables": [
+            {
+              "artifactType": "Variable",
+              "name": "sql_assign_0",
+              "scope": "NodeContext",
+              "type": "NodeOutput",
+              "value": "${outputs}",
+              "node": {
+                "output": "cd0a7f7e21ef49e6bebeb98438c9ebe9"
+              }
+            }
+          ]
+        },
+        "outputs": {
+          "variables": [
+            {
+              "artifactType": "Variable",
+              "name": "sql_assign_1",
+              "scope": "NodeContext",
+              "type": "NodeOutput",
+              "value": "${outputs}",
+              "node": {
+                "output": "c6a3bbe198fd4031bbe71ad3e66ceb91"
+              }
+            }
+          ],
+          "outputs": [
+            {
+              "artifactType": "Output",
+              "data": "c6a3bbe198fd4031bbe71ad3e66ceb91",
+              "refTableName": "sql_assign_1"
+            }
+          ]
+        },
+        "functions": [],
+        "fileResources": []
+      }
+    ],
+    "flow": [
+      {
+        "nodeId": "c6a3bbe198fd4031bbe71ad3e66ceb91",
+        "depends": [
+          {
+            "type": "Normal",
+            "output": "f6cbb79aa27540dc9d3f055a639436b1"
+          },
+          {
+            "type": "Normal",
+            "output": "cd0a7f7e21ef49e6bebeb98438c9ebe9"
+          }
+        ]
+      }
+    ]
+  }
+}

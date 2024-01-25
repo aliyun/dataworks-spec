@@ -1,0 +1,23 @@
+{
+  "reader": {
+    "dolphinscheduler": {
+      "appClass": "com.aliyun.dataworks.migrationx.reader.dolphinscheduler.DolphinSchedulerCommandApp"
+    },
+    "aliyunemr": {
+      "appClass": "com.aliyun.dataworks.migrationx.reader.aliyunemr.AliyunEmrCommandApp"
+    },
+    "airflow": {
+      "appClass": "com.aliyun.dataworks.migrationx.reader.airflow.AirflowCommandApp"
+    }
+  },
+  "transformer": {
+    "dolphinscheduler_to_dataworks": {
+      "appClass": "com.aliyun.dataworks.migrationx.transformer.dataworks.apps.DataWorksDolphinschedulerTransformerApp"
+    }
+  },
+  "writer": {
+    "dataworks": {
+      "appClass": "com.aliyun.dataworks.migrationx.writer.DataWorksMigrationAssistWriter"
+    }
+  }
+}

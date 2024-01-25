@@ -1,0 +1,214 @@
+{
+  "version": "1.1.0",
+  "kind": "CycleWorkflow",
+  "metadata": {
+    "owner": 26730,
+    "description": "real case example"
+  },
+  "spec": {
+    "nodes": [
+      {
+        "id": "base_tenant_user_alibaba",
+        "reference": {
+          "output": "dataworks_analyze.8674738_out"
+        }
+      },
+      {
+        "id": "sls_full_access_log",
+        "name": "sls_full_access_log",
+        "script": {
+          "path": "/DataIntegration",
+          "language": "json",
+          "code": "{\n  \"extend\": {\"mode\": \"wizard\"},\n  \"steps\": [\n   ]\n}\n",
+          "runtime": {
+            "engine": "DataIntegration",
+            "command": "DI"
+          },
+          "parameters": [
+            {
+              "name": "bizdate",
+              "value": "$bizdate",
+              "scope": "NodeParameter",
+              "type": "System"
+            },
+            {
+              "name": "startTime",
+              "value": "$[yyyymmddhh24miss-1/24]",
+              "scope": "NodeParameter",
+              "type": "System"
+            },
+            {
+              "name": "endTime",
+              "value": "$[yyyymmddhh24miss-30/24/60]",
+              "scope": "NodeParameter",
+              "type": "System"
+            },
+            {
+              "name": "ds",
+              "value": "$[yyyymmddhh24mi-30/24/60]",
+              "scope": "NodeParameter",
+              "type": "System"
+            }
+          ]
+        },
+        "recurrence": "Normal",
+        "priority": 7,
+        "timeout": 4,
+        "instanceMode": "T+1",
+        "rerunMode": "Allowed",
+        "inputs": {
+          "tables": [
+            {
+              "type": "table",
+              "guid": "loghub.pop_sls.pop_rpc_trace_log"
+            }
+          ]
+        },
+        "outputs": {
+          "tables": [
+            {
+              "type": "table",
+              "guid": "odps.dataworks_analyze.dw_openapi_invoke_log_details"
+            }
+          ]
+        },
+        "trigger": {
+          "type": "Scheduler",
+          "cron": "00 */30 00-23 * * ?",
+          "startTime": "2023-01-01T00:00:00",
+          "endTime": "2024-01-01T00:00:00"
+        },
+        "runtimeResource": {
+          "resourceGroup": null
+        }
+      },
+      {
+        "id": "analyze_region_api_access_log",
+        "name": null,
+        "script": {
+          "path": "/MaxCompute/DataAnalytic",
+          "code": "--odps sql \n--********************************************************************--\n--author: sx\n--create time:2023-03-28 17:59:42\n-- projectName:autotest\n--********************************************************************--\nSELECT CONCAT(${bizdate}, \"--\", ${BIZDATE});\nselect * from autotest.lineage_demo_u02_02_20210407 ;\n",
+          "runtime": {
+            "engine": "MaxCompute",
+            "command": "ODPS_SQL"
+          },
+          "language": "sql",
+          "parameters": [
+            {
+              "name": "bizdate",
+              "value": "$bizdate",
+              "scope": "NodeParameter",
+              "type": "System"
+            },
+            {
+              "name": "ds",
+              "value": "$[yyyymmddhh24mi-30/24/60]",
+              "scope": "NodeParameter",
+              "type": "System"
+            }
+          ]
+        },
+        "trigger": {
+          "type": "Scheduler",
+          "cron": "00 */30 00-23 * * ?",
+          "startTime": "2023-01-01T00:00:00",
+          "endTime": "2024-01-01T00:00:00"
+        },
+        "runtimeResource": {
+          "resourceGroup": null
+        },
+        "inputs": {
+          "tables": [
+            {
+              "type": "table",
+              "guid": "odps.dataworks_analyze.dw_openapi_invoke_log_details"
+            }
+          ]
+        },
+        "outputs": {
+          "tables": [
+            {
+              "type": "table",
+              "guid": "odps.dataworks_analyze.dw_open_api_invoke_log_details_analyse"
+            }
+          ]
+        }
+      },
+      {
+        "id": "cn_shanghai_api_access_detail",
+        "name": "cn_shanghai_api_access_detail",
+        "script": {
+          "path": "/MaxCompute/DataAnalytic",
+          "code": "show tables;",
+          "runtime": {
+            "engine": "MaxCompute",
+            "command": "ODPS_SQL"
+          },
+          "language": "sql",
+          "parameters": [
+            {
+              "name": "bizdate",
+              "value": "$bizdate",
+              "scope": "NodeParameter",
+              "type": "System"
+            },
+            {
+              "name": "ds",
+              "value": "$[yyyymmddhh24mi-30/24/60]",
+              "scope": "NodeParameter",
+              "type": "System"
+            }
+          ]
+        },
+        "trigger": {
+          "type": "Scheduler",
+          "cron": "00 */30 00-23 * * ?",
+          "startTime": "2023-01-01T00:00:00",
+          "endTime": "2024-01-01T00:00:00"
+        },
+        "runtimeResource": {
+          "resourceGroup": null
+        },
+        "inputs": {
+          "tables": [
+            {
+              "type": "table",
+              "guid": "odps.dataworks_analyze.dw_open_api_invoke_log_details_analyse"
+            }
+          ]
+        },
+        "outputs": {
+          "tables": [
+            {
+              "type": "table",
+              "guid": "odps.dataworks_analyze.dw_open_api_invoke_log_details_business"
+            }
+          ]
+        }
+      }
+    ],
+    "flow": [
+      {
+        "nodeId": "{{analyze_region_api_access_log}}",
+        "depends": [
+          {
+            "nodeId": "{{sls_full_access_log}}",
+            "type": "Normal"
+          }
+        ]
+      },
+      {
+        "nodeId": "{{cn_shanghai_api_access_detail}}",
+        "depends": [
+          {
+            "nodeId": "{{analyze_region_api_access_log}}"
+          },
+          {
+            "nodeId": "{{base_tenant_user_alibaba}}",
+            "type": "Normal"
+          }
+        ]
+      }
+    ]
+  }
+}

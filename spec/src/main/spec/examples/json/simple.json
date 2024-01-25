@@ -1,0 +1,68 @@
+{
+  "version": "1.1.0",
+  "kind": "CycleWorkflow",
+  "spec": {
+    "variables": [
+      {
+        "id": "bizdate",
+        "name": "bizdate",
+        "type": "System",
+        "scope": "NodeParameter",
+        "value": "${yyyymmdd}"
+      }
+    ],
+    "scripts": [
+      {
+        "id": "file1",
+        "path": "/path/to/datax_1.json",
+        "language": "json",
+        "runtime": {
+          "engine": "DataIntegration",
+          "command": "DI"
+        },
+        "parameters": [
+          "{{variables.bizdate}}"
+        ]
+      },
+      {
+        "id": "file2",
+        "path": "/path/to/file2.sql",
+        "language": "sql",
+        "parameters": [
+          "{{variables.bizdate}}"
+        ]
+      }
+    ],
+    "nodes": [
+      {
+        "id": "start"
+      },
+      {
+        "id": "datax",
+        "script": "{{scripts.file1}}"
+      },
+      {
+        "id": "sql",
+        "script": "{{scripts.file2}}"
+      }
+    ],
+    "flow": [
+      {
+        "nodeId": "{{datax}}",
+        "depends": [
+          {
+            "nodeId": "{{start}}"
+          }
+        ]
+      },
+      {
+        "nodeId": "{{sql}}",
+        "depends": [
+          {
+            "nodeId": "{{datax}}"
+          }
+        ]
+      }
+    ]
+  }
+}

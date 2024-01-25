@@ -1,0 +1,57 @@
+[
+  {
+    "id": 4,
+    "pid": 2,
+    "name": "commons-pool2-2.4.2.2.jar",
+    "fullName": "test_folder/commons-pool2-2.4.2.jar",
+    "idValue": "4_0",
+    "type": "FILE",
+    "children": [],
+    "dirctory": false
+  },
+  {
+    "id": 1,
+    "pid": -1,
+    "name": "aliyun-java-sdk-dataworks-public-1.0.0.jar",
+    "fullName": "aliyun-java-sdk-dataworks-public-1.0.0.jar",
+    "description": "",
+    "idValue": "1_0",
+    "type": "UDF",
+    "children": [],
+    "dirctory": false
+  },
+  {
+    "id": 2,
+    "pid": -1,
+    "name": "test_folder",
+    "fullName": "test_folder",
+    "description": "",
+    "idValue": "2_1",
+    "type": "UDF",
+    "children": [
+      {
+        "id": 3,
+        "pid": 2,
+        "name": "commons-pool2-2.4.2.jar",
+        "fullName": "test_folder/commons-pool2-2.4.2.jar",
+        "description": "",
+        "idValue": "3_0",
+        "type": "UDF",
+        "children": [],
+        "dirctory": false
+      }
+    ],
+    "dirctory": true
+  },
+  {
+    "id": 557,
+    "pid": 539,
+    "name": "customer_mongo.py",
+    "fullName": "ai_feature/customer_mongo.py",
+    "description": "",
+    "idValue": "557_0",
+    "type": "FILE",
+    "children": [],
+    "dirctory": false
+  }
+]

@@ -1,0 +1,231 @@
+{
+  "version": "1.1.0",
+  "kind": "CycleWorkflow",
+  "metadata": {
+    "owner": 26730,
+    "description": "real case example"
+  },
+  "spec": {
+    "variables": [
+      {
+        "id": "bizdate",
+        "name": "bizdate",
+        "scope": "Workflow",
+        "type": "System",
+        "value": "$bizdate"
+      },
+      {
+        "id": "startTime",
+        "name": "startTime",
+        "scope": "Workflow",
+        "type": "System",
+        "value": "$[yyyymmddhh24miss-1/24]"
+      },
+      {
+        "id": "endTime",
+        "name": "endTime",
+        "scope": "Workflow",
+        "type": "System",
+        "value": "$[yyyymmddhh24miss-30/24/60]"
+      },
+      {
+        "id": "ds",
+        "name": "ds",
+        "scope": "NodeParameter",
+        "type": "System",
+        "value": "$[yyyymmddhh24mi-30/24/60]"
+      }
+    ],
+    "scripts": [
+      {
+        "id": "sls_full_access_log",
+        "name": "sls_full_access_log",
+        "path": "/DataIntegration",
+        "language": "json",
+        "code": "{\n  \"extend\": {\"mode\": \"wizard\"},\n  \"steps\": [\n   ]\n}\n",
+        "runtime": {
+          "engine": "DataIntegration",
+          "command": "DI"
+        },
+        "parameters": [
+          "{{variables.bizdate}}",
+          "{{variables.startTime}}",
+          "{{variables.endTime}}",
+          "{{variables.ds}}"
+        ]
+      },
+      {
+        "id": "dw_open_api_invoke_log_details_analyse",
+        "name": null,
+        "path": "/MaxCompute/DataAnalytic",
+        "code": "--odps sql \n--********************************************************************--\n--author:yj\n--create time:2023-03-28 17:59:42\n-- projectName:autotest\n--********************************************************************--\nSELECT CONCAT(${bizdate}, \"--\", ${BIZDATE});\nselect * from autotest.lineage_demo_u02_02_20210407 ;\n",
+        "runtime": {
+          "engine": "MaxCompute",
+          "command": "ODPS_SQL"
+        },
+        "language": "sql",
+        "parameters": [
+          "{{variables.bizdate}}",
+          "{{variables.ds}}"
+        ]
+      },
+      {
+        "id": "dw_open_api_invoke_log_details_business",
+        "name": "cn_shanghai_api_access_detail",
+        "path": "/MaxCompute/DataAnalytic",
+        "code": "show tables;",
+        "runtime": {
+          "engine": "MaxCompute",
+          "command": "ODPS_SQL"
+        },
+        "language": "sql",
+        "parameters": [
+          "{{variables.bizdate}}",
+          "{{variables.ds}}"
+        ]
+      },
+      {
+        "id": "shell_0",
+        "name": "shell节点",
+        "code": "echo hello",
+        "path": "/通用",
+        "runtime": {
+          "engine": "Linux",
+          "command": "bash"
+        },
+        "language": "sh"
+      },
+      {
+        "id": "virtual_0",
+        "name": "虚拟节点",
+        "path": "/通用"
+      }
+    ],
+    "runtimeResources": [
+      {
+        "id": "default_resgroup",
+        "resourceGroup": null
+      }
+    ],
+    "triggers": [
+      {
+        "id": "every_30_minutes",
+        "type": "Scheduler",
+        "cron": "00 */30 00-23 * * ?",
+        "startTime": "2023-01-01T00:00:00",
+        "endTime": "2024-01-01T00:00:00"
+      }
+    ],
+    "artifacts": {
+      "tables": [
+        {
+          "id": "log_store_1",
+          "type": "table",
+          "guid": "loghub.pop_sls.pop_rpc_trace_log"
+        },
+        {
+          "id": "dw_openapi_invoke_log_details",
+          "type": "table",
+          "guid": "odps.dataworks_analyze.dw_openapi_invoke_log_details"
+        },
+        {
+          "id": "dw_open_api_invoke_log_details_analyse",
+          "type": "table",
+          "guid": "odps.dataworks_analyze.dw_open_api_invoke_log_details_analyse"
+        },
+        {
+          "id": "dw_open_api_invoke_log_details_business",
+          "type": "table",
+          "guid": "odps.dataworks_analyze.dw_open_api_invoke_log_details_business"
+        }
+      ]
+    },
+    "nodes": [
+      {
+        "id": "base_tenant_user_alibaba",
+        "reference": {
+          "output": "dataworks_analyze.8674738_out"
+        }
+      },
+      {
+        "id": "sls_full_access_log",
+        "name": "sls_full_access_log",
+        "script": "{{sls_full_access_log}}",
+        "recurrence": "Normal",
+        "priority": 7,
+        "timeout": 4,
+        "instanceMode": "T+1",
+        "rerunMode": "Allowed",
+        "inputs": {
+          "tables": [
+            "{{artifacts.log_store_1}}"
+          ]
+        },
+        "outputs": {
+          "tables": [
+            "{{artifacts.dw_openapi_invoke_log_details}}"
+          ]
+        },
+        "trigger": "{{triggers.every_30_minutes}}",
+        "runtimeResource": "{{runtimeResources.default_resgroup}}"
+      },
+      {
+        "id": "dw_open_api_invoke_log_details_analyse",
+        "name": null,
+        "script": "{{dw_open_api_invoke_log_details_analyse}}",
+        "trigger": "{{triggers.every_30_minutes}}",
+        "runtimeResource": "{{runtimeResources.default_resgroup}}",
+        "inputs": {
+          "tables": [
+            "{{artifacts.dw_openapi_invoke_log_details}}"
+          ]
+        },
+        "outputs": {
+          "tables": [
+            "{{artifacts.dw_open_api_invoke_log_details_analyse}}"
+          ]
+        }
+      },
+      {
+        "id": "dw_open_api_invoke_log_details_business",
+        "name": "cn_shanghai_api_access_detail",
+        "script": "{{dw_open_api_invoke_log_details_business}}",
+        "trigger": "{{triggers.every_30_minutes}}",
+        "runtimeResource": "{{runtimeResources.default_resgroup}}",
+        "inputs": {
+          "tables": [
+            "{{artifacts.dw_open_api_invoke_log_details_analyse}}"
+          ]
+        },
+        "outputs": {
+          "tables": [
+            "{{artifacts.dw_open_api_invoke_log_details_business}}"
+          ]
+        }
+      }
+    ],
+    "flow": [
+      {
+        "nodeId": "{{dw_open_api_invoke_log_details_analyse}}",
+        "depends": [
+          {
+            "nodeId": "{{sls_full_access_log}}",
+            "type": "Normal"
+          }
+        ]
+      },
+      {
+        "nodeId": "{{dw_open_api_invoke_log_details_business}}",
+        "depends": [
+          {
+            "nodeId": "{{dw_open_api_invoke_log_details_analyse}}"
+          },
+          {
+            "nodeId": "{{base_tenant_user_alibaba}}",
+            "type": "Normal"
+          }
+        ]
+      }
+    ]
+  }
+}

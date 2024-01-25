@@ -1,0 +1,67 @@
+{
+  "version": "1.1.0",
+  "kind": "CycleWorkflow",
+  "spec": {
+    "nodes": [
+      {
+        "id": "param_1",
+        "param-hub": {
+          "variables": [
+            {
+              "name": "my_const",
+              "type": "Constant",
+              "scope": "NodeContext",
+              "value": "cn-shanghai"
+            },
+            {
+              "name": "my_var",
+              "type": "System",
+              "scope": "NodeContext",
+              "value": "${yyyymmdd}"
+            },
+            {
+              "name": "outputs",
+              "type": "PassThrough",
+              "scope": "NodeContext",
+              "variable": {
+                "name": "outputs",
+                "type": "NodeOutput",
+                "scope": "NodeContext",
+                "value": "${outputs}",
+                "node": {
+                  "output": "autotest.28517448_out"
+                }
+              }
+            },
+            {
+              "name": "shell_const_1",
+              "type": "PassThrough",
+              "scope": "NodeContext",
+              "variable": {
+                "name": "shell_const_1",
+                "type": "NodeOutput",
+                "scope": "NodeContext",
+                "node": {
+                  "output": "autotest.28517347_out"
+                }
+              }
+            },
+            {
+              "name": "shell_var_1",
+              "type": "PassThrough",
+              "scope": "NodeContext",
+              "variable": {
+                "name": "shell_var_1",
+                "type": "NodeOutput",
+                "scope": "NodeContext",
+                "node": {
+                  "output": "autotest.28517347_out"
+                }
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

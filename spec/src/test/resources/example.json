@@ -1,0 +1,198 @@
+{
+  "version": "1.0.0",
+  "kind": "CycleWorkflow",
+  "metadata": {
+    "owner": 123124124,
+    "description": "desc"
+  },
+  "variables": [
+    {
+      "id": "global_var_0",
+      "name": "global_var_0",
+      "scope": "Workspace",
+      "type": "Constant",
+      "value": "global_value"
+    },
+    {
+      "id": "bizdate",
+      "name": "bizdate",
+      "scope": "NodeParameter",
+      "type": "System",
+      "value": "${yyyymmdd}"
+    },
+    {
+      "id": "hour",
+      "name": "hour",
+      "scope": "NodeParameter",
+      "type": "System",
+      "value": "${hi24mmss}"
+    },
+    {
+      "id": "region",
+      "name": "region",
+      "scope": "NodeParameter",
+      "type": "Constant",
+      "value": "cn-shanghai"
+    },
+    {
+      "id": "ctx_output_1",
+      "name": "output",
+      "scope": "NodeContext",
+      "type": "Constant",
+      "node": {
+        "nodeId": "{{nodes.node_1}}"
+      }
+    }
+  ],
+  "scripts": [
+    {
+      "id": "script_file1",
+      "path": "/path/to/file1.sql",
+      "language": "sql",
+      "runtime": {
+        "engine": "MaxCompute",
+        "command": "ODPS_SQL"
+      },
+      "parameters": [
+        "{{variables.bizdate}}",
+        "{{variables.hour}}",
+        "{{variables.region}}"
+      ]
+    },
+    {
+      "id": "script_file2",
+      "path": "/path/to/file2.py",
+      "runtime": {
+        "engine": "MaxCompute",
+        "command": "PY_ODPS"
+      },
+      "language": "python"
+    }
+  ],
+  "runtimeResources": [
+    {
+      "id": "resgroup_1",
+      "resourceGroup": "S_xxx_yyy"
+    },
+    {
+      "id": "runtime_resgroup_1",
+      "resourceGroup": "S_zzz"
+    }
+  ],
+  "triggers": [
+    {
+      "id": "daily",
+      "type": "scheduler",
+      "cron": "00 00 00 * * ?",
+      "startTime": "2023-01-01 00:00:00",
+      "endTime": "2024-01-01 00:00:00",
+      "timezone": "Asia/shanghai"
+    }
+  ],
+  "artifacts": {
+    "variables": [
+      {
+        "id": "global_var_1",
+        "name": "global_var_1",
+        "scope": "Workspace",
+        "type": "Constant",
+        "value": "global_value"
+      }
+    ],
+    "tables": [
+      {
+        "id": "table1",
+        "guid": "odps.autotest.table_1"
+      },
+      {
+        "id": "table2",
+        "guid": "odps.autotest.table_2"
+      },
+      {
+        "id": "table3",
+        "guid": "odps.autotest.table_3"
+      }
+    ],
+    "outputs": [
+      {
+        "id": "artifact_1",
+        "str": "autotest.output_1",
+        "refTableName": "autotest.table_1"
+      }
+    ]
+  },
+  "nodes": [
+    {
+      "id": "node_existed_xx",
+      "reference": {
+        "output": "autotest.table_1"
+      }
+    },
+    {
+      "id": "node_1",
+      "script": "{{script_file1}}",
+      "recurrence": "Normal",
+      "owner": "064152",
+      "priority": 7,
+      "timeout": 4,
+      "instanceMode": "T+1",
+      "rerunMode": "Allowed",
+      "rerunTimes": 3,
+      "rerunInterval": 18000,
+      "datasource": {
+        "name": "odps_first"
+      },
+      "inputs": {
+        "tables": [
+          "{{tables.table1}}",
+          "{{tables.table2}}"
+        ],
+        "variables": [
+          "{{variables.ctx_output_1}}"
+        ]
+      },
+      "outputs": {
+        "tables": [
+          "{{tables.table3}}"
+        ],
+        "variables": [
+          "{{variables.region}}"
+        ]
+      },
+      "trigger": "{{triggers.daily}}",
+      "runtimeResource": "{{runtimeResources.resgroup_1}}"
+    },
+    {
+      "id": "node_2",
+      "script": "{{scripts.script_file2}}",
+      "trigger": "{{triggers.daily}}",
+      "runtimeResource": "{{runtimeResources.runtime_resgroup_1}}"
+    }
+  ],
+  "flow": [
+    {
+      "nodeId": "{{node_1}}",
+      "depends": [
+        {
+          "nodeId": "{{node_existed_xx}}",
+          "type": "Normal"
+        }
+      ]
+    },
+    {
+      "nodeId": "{{node_2}}",
+      "depends": [
+        {
+          "nodeId": "{{node_existed_xx}}",
+          "type": "CrossCycleDependsOnOtherNode"
+        },
+        {
+          "type": "CrossCycleDependsOnSelf"
+        },
+        {
+          "type": "CrossCycleDependsOnChildren"
+        }
+      ]
+    }
+  ]
+}

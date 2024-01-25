@@ -1,0 +1,25 @@
+{
+  "version": "1.1.0",
+  "kind": "CycleWorkflow",
+  "spec": {
+    "artifacts": {
+      "tables": [
+        {
+          "id": "table1",
+          "metadata": {
+            "owner": 123124124,
+            "description": "description of table1"
+          },
+          "name": "table1",
+          "guid": "odps.test_project.default.test_table1",
+          "calcEngine": {
+            "type": "MaxCompute",
+            "project": "test_project",
+            "schema": "default"
+          },
+          "ddl": "CREATE TABLE IF NOT EXISTS table1 (\n  id STRING,\n  name STRING,\n  dt STRING\n) PARTITIONED BY (\n  dt STRING\n) LOCATION 'oss://test-bucket/test-table1'"
+        }
+      ]
+    }
+  }
+}

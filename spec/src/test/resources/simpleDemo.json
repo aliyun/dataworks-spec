@@ -1,0 +1,69 @@
+{
+  "kind": "CycleWorkflow",
+  "version": "1.0.0",
+  "variables": [
+    {
+      "id": "global_var_0",
+      "name": "global_var_0",
+      "scope": "Workspace",
+      "type": "Constant",
+      "value": "global_value",
+      "node": {
+        "nodeId": "{{node_1}}"
+      }
+    },
+    {
+      "id": "ctx_output_1",
+      "name": "ctx_output_1",
+      "scope": "Tenant",
+      "type": "Constant",
+      "value": "output_value"
+    },
+    {
+      "id": "my_output",
+      "name": "my_output",
+      "scope": "Tenant",
+      "type": "Constant",
+      "value": "input_value"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "node_1",
+      "inputs": {
+        "tables": [
+          "{{tables.table1}}",
+          "{{tables.table2}}"
+        ],
+        "variables": [
+          "{{variables.ctx_output_1}}"
+        ]
+      },
+      "outputs": {
+        "tables": [
+          "{{tables.table3}}"
+        ],
+        "variables": [
+          "{{variables.my_output}}"
+        ]
+      },
+      "resource": "{{resource.resgroup_1}}"
+    }
+  ],
+  "artifacts": {
+    "tables": [
+      {
+        "id": "table1",
+        "guid": "odps.autotest.table_1"
+      },
+      {
+        "id": "table2",
+        "guid": "odps.autotest.table_2"
+      },
+      {
+        "id": "table3",
+        "guid": "odps.autotest.table_3"
+      }
+    ]
+  }
+}

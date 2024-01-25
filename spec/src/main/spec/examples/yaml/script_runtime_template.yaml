@@ -1,0 +1,55 @@
+---
+# DataWorks EMR example
+version: 1.1.0
+kind: CycleWorkflow
+spec:
+  scripts:
+    - id: EMR_HIVE
+      path: "/path/to/EMR_HIVE.hql"
+      language: sql
+      runtime:
+        engine: Hive
+        command: EMR_HIVE
+        template:
+          name: dw68764106362
+          description: DataWorks
+          type: HIVE_SQL
+          launcher:
+            allocationSpec:
+              DATAWORKS_SESSION_DISABLE: false
+              FLOW_SKIP_SQL_ANALYZE: false
+              priority: '1'
+              queue: default
+          properties:
+            envs:
+              FLOW_SKIP_SQL_ANALYZE: false
+            arguments: [ ]
+            tags:
+              - '502950297'
+    - id: assign_python
+      path: "/path/to/assign_node.py"
+      runtime:
+        engine: General
+        command: CONTROLLER_ASSIGNMENT
+        template:
+          language: python
+          content: ''
+      language: python
+    - id: assign_shell
+      path: "/path/to/assign_node.sh"
+      runtime:
+        engine: General
+        command: CONTROLLER_ASSIGNMENT
+        template:
+          language: shell
+          content: ''
+      language: shell
+    - id: controller_cycle_end
+      path: "/path/to/end.sh"
+      runtime:
+        engine: General
+        command: CONTROLLER_CYCLE_END
+        template:
+          language: shell
+          content: echo true
+      language: shell

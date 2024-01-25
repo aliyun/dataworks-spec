@@ -1,0 +1,32 @@
+[
+  {
+    "id": 3,
+    "userId": 1,
+    "name": "mysql_conn",
+    "note": "",
+    "type": "MYSQL",
+    "connectionParams": "{\"password\":\"******\",\"username\":\"admin\"}",
+    "createTime": "2022-10-24T14:44:34.007+0800",
+    "updateTime": "2022-10-24T14:44:34.007+0800"
+  },
+  {
+    "id": 2,
+    "userId": 1,
+    "name": "hive_conn",
+    "note": "",
+    "type": "HIVE",
+    "connectionParams": "{\"password\":\"******\",\"username\":\"admin\"}",
+    "createTime": "2022-10-18T17:52:45.707+0800",
+    "updateTime": "2022-10-18T17:52:45.707+0800"
+  },
+  {
+    "id": 1,
+    "userId": 1,
+    "name": "spark_conn",
+    "note": "",
+    "type": "SPARK",
+    "connectionParams": "{\"password\":\"******\",\"username\":\"admin\"}",
+    "createTime": "2022-10-18T17:12:10.402+0800",
+    "updateTime": "2022-10-18T17:12:10.402+0800"
+  }
+]

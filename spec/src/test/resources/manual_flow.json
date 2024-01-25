@@ -1,0 +1,66 @@
+{
+  "version": "1.0.0",
+  "kind": "ManualWorkflow",
+  "scripts": [
+    {
+      "id": "file1",
+      "path": "/path/to/datax_1.json",
+      "runtime": {
+        "engine": "DataIntegration",
+        "command": "DI"
+      },
+      "language": "json"
+    },
+    {
+      "id": "file2",
+      "path": "/path/to/file2.sql",
+      "runtime": {
+        "engine": "MaxCompute",
+        "command": "ODPS_SQL"
+      },
+      "language": "sql"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "start"
+    },
+    {
+      "id": "datax",
+      "script": "{{file1}}"
+    },
+    {
+      "id": "sql",
+      "script": "{{file2}}"
+    },
+    {
+      "id": "end"
+    }
+  ],
+  "flow": [
+    {
+      "nodeId": "{{datax}}",
+      "depends": [
+        {
+          "nodeId": "{{start}}"
+        }
+      ]
+    },
+    {
+      "nodeId": "{{sql}}",
+      "depends": [
+        {
+          "nodeId": "{{datax}}"
+        }
+      ]
+    },
+    {
+      "nodeId": "{{end}}",
+      "depends": [
+        {
+          "nodeId": "{{sql}}"
+        }
+      ]
+    }
+  ]
+}

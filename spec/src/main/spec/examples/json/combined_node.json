@@ -1,0 +1,66 @@
+{
+  "version": "1.1.0",
+  "kind": "CycleWorkflow",
+  "metadata": {
+    "owner": 123124124,
+    "description": "desc"
+  },
+  "spec": {
+    "nodes": [
+      {
+        "id": "combined_node_1",
+        "inputs": null,
+        "outputs": null,
+        "runtimeResource": {
+          "resourceGroup": "S_res_group_xxx_1"
+        },
+        "combined": {
+          "nodes": [
+            {
+              "id": "sql11",
+              "script": {
+                "path": "/path/to/file1.sql",
+                "language": "sql",
+                "runtime": {
+                  "engine": "MaxCompute",
+                  "command": "ODPS_SQL"
+                }
+              }
+            },
+            {
+              "id": "sql12",
+              "script": {
+                "path": "/path/to/file2.py",
+                "language": "python"
+              }
+            },
+            {
+              "id": "shell13",
+              "script": {
+                "path": "/path/to/file3.sh",
+                "language": "shell",
+                "runtime": {
+                  "engine": "MaxCompute",
+                  "command": "ODPS_SHELL"
+                }
+              }
+            }
+          ],
+          "flow": [
+            {
+              "nodeId": "{{shell13}}",
+              "depends": [
+                {
+                  "nodeId": "{{sql11}}"
+                },
+                {
+                  "nodeId": "{{sql12}}"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

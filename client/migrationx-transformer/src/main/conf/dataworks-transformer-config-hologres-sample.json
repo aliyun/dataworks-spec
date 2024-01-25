@@ -1,0 +1,17 @@
+{
+  "format": "SPEC",
+  "locale": "zh_CN",
+  "settings": {
+    "workflow.converter.shellNodeType": "DIDE_SHELL",
+    "workflow.converter.commandSqlAs": "DIDE_SHELL",
+    "workflow.converter.sparkSubmitAs": "ODPS_SPARK",
+    "workflow.converter.target.unknownNodeTypeAs": "DIDE_SHELL",
+    "workflow.converter.mrNodeType": "ODPS_MR",
+    "workflow.converter.target.engine.type": "Hologres",
+    "workflow.converter.dolphinscheduler.sqlNodeTypeMapping": {
+      "POSTGRESQL": "HOLOGRES_SQL",
+      "MYSQL": "HOLOGRES_SQL",
+      "HIVE": "HOLOGRES_SQL"
+    }
+  }
+}

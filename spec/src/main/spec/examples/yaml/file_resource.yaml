@@ -1,0 +1,43 @@
+version: 1.1.0
+kind: CycleWorkflow
+spec:
+  # function example
+  files:
+    oss:
+      - id: file1
+        storage:
+          type: oss
+          endpoint: https://oss-cn-hangzhou.aliyuncs.com
+          bucket: 'test-bucket'
+        objectKey: /path/to/file1.jar
+        extension: .jar
+    hdfs:
+      - id: file2
+        storage:
+          type: hdfs
+          addresses:
+            - namenode1:8020
+            - namenode2:8020
+          hdfsUser: hdfs
+        path: /path/to/file2.jar
+        extension: .jar
+  fileResources:
+    - id: res_1
+      name: res_1.py
+      type: python
+      file: "{{file1}}"
+    - id: res_2
+      name: file2.jar
+      type: jar
+      calcEngine:
+        type: MaxCompute
+        project: test_project
+        schema: default
+        endpoint: https://service.odps.aliyun.com
+      file:
+        storage:
+          type: oss
+          endpoint: https://oss-cn-hangzhou.aliyuncs.com
+          bucket: 'test-bucket'
+        objectKey: /path/to/file2.jar
+        extension: .jar

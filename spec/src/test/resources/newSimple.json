@@ -1,0 +1,12 @@
+{
+  "kind": "CycleWorkflow",
+  "triggers": [
+    {
+      "id": "daily",
+      "type": "scheduler",
+      "cron": "00 00 00 * * ?",
+      "startTime": "2023-01-01T00:00:00",
+      "endTime": "2024-01-01T00:00:00"
+    }
+  ]
+}

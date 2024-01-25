@@ -1,0 +1,17 @@
+{
+  "format": "SPEC",
+  "locale": "zh_CN",
+  "settings": {
+    "workflow.converter.shellNodeType": "DIDE_SHELL",
+    "workflow.converter.commandSqlAs": "DIDE_SHELL",
+    "workflow.converter.sparkSubmitAs": "ODPS_SPARK",
+    "workflow.converter.target.unknownNodeTypeAs": "DIDE_SHELL",
+    "workflow.converter.mrNodeType": "ODPS_MR",
+    "workflow.converter.target.engine.type": "MaxCompute",
+    "workflow.converter.dolphinscheduler.sqlNodeTypeMapping": {
+      "POSTGRESQL": "ODPS_SQL",
+      "MYSQL": "ODPS_SQL",
+      "HIVE": "ODPS_SQL"
+    }
+  }
+}

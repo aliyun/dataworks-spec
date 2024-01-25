@@ -1,0 +1,18 @@
+version: 1.1.0
+kind: CycleWorkflow
+spec:
+  # table example
+  datasources:
+    - id: table1
+      name: table1
+      type: mysql
+      subType: rds
+      config: |
+        {
+          "username": "root",
+          "password": "123456",
+          "host": "127.0.0.1",
+          "port": 3306,
+          "database": "test",
+          "table": "table1"
+        }

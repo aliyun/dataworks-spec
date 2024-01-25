@@ -1,0 +1,205 @@
+{
+  "version": "1.1.0",
+  "kind": "CycleWorkflow",
+  "spec": {
+    "nodes": [
+      {
+        "id": "bbd10b0e70324a8d91e046fee1f6fc1a",
+        "recurrence": "Normal",
+        "timeout": 12,
+        "instanceMode": "T+1",
+        "rerunMode": "Allowed",
+        "rerunTimes": 3,
+        "rerunInterval": 18000,
+        "script": {
+          "path": "/循环节点0",
+          "runtime": {
+            "engine": "General",
+            "command": "CONTROLLER_CYCLE"
+          },
+          "parameters": [
+            {
+              "artifactType": "Variable",
+              "name": "loopDataArray",
+              "scope": "NodeParameter",
+              "type": "System",
+              "value": "[]"
+            }
+          ]
+        },
+        "trigger": {
+          "type": "Scheduler",
+          "cron": "00 00 00 * * ?",
+          "startTime": "1970-01-01 00:00:00",
+          "endTime": "9999-01-01 00:00:00",
+          "timezone": "Asia/Shanghai"
+        },
+        "runtimeResource": {
+          "resourceGroup": "res_group_1"
+        },
+        "name": "循环节点0",
+        "owner": "WORKER_1482465063962",
+        "inputs": {},
+        "outputs": {
+          "nodeOutputs": [
+            {
+              "artifactType": "NodeOutput",
+              "data": "bbd10b0e70324a8d91e046fee1f6fc1a",
+              "refTableName": "循环节点0"
+            }
+          ]
+        },
+        "functions": [],
+        "fileResources": [],
+        "do-while": {
+          "nodes": [
+            {
+              "id": "1c2af127ca5548e8a5dfa9ef4ccca2d8",
+              "recurrence": "Normal",
+              "timeout": 12,
+              "instanceMode": "T+1",
+              "rerunMode": "Allowed",
+              "rerunTimes": 3,
+              "rerunInterval": 18000,
+              "script": {
+                "path": "/循环节点0/cycle_start",
+                "runtime": {
+                  "engine": "GENERAL",
+                  "command": "CONTROLLER_CYCLE_START"
+                },
+                "parameters": []
+              },
+              "trigger": {
+                "type": "Scheduler",
+                "cron": "00 00 00 * * ?",
+                "startTime": "1970-01-01 00:00:00",
+                "endTime": "9999-01-01 00:00:00",
+                "timezone": "Asia/Shanghai"
+              },
+              "runtimeResource": {
+                "resourceGroup": "res_group_1"
+              },
+              "name": "cycle_start",
+              "owner": "WORKER_1482465063962",
+              "inputs": {},
+              "outputs": {
+                "nodeOutputs": [
+                  {
+                    "artifactType": "NodeOutput",
+                    "data": "1c2af127ca5548e8a5dfa9ef4ccca2d8",
+                    "refTableName": "cycle_start"
+                  }
+                ]
+              },
+              "functions": [],
+              "fileResources": []
+            },
+            {
+              "id": "06b24d68a38e414eab9f952d79ca66d4",
+              "recurrence": "Normal",
+              "timeout": 12,
+              "instanceMode": "T+1",
+              "rerunMode": "Allowed",
+              "rerunTimes": 3,
+              "rerunInterval": 18000,
+              "script": {
+                "path": "/循环节点0/shell",
+                "runtime": {
+                  "engine": "GENERAL",
+                  "command": "DIDE_SHELL"
+                },
+                "parameters": []
+              },
+              "trigger": {
+                "type": "Scheduler",
+                "cron": "00 00 00 * * ?",
+                "startTime": "1970-01-01 00:00:00",
+                "endTime": "9999-01-01 00:00:00",
+                "timezone": "Asia/Shanghai"
+              },
+              "runtimeResource": {
+                "resourceGroup": "res_group_1"
+              },
+              "name": "shell",
+              "owner": "WORKER_1482465063962",
+              "inputs": {},
+              "outputs": {
+                "nodeOutputs": [
+                  {
+                    "artifactType": "NodeOutput",
+                    "data": "06b24d68a38e414eab9f952d79ca66d4",
+                    "refTableName": "shell"
+                  }
+                ]
+              },
+              "functions": [],
+              "fileResources": []
+            }
+          ],
+          "flow": [
+            {
+              "nodeId": "06b24d68a38e414eab9f952d79ca66d4",
+              "depends": [
+                {
+                  "nodeId": "1c2af127ca5548e8a5dfa9ef4ccca2d8",
+                  "type": "Normal"
+                }
+              ]
+            },
+            {
+              "nodeId": "19d1d3c26e894a329e8f0d5859766c35",
+              "depends": [
+                {
+                  "nodeId": "06b24d68a38e414eab9f952d79ca66d4",
+                  "type": "Normal"
+                }
+              ]
+            }
+          ],
+          "while": {
+            "id": "19d1d3c26e894a329e8f0d5859766c35",
+            "recurrence": "Normal",
+            "timeout": 12,
+            "instanceMode": "T+1",
+            "rerunMode": "Allowed",
+            "rerunTimes": 3,
+            "rerunInterval": 18000,
+            "script": {
+              "path": "/循环节点0/cycle_end",
+              "runtime": {
+                "engine": "GENERAL",
+                "command": "CONTROLLER_CYCLE_END"
+              },
+              "parameters": []
+            },
+            "trigger": {
+              "type": "Scheduler",
+              "cron": "00 00 00 * * ?",
+              "startTime": "1970-01-01 00:00:00",
+              "endTime": "9999-01-01 00:00:00",
+              "timezone": "Asia/Shanghai"
+            },
+            "runtimeResource": {
+              "resourceGroup": "res_group_1"
+            },
+            "name": "cycle_end",
+            "owner": "WORKER_1482465063962",
+            "inputs": {},
+            "outputs": {
+              "nodeOutputs": [
+                {
+                  "artifactType": "NodeOutput",
+                  "data": "19d1d3c26e894a329e8f0d5859766c35",
+                  "refTableName": "cycle_end"
+                }
+              ]
+            },
+            "functions": [],
+            "fileResources": []
+          }
+        }
+      }
+    ],
+    "flow": []
+  }
+}

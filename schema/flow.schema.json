@@ -1,0 +1,265 @@
+{
+    "$id": "https://dataworks.data.aliyun.com/schemas/1.1.0/flow.schema.json",
+    "title": "Flow",
+    "description": "DataWorks 通用的工作流描述规范",
+    "type":"object",
+    "properties": {
+        "version": {
+            "description": "版本号",
+            "type": "string"
+        },
+        "kind": {
+            "description": "工作流类型",
+            "type": "string",
+            "enum": [ "CycleWorkflow", "ManualWorkflow" ]
+        },
+        "metadata": {
+            "title": "Flow Metedata",
+            "description": "定义工作流的扩展元信息",
+            "type": "object",
+            "properties": {
+                "owner": {
+                    "description": "责任人",
+                    "type": "string"
+                },
+                "description": {
+                    "description": "字段说明",
+                    "type": "string"
+                }
+            }
+        }
+    },
+    "allOf": [
+        {
+            "title": "CycleWorkflow",
+            "if": {
+                "properties": {
+                    "kind": { "const": "CycleWorkflow" }
+                }   
+            },
+            "then": {
+                "properties": {
+                    "spec": {
+                        "title": "CycleWorkflow Spec",
+                        "description": "CycleWorkflow 的定义",
+                        "type": "object",
+                        "allOf": [
+                            { "$ref": "#/$defs/baseProperties" }
+                        ],
+                        "properties": {
+                            "triggers": {
+                                "title": "Triggers",
+                                "description": "周期调度定义列表",
+                                "type": "array",
+                                "items": {
+                                }
+                            }
+                        } 
+                    }
+                } 
+            }
+        },
+        {
+            "title": "ManualWorkflow",
+            "if": {
+                "properties": {
+                    "kind": { "const": "ManualWorkflow" }
+                }   
+            },
+            "then": {
+                "properties": {
+                    "spec": {
+                        "title": "ManualWorkflow Spec",
+                        "description": "ManualWorkflow 的定义",
+                        "type": "object",
+                        "allOf": [
+                            { "$ref": "#/$defs/baseProperties" }
+                        ]
+                    }
+                } 
+            }
+        }
+    ],
+    "required": [ "spec" ],
+    "$defs": {
+        "baseProperties": {
+            "properties": {
+                "nodes": {
+                    "title": "Nodes",
+                    "description": "任务节点列表",
+                    "type": "array",
+                    "items": {
+                        "$ref": "node.schema.json"
+                    }
+                },
+                "variables": {
+                    "title": "Variables",
+                    "description": "定义工作流的变量",
+                    "type": "array",
+                    "items": {
+                        "title": "Variables Item",
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "description": "唯一标识",
+                                "type": "string"
+                            },
+                            "name": {
+                                "description": "变量名",
+                                "type": "string"
+                            },
+                            "scope": {
+                                "description": "变量作用域",
+                                "type": "string",
+                                "enum": [ "NodeParameter", "NodeContext", "Workspace", "Tenant" ]
+                            },
+                            "type": {
+                                "description": "变量类型",
+                                "type": "string",
+                                "enum": [ "System", "Constant" ]
+                            },
+                            "value": {
+                                "description": "变量值",
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "scripts": {
+                    "title": "Scripts",
+                    "description": "定义工作流的变量",
+                    "type": "array",
+                    "items": {
+                        "title": "Scripts Item",
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "description": "唯一标识",
+                                "type": "string"
+                            },
+                            "path": {
+                                "description": "脚本路径",
+                                "type": "string"
+                            },
+                            "language": {
+                                "description": "脚本语言",
+                                "type": "string"
+                            },
+                            "runtime": {
+                                "title": "Runtime",
+                                "description": "脚本运行时环境定义",
+                                "type": "object",
+                                "properties": {
+                                    "engine": {
+                                        "description": "运行时引擎",
+                                        "type": "string"
+                                    },
+                                    "command": {
+                                        "description": "运行时环境的命令标识",
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "parameters": {
+                                "title": "Script Parameters",
+                                "description": "脚本参数列表",
+                                "type": "array",
+                                "items": {
+                                    "type": "string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "artifacts": {
+                    "title": "Artifacts",
+                    "description": "定义工作流的变量",
+                    "type": "array",
+                    "items": {
+                        "title": "Artifacts Item",
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "description": "唯一标识",
+                                "type": "string"
+                            },
+                            "table": {
+                                "description": "唯一标识",
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "runtimeResources": {
+                    "title": "RuntimeResources",
+                    "description": "运行时资源定义列表",
+                    "type": "array",
+                    "items": {
+                        "title": "RuntimeResources Item",
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "description": "唯一标识",
+                                "type": "string"
+                            },
+                            "resourceGroup": {
+                                "description": "资源组唯一标识",
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "fileResources": {
+                    "title": "FileResources",
+                    "description": "文件资源列表",
+                    "type": "array",
+                    "items": {
+                        "title": "FileResources Item",
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "description": "唯一标识",
+                                "type": "string"
+                            },
+                            "name": {
+                                "description": "资源名称",
+                                "type": "string"
+                            },
+                            "script": {
+                                "description": "资源文件",
+                                "type": "string"
+                            }
+                        }
+                    }
+                },
+                "functions": {
+                    "title": "Functions",
+                    "description": "函数定义列表",
+                    "type": "array",
+                    "items": {
+                        "title": "Functions Item",
+                        "type": "object",
+                        "properties": {
+                            "id": {
+                                "description": "唯一标识",
+                                "type": "string"
+                            },
+                            "name": {
+                                "description": "函数名称",
+                                "type": "string"
+                            },
+                            "script": {
+                                "description": "使用的脚本",
+                                "type": "string"
+                            },
+                            "fileResources": {
+                                "description": "使用的资源列表",
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            } 
+        }
+    }
+}

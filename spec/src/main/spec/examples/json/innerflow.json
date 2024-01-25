@@ -1,0 +1,186 @@
+{
+  "version": "1.1.0",
+  "kind": "CycleWorkflow",
+  "metadata": {
+    "owner": 123124124,
+    "description": "desc"
+  },
+  "spec": {
+    "variables": [
+      {
+        "id": "var_arr",
+        "name": "var_arr",
+        "type": "System",
+        "scope": "NodeContext",
+        "value": "['a','b','c']"
+      }
+    ],
+    "scripts": [
+      {
+        "id": "script_file1",
+        "path": "/path/to/file1.sql",
+        "language": "sql",
+        "runtime": {
+          "engine": "MaxCompute",
+          "command": "ODPS_SQL"
+        }
+      },
+      {
+        "id": "script_file2",
+        "path": "/path/to/file2.py",
+        "language": "python"
+      }
+    ],
+    "runtimeResources": [
+      {
+        "id": "resgroup_1",
+        "resourceGroup": "resgroup_1"
+      }
+    ],
+    "nodes": [
+      {
+        "id": "node_1",
+        "script": "{{scripts.script_file1}}",
+        "inputs": null,
+        "outputs": null,
+        "runtimeResource": "{{runtimeResources.resgroup_1}}"
+      },
+      {
+        "id": "node_2",
+        "script": "{{scripts.script_file2}}",
+        "runtimeResource": "{{runtimeResources.resgroup_1}}"
+      },
+      {
+        "id": "do_while_1",
+        "do-while": {
+          "nodes": [
+            {
+              "id": "sql11",
+              "script": {
+                "path": "/path/to/file1.sql",
+                "language": "sql",
+                "runtime": {
+                  "engine": "MaxCompute",
+                  "command": "ODPS_SQL"
+                }
+              }
+            },
+            {
+              "id": "sql12",
+              "script": {
+                "path": "/path/to/file2.py",
+                "language": "python"
+              }
+            },
+            {
+              "id": "shell13",
+              "script": {
+                "path": "/path/to/file3.sh",
+                "language": "shell",
+                "runtime": {
+                  "engine": "MaxCompute",
+                  "command": "ODPS_SHELL"
+                }
+              }
+            }
+          ],
+          "while": {
+            "script": {
+              "path": "/path/to/file4.sh",
+              "language": "shell",
+              "runtime": {
+                "engine": "MaxCompute",
+                "command": "ODPS_SHELL"
+              }
+            }
+          },
+          "flow": [
+            {
+              "nodeId": "{{shell13}}",
+              "depends": [
+                {
+                  "nodeId": "{{sql11}}"
+                },
+                {
+                  "nodeId": "{{sql12}}"
+                }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        "id": "foreach_1",
+        "for-each": {
+          "array": "{{variables.var_arr}}",
+          "nodes": [
+            {
+              "id": "sql1",
+              "script": {
+                "path": "/path/to/file1.sql",
+                "language": "sql",
+                "runtime": {
+                  "engine": "MaxCompute",
+                  "command": "ODPS_SQL"
+                }
+              }
+            },
+            {
+              "id": "sql2",
+              "script": {
+                "path": "/path/to/file2.py",
+                "language": "python"
+              }
+            },
+            {
+              "id": "shell1",
+              "script": {
+                "path": "/path/to/file3.sh",
+                "language": "shell",
+                "runtime": {
+                  "engine": "MaxCompute",
+                  "command": "ODPS_SHELL"
+                }
+              }
+            },
+            {
+              "id": "end"
+            }
+          ],
+          "flow": [
+            {
+              "nodeId": "{{end}}",
+              "depends": [
+                {
+                  "nodeId": "{{sql1}}"
+                },
+                {
+                  "nodeId": "{{sql2}}"
+                },
+                {
+                  "nodeId": "{{shell1}}"
+                }
+              ]
+            }
+          ]
+        }
+      }
+    ],
+    "flow": [
+      {
+        "nodeId": "{{node_2}}",
+        "depends": [
+          {
+            "nodeId": "{{node_1}}"
+          },
+          {
+            "nodeId": "{{do_while_1}}"
+          },
+          {
+            "nodeId": "{{foreach_1}}"
+          }
+        ]
+      }
+    ]
+  }
+}

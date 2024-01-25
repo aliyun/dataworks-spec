@@ -1,0 +1,25 @@
+{
+  "version": "1.1.0",
+  "kind": "CycleWorkflow",
+  "spec": {
+    "dqcRules": [
+      {
+        "id": "rule1",
+        "name": "rule1",
+        "description": "rule1 description",
+        "calcEngine": {
+          "type": "MaxCompute"
+        },
+        "table": {
+          "name": "test_table",
+          "guid": "test_project.default.test_table"
+        },
+        "partitionExpression": "dt=$[yyyyMMdd]",
+        "schedulerNode": {
+          "output": "autotest.1234_out"
+        },
+        "ruleConfig": "{\n  \"rules\": [\n    {\n      \"ruleType\": \"check_null\",\n      \"ruleConfig\": {\n        \"column\": \"id\",\n        \"threshold\": 0.9,\n        \"thresholdType\": \"percentage\"\n      }\n    },\n    {\n      \"ruleType\": \"check_null\",\n      \"ruleConfig\": {\n        \"column\": \"name\",\n        \"threshold\": 0.9,\n        \"thresholdType\": \"percentage\"\n    }\n  ]\n}"
+      }
+    ]
+  }
+}

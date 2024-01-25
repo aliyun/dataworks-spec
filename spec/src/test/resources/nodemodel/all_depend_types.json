@@ -1,0 +1,182 @@
+{
+  "version": "1.1.0",
+  "kind": "CycleWorkflow",
+  "spec": {
+    "nodes": [
+      {
+        "id": "53046d47cb5842ec960921e4cdc28a73",
+        "recurrence": "Normal",
+        "timeout": 3,
+        "instanceMode": "T+1",
+        "rerunMode": "Allowed",
+        "rerunTimes": 3,
+        "rerunInterval": 180000,
+        "script": {
+          "language": "odps",
+          "content": "select 1;",
+          "runtime": {
+            "engine": "MaxCompute",
+            "command": "CONTROLLER_ASSIGNMENT"
+          },
+          "parameters": [
+            {
+              "artifactType": "Variable",
+              "name": "region",
+              "type": "NodeOutput",
+              "scope": "NodeContext",
+              "value": "${outputs}"
+            },
+            {
+              "artifactType": "Variable",
+              "name": "bizdate",
+              "scope": "NodeParameter",
+              "type": "System",
+              "value": "$[yyyymmdd-1]"
+            }
+          ]
+        },
+        "trigger": {
+          "id": "0819998f89154906884faa39e5ab3c88",
+          "type": "Scheduler",
+          "cron": "00 00 00 * * ?",
+          "startTime": "1970-01-01 00:00:00",
+          "endTime": "9999-01-01 00:00:00",
+          "timezone": "Asia/Shanghai"
+        },
+        "runtimeResource": {
+          "resourceGroup": "group_2",
+          "resourceGroupId": "2"
+        },
+        "name": "调度参数设置1",
+        "owner": "064152",
+        "inputs": {
+          "variables": [
+            {
+              "artifactType": "Variable",
+              "name": "outputs",
+              "type": "NodeOutput",
+              "scope": "NodeContext",
+              "value": "${outputs}",
+              "referenceVariable": {
+                "name": "outputs",
+                "type": "NodeOutput",
+                "scope": "NodeContext",
+                "value": "${outputs}",
+                "node": {
+                  "output": "53046d47cb5842ec960921e4cdc28a73"
+                }
+              },
+              "node": {
+                "output": "5a550dd3c0fb40e5b1455ff3dd998da7"
+              }
+            },
+            {
+              "artifactType": "Variable",
+              "name": "my_var",
+              "scope": "NodeContext",
+              "type": "System",
+              "value": "${yyyymmdd}",
+              "node": {
+                "output": "5a550dd3c0fb40e5b1455ff3dd998da7"
+              },
+              "variable": {
+                "name": "outputs",
+                "type": "NodeOutput",
+                "scope": "NodeContext",
+                "value": "${outputs}"
+              }
+            }
+          ]
+        },
+        "outputs": {
+          "outputs": [
+            {
+              "artifactType": "Output",
+              "data": "53046d47cb5842ec960921e4cdc28a73",
+              "refTableName": "调度参数设置1"
+            }
+          ],
+          "variables": [
+            {
+              "artifactType": "Variable",
+              "name": "const_var1",
+              "scope": "NodeContext",
+              "type": "Constant",
+              "value": "$[yyyymmdd-1]"
+            },
+            {
+              "artifactType": "Variable",
+              "name": "system_var1",
+              "scope": "NodeContext",
+              "type": "System",
+              "value": "$[yyyymmdd-1]"
+            },
+            {
+              "artifactType": "Variable",
+              "name": "node_output_var1",
+              "scope": "NodeContext",
+              "type": "NodeOutput",
+              "value": "$[yyyymmdd-1]"
+            },
+            {
+              "artifactType": "Variable",
+              "name": "pass_through_var1",
+              "scope": "NodeContext",
+              "type": "PassThrough",
+              "referenceVariable": {
+                "name": "outputs",
+                "type": "NodeOutput",
+                "scope": "NodeContext",
+                "value": "${outputs}",
+                "node": {
+                  "output": "53046d47cb5842ec960921e4cdc28a73"
+                }
+              }
+            }
+          ]
+        },
+        "functions": [],
+        "fileResources": []
+      }
+    ],
+    "flow": [
+      {
+        "nodeId": "53046d47cb5842ec960921e4cdc28a73",
+        "depends": [
+          {
+            "type": "Normal",
+            "output": "5a550dd3c0fb40e5b1455ff3dd998da7"
+          },
+          {
+            "type": "CrossCycleDependsOnOtherNode",
+            "output": "yin_zdh_wudong_zt_dw_dw_case001"
+          },
+          {
+            "type": "CrossCycleDependsOnOtherNode",
+            "output": "dw_scheduler_pre.16549628_out"
+          },
+          {
+            "type": "CrossCycleDependsOnOtherNode",
+            "output": "yin_test_fabu_maoyan_mr"
+          },
+          {
+            "type": "CrossCycleDependsOnSelf",
+            "output": "dw_scheduler_pre.mysql_mc_di_02"
+          },
+          {
+            "type": "Normal",
+            "output": "dw_scheduler_pre.adm_ant_start_boyan_autotest_01_td_clonerzfz"
+          },
+          {
+            "type": "Normal",
+            "output": "dw_scheduler_pre.nodefortestone"
+          },
+          {
+            "type": "Normal",
+            "output": "f6cbb79aa27540dc9d3f055a639436b1"
+          }
+        ]
+      }
+    ]
+  }
+}

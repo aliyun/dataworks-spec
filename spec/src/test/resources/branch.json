@@ -1,0 +1,73 @@
+{
+  "version": "1.0.0",
+  "kind": "CycleWorkflow",
+  "artifacts": {
+    "output": [
+      {
+        "id": "branch_1",
+        "type": "output",
+        "data": "autotest.branch_1"
+      },
+      {
+        "id": "branch_2",
+        "type": "output",
+        "data": "autotest.branch_2"
+      }
+    ]
+  },
+  "scripts": [
+    {
+      "id": "pyodps_1"
+    },
+    {
+      "id": "shell_1"
+    }
+  ],
+  "nodes": [
+    {
+      "id": "branch",
+      "branch": {
+        "branches": [
+          {
+            "when": "a == 1",
+            "output": "{{artifacts.branch_1}}",
+            "desc": "branch_1"
+          },
+          {
+            "when": "a == 2",
+            "output": "{{artifacts.branch_1}}",
+            "desc": "branch_2"
+          }
+        ]
+      }
+    },
+    {
+      "id": "branch_1",
+      "script": "{{pyodps_1}}"
+    },
+    {
+      "id": "branch_2",
+      "script": "{{shell_1}}"
+    }
+  ],
+  "flow": [
+    {
+      "nodeId": "{{branch_1}}",
+      "depends": [
+        {
+          "nodeId": "{{branch}}",
+          "output": "{{artifacts.branch_1}}"
+        }
+      ]
+    },
+    {
+      "nodeId": "{{branch_2}}",
+      "depends": [
+        {
+          "nodeId": "{{branch}}",
+          "output": "{{artifacts.branch_1}}"
+        }
+      ]
+    }
+  ]
+}

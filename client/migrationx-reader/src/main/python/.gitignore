@@ -1,0 +1,6 @@
+*.pyc
+*~
+src/*.pyc
+test_dag_folder/*.pyc
+deploy
+.env/*

@@ -1,0 +1,16 @@
+{
+  "ErrorCode.UnknownEnumType": "未知的枚举类型: {0}, 取值为: {1}",
+  "ErrorCode.ParameterNotSet": "参数未设置: {0}",
+  "ErrorCode.ParameterInvalid": "参数非法: {0}",
+  "ErrorCode.ProjectNotFound": "项目不存在: {0}",
+  "ErrorCode.ProcedureCanceled": "处理流程取消",
+  "ErrorCode.NoPermission": "没有权限: {0}",
+  "ErrorCode.NoPermissionProjectAdmin": "用户 {0} 没有项目 {1} 的管理员权限",
+  "ErrorCode.NoPermissionProjectMember": "用户 {0} 不是项目 {1} 的成员",
+  "ErrorCode.TranslateNodeError": "转换出错: {0}",
+  "ErrorCode.PackageAnalyzeError": "分析包出错: {0}",
+  "ErrorCode.PackageConvertError": "转换包出错: {0}",
+  "ErrorCode.PackageNotLoaded": "包文件未加载",
+  "ErrorCode.UnsupportedPackage": "不支持的包类型: {0}",
+  "ErrorCode.UnknownCommandApp": "未知的命令行App: {0}"
+}
