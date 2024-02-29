@@ -1,0 +1,29 @@
+{
+    "$id": "https://dataworks.data.aliyun.com/schemas/1.1.0/script.schema.json",
+    "title": "Function",
+    "description": "定义工作流节点使用的UDF",
+    "type": "object",
+    "properties": {
+        "id": {
+            "description": "唯一标识",
+            "type": "string"
+        },
+        "name": {
+            "description": "函数名称",
+            "type": "string"
+        },
+        "script": {
+            "description": "使用的脚本",
+            "$ref": "script.schema.json"
+        },
+        "fileResources": {
+            "description": "使用的资源列表",
+            "$ref": "fileResource.schema.json"
+        }
+    },
+    "required": [
+        "id",
+        "name",
+        "script"
+    ]
+}

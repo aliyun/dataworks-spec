@@ -1,0 +1,36 @@
+{
+    "$id": "https://dataworks.data.aliyun.com/schemas/1.1.0/trigger.schema.json",
+    "title": "Trigger",
+    "description": "定义了工作流的触发器",
+    "type": "object",
+    "properties": {
+        "id": {
+            "description": "唯一标识",
+            "type": "string"
+        },
+        "type": {
+            "description": "触发器类型",
+            "type": "string",
+            "enum": ["Scheduler", "Manual"]
+        },
+        "cron": {
+            "description": "周期调度触发器的定时表达式",
+            "type": "string"
+        },
+        "startTime": {
+            "description": "周期调度的起始生效时间，节点只在startTime到endTime时间段内执行周期调度运行",
+            "type": "string"
+        },
+        "endTime": {
+            "description": "周期调度的结束生效时间，节点只在startTime到endTime时间段内执行周期调度运行",
+            "type": "string"
+        },
+        "timezone": {
+            "description": "周期调度时间的时区",
+            "type": "string"
+        }
+    },
+    "required": [
+       "id", "type"
+    ]
+}

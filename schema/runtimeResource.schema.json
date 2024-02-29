@@ -1,0 +1,20 @@
+{
+    "$id": "https://dataworks.data.aliyun.com/schemas/1.1.0/runtimeResource.schema.json",
+    "title": "RuntimeResource",
+    "description": "节点的运行时资源定义或引用",
+    "type": "object",
+    "properties": {
+        "id": {
+            "description": "唯一标识符",
+            "type": "string"
+        },
+        "resourceGroup": {
+            "description": "资源组唯一标识",
+            "type": "string"
+        }
+    },
+    "required": [
+        "id",
+        "resourceGroup"
+    ]
+}

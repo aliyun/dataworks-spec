@@ -1,0 +1,144 @@
+{
+    "$id": "https://dataworks.data.aliyun.com/schemas/1.1.0/artifact.schema.json",
+    "title": "Artifact",
+    "description": "Artifact 的类型可以是 NodeOutput、Table、Variable，都可以作为工作流节点的输入或者输出使用。",
+    "type": "object",
+    "properties": {
+        "artifactType": {
+            "type": "string",
+            "enum": [
+                "Table",
+                "Variable",
+                "NodeOutput"
+            ],
+            "meta:enum": {
+                "Table": "表",
+                "Variable": "变量",
+                "NodeOutput": "节点输出"
+            }
+        }
+    },
+    "required": [
+        "artifactType"
+    ],
+    "oneOf": [
+        {
+            "properties": {
+                "artifactType": {
+                    "const": "Table"
+                }
+            },
+            "$ref": "#/table"
+        },
+        {
+            "properties": {
+                "artifactType": {
+                    "const": "Variable"
+                }
+            },
+            "$ref": "#/variable"
+        },
+        {
+            "properties": {
+                "artifactType": {
+                    "const": "NodeOutput"
+                }
+            },
+            "$ref": "#/nodeOutput"
+        }
+    ],
+    "table": {
+        "title": "Artifact.Table",
+        "description": "节点使用的上游产出表",
+        "type": "object",
+        "properties": {
+            "guid": {
+                "title": "Guid",
+                "description": "产出表唯一标识符",
+                "type": "string"
+            }
+        },
+        "required": [
+            "guid"
+        ]
+    },
+    "variable": {
+        "title": "Artifact.Variable",
+        "description": "Variable定义了工作流的变量, Variable可以被在工作流节点中引用",
+        "type": "object",
+        "properties": {
+            "id": {
+                "description": "唯一标识",
+                "type": "string"
+            },
+            "name": {
+                "description": "变量名",
+                "type": "string"
+            },
+            "scope": {
+                "description": "变量作用域",
+                "type": "string",
+                "enum": [
+                    "NodeParameter",
+                    "NodeContext",
+                    "Workflow",
+                    "Workspace",
+                    "Tenant"
+                ],
+                "meta:enum": {
+                    "NodeParameter": "只有节点内使用的参数",
+                    "NodeContext": "节点的上下文中的参数，可以被下游节点使用",
+                    "Workflow": "工作流级别的参数，可以被工作流所有节点使用",
+                    "Workspace": "工作空间级别的参数，可以被工作空间所有节点使用",
+                    "Tenant": "租户级别参数，可以被租户的所有节点使用"
+                }
+            },
+            "type": {
+                "description": "变量类型",
+                "type": "string",
+                "enum": [
+                    "System",
+                    "Constant"
+                ],
+                "meta:enum": {
+                    "System": "系统变量，例如: $[yyyymmdd]",
+                    "Constant": "常量"
+                }
+            },
+            "value": {
+                "description": "变量值",
+                "type": "string",
+                "examples": [
+                    "$[yyyymmdd]",
+                    "$[yyyymmdd-1]",
+                    "$[hh24-1/24]",
+                    "$[hh24miss-1/24/60]",
+                    "$[add_months(yyyymm,-1)]",
+                    "$[add_months(yyyymmdd,-12)]"
+                ]
+            }
+        },
+        "required": [
+            "id",
+            "name",
+            "scope",
+            "type",
+            "value"
+        ]
+    },
+    "nodeOutput": {
+        "title": "Artifact.NodeOutput",
+        "description": "节点使用的上游节点的预定义输出",
+        "type": "object",
+        "properties": {
+            "output": {
+                "title": "Output",
+                "description": "节点调度输出标识",
+                "type": "string"
+            }
+        },
+        "required": [
+            "output"
+        ]
+    }
+}

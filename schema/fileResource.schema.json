@@ -1,0 +1,25 @@
+{
+    "$id": "https://dataworks.data.aliyun.com/schemas/1.1.0/fileResource.schema.json",
+    "title": "FileResource",
+    "description": "定义了文件资源, 如: jar, python, text file, archive files等",
+    "type": "object",
+    "properties": {
+        "id": {
+            "description": "唯一标识",
+            "type": "string"
+        },
+        "name": {
+            "description": "函数名称",
+            "type": "string"
+        },
+        "script": {
+            "description": "使用的脚本",
+            "$ref": "script.schema.json"
+        }
+    },
+    "required": [
+        "id",
+        "name",
+        "script"
+    ]
+}
