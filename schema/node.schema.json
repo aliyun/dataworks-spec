@@ -2,125 +2,120 @@
     "$id": "https://dataworks.data.aliyun.com/schemas/1.1.0/node.schema.json",
     "title": "Node",
     "description": "工作流节点的定义描述",
-    "type":"object",
+    "type": "object",
     "properties": {
+        "id": {
+            "title": "Id",
+            "description": "节点在 Spec 中的唯一 Id",
+            "type": "string"
+        },
+        "name": {
+            "title": "Name",
+            "description": "节点名",
+            "type": "string"
+        },
         "script": {
-            "title": "Script",
-            "description": "节点所需的脚本定义或者引用",
+            "$ref": "script.schema.json"
+        },
+        "trigger": {
+            "$ref": "trigger.schema.json"
+        },
+        "inputs": {
+            "title": "Node.InputArtifact",
+            "description": "节点的输入",
             "type": "object",
             "properties": {
-                "id": {
-                    "description": "唯一标识",
-                    "type": "string"
-                },
-                "path": {
-                    "description": "脚本路径",
-                    "type": "string"
-                },
-                "language": {
-                    "description": "脚本语言",
-                    "type": "string"
-                },
-                "runtime": {
-                    "title": "Runtime",
-                    "description": "脚本语言",
-                    "type": "object",
-                    "properties": {
-                        "engine": {
-                            "description": "运行时引擎",
-                            "type": "string"
-                        },
-                        "command": {
-                            "description": "运行时环境的命令标识",
-                            "type": "string"
-                        }
-                    }
-                },
-                "parameters": {
-                    "title": "Script Parameters",
-                    "description": "脚本参数列表",
+                "tables": {
+                    "title": "Node.InputArtifact.Tables",
+                    "description": "节点使用的上游产出表列表",
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "$ref": "artifact.schema.json"
+                    }
+                },
+                "variables": {
+                    "title": "Node.InputArtifact.Variables",
+                    "description": "节点依赖的变量Variable列表",
+                    "type": "array",
+                    "items": {
+                        "$ref": "artifact.schema.json"
+                    }
+                },
+                "nodeOutputs": {
+                    "title": "Node.InputArtifact.NodeOutputs",
+                    "description": "节点使用的上游节点的预定义输出列表",
+                    "type": "array",
+                    "items": {
+                        "$ref": "artifact.schema.json"
+                    }
+                }
+            }
+        },
+        "outputs": {
+            "title": "Node.OutputArtifact",
+            "description": "输出定义了工作流节点的产出信息",
+            "type": "object",
+            "properties": {
+                "tables": {
+                    "title": "Node.OutputArtifact.Tables",
+                    "description": "节点使用的上游产出表列表",
+                    "type": "array",
+                    "items": {
+                        "$ref": "artifact.schema.json"
+                    }
+                },
+                "variables": {
+                    "title": "Node.OutputArtifact.Variables",
+                    "description": "节点依赖的变量Variable列表",
+                    "type": "array",
+                    "items": {
+                        "$ref": "artifact.schema.json"
+                    }
+                },
+                "nodeOutputs": {
+                    "title": "Node.OutputArtifact.NodeOutputs",
+                    "description": "节点使用的上游节点的预定义输出列表",
+                    "type": "array",
+                    "items": {
+                        "$ref": "artifact.schema.json"
                     }
                 }
             }
         },
         "functions": {
-            "title": "Functions",
+            "title": "Node.Functions",
             "description": "节点所需的函数定义或者引用",
             "type": "array",
             "items": {
-                "title": "Functions Item",
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "description": "唯一标识",
-                        "type": "string"
-                    },
-                    "name": {
-                        "description": "函数名称",
-                        "type": "string"
-                    },
-                    "script": {
-                        "description": "使用的脚本",
-                        "type": "string"
-                    },
-                    "fileResources": {
-                        "description": "使用的资源列表",
-                        "type": "string"
-                    }
-                }
+                "$ref": "function.schema.json"
             }
         },
         "fileResources": {
-            "title": "FileResources",
+            "title": "Node.FileResources",
             "description": "节点所需的文件资源定义或者引用",
             "type": "array",
             "items": {
-                "title": "FileResources Item",
-                "type": "object",
-                "properties": {
-                    "id": {
-                        "description": "唯一标识",
-                        "type": "string"
-                    },
-                    "name": {
-                        "description": "资源名称",
-                        "type": "string"
-                    },
-                    "script": {
-                        "description": "资源文件",
-                        "type": "string"
-                    }
-                }
+                "$ref": "fileResource.schema.json"
             }
-        },
-        "inputs": {
-            "description": "节点的输入"
-        },
-        "outputs": {
-            "description": "节点的输出"
         },
         "runtimeResource": {
             "title": "RuntimeResource",
             "description": "节点的运行时资源定义或引用",
-            "type": "object",
-            "properties": {
-                "id": {
-                    "description": "唯一标识符",
-                    "type": "string"
-                },
-                "resourceGroup": {
-                    "description": "资源组唯一标识",
-                    "type": "string"
-                }
-            }
+            "$ref":"runtimeResource.schema.json"
         },
         "recurrence": {
             "description": "定义周期调度节点的调度状态",
             "type": "string",
-            "enum": [ "Normal", "Skip", "Pause" ]
+            "enum": [
+                "Normal",
+                "Skip",
+                "Pause"
+            ],
+            "meta:enum": {
+                "Normal": "节点会被正常按照指定调度周期调度运行",
+                "Skip": "节点会被正常按照指定调度周期实例化，但是代码不会被运行生效，任务状态直接设置为成功",
+                "Pause": "节点会被正产按照指定调度周期实例化，但是状态直接设置为失败"
+            }
         },
         "priority": {
             "description": "定义节点的优先级, 数值越大优先级越高",
@@ -133,12 +128,33 @@
         "instanceMode": {
             "description": "节点的实例化模式",
             "type": "string",
-            "enum": [ "T+1", "Immediately" ]
+            "enum": [
+                "T+1",
+                "Immediately"
+            ],
+            "meta:enum": {
+                "T+1": "节点的配置修改将会在T+1天后生效",
+                "Immediately": "节点配置修改将立即生效"
+            }
         },
         "rerunMode": {
             "description": "节点重试策略",
             "type": "string",
-            "enum": [ "Allowed", "Denied", "FailureAllowed" ]
+            "enum": [
+                "Allowed",
+                "Denied",
+                "FailureAllowed"
+            ],
+            "meta:enum": {
+                "Allowed": "任何情况下都允许重跑",
+                "Denied": "任何情况下都不允许重跑",
+                "FailureAllowed": "失败的情况下允许重跑"
+            }
         }
-    }
+    },
+    "required": [
+        "id",
+        "name",
+        "script"
+    ]
 }

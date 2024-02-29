@@ -1,0 +1,51 @@
+{
+    "$id": "https://dataworks.data.aliyun.com/schemas/1.1.0/script.schema.json",
+    "title": "Script",
+    "description": "节点所需的脚本定义或者引用",
+    "type": "object",
+    "properties": {
+        "id": {
+            "description": "唯一标识",
+            "type": "string"
+        },
+        "path": {
+            "description": "脚本路径",
+            "type": "string"
+        },
+        "language": {
+            "description": "脚本语言",
+            "type": "string"
+        },
+        "runtime": {
+            "title": "Script.Runtime",
+            "description": "脚本语言",
+            "type": "object",
+            "properties": {
+                "engine": {
+                    "description": "运行时引擎",
+                    "type": "string"
+                },
+                "command": {
+                    "description": "运行时环境的命令标识",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "command"
+            ]
+        },
+        "parameters": {
+            "title": "Script.Parameters",
+            "description": "脚本参数列表",
+            "type": "array",
+            "items": {
+                "$ref": "artifact.schema.json"
+            }
+        }
+    },
+    "required": [
+        "id",
+        "path",
+        "runtime"
+    ]
+}
