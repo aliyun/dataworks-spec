@@ -43,6 +43,8 @@ public class EmrAllocationSpec {
     private Boolean reuseSession;
     @SerializedName("FLOW_SKIP_SQL_ANALYZE")
     private Boolean batchMode;
+    @SerializedName("ENABLE_SPARKSQL_JDBC")
+    private Boolean enableJdbcSql;
 
     public static EmrAllocationSpec of(Map<String, Object> allocateSpec) {
         if (allocateSpec == null) {

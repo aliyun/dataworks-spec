@@ -15,6 +15,7 @@
 
 package com.aliyun.dataworks.common.spec.domain.dw.codemodel;
 
+import java.util.List;
 import java.util.Map;
 
 import lombok.Data;
@@ -58,6 +59,11 @@ public class PlainTextCode extends AbstractBaseCode {
 
     @Override
     public Map<String, Object> getTemplate() {
+        return null;
+    }
+
+    @Override
+    public List<String> getProgramTypes() {
         return null;
     }
 }

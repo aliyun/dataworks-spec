@@ -15,6 +15,7 @@
 
 package com.aliyun.dataworks.common.spec.domain.dw.codemodel;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -66,5 +67,15 @@ public class CodeModel<T extends Code> implements Code {
     @Override
     public Map<String, Object> getTemplate() {
         return codeModel.getTemplate();
+    }
+
+    @Override
+    public List<String> getProgramTypes() {
+        return Collections.singletonList(programType);
+    }
+
+    @Override
+    public int getClassHierarchyLevel() {
+        return 0;
     }
 }

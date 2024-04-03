@@ -35,7 +35,8 @@ public class SpecFunctionWriter extends DefaultJsonObjectWriter<SpecFunction> {
     public JSONObject write(SpecFunction specObj, SpecWriterContext context) {
         JSONObject json = writeJsonObject(specObj, true);
         json.put("fileResources", writeByWriter(specObj.getFileResources()));
-        json.put("calcEngine", writeByWriter(specObj.getCalcEngine()));
+        json.put("datasource", writeByWriter(specObj.getDatasource()));
+        json.put("runtimeResource", writeByWriter(specObj.getRuntimeResource()));
         return json;
     }
 }

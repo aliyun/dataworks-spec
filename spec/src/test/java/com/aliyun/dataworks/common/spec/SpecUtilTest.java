@@ -35,6 +35,7 @@ import com.aliyun.dataworks.common.spec.domain.dw.codemodel.EmrCode;
 import com.aliyun.dataworks.common.spec.domain.dw.nodemodel.DataWorksNodeCodeAdapter;
 import com.aliyun.dataworks.common.spec.domain.enums.FunctionType;
 import com.aliyun.dataworks.common.spec.domain.enums.SpecKind;
+import com.aliyun.dataworks.common.spec.domain.enums.SpecVersion;
 import com.aliyun.dataworks.common.spec.domain.enums.VariableScopeType;
 import com.aliyun.dataworks.common.spec.domain.interfaces.Input;
 import com.aliyun.dataworks.common.spec.domain.noref.SpecBranches;
@@ -44,17 +45,21 @@ import com.aliyun.dataworks.common.spec.domain.noref.SpecFlowDepend;
 import com.aliyun.dataworks.common.spec.domain.noref.SpecForEach;
 import com.aliyun.dataworks.common.spec.domain.noref.SpecJoinBranch;
 import com.aliyun.dataworks.common.spec.domain.noref.SpecLogic;
+import com.aliyun.dataworks.common.spec.domain.noref.SpecParamHub;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecArtifact;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecDatasource;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecDqcRule;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecFunction;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecNode;
+import com.aliyun.dataworks.common.spec.domain.ref.SpecNodeOutput;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecRuntimeResource;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecScript;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecTable;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecTrigger;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecVariable;
 import com.aliyun.dataworks.common.spec.parser.SpecParserContext;
+import com.aliyun.dataworks.common.spec.utils.GsonUtils;
+import com.aliyun.dataworks.common.spec.utils.SpecDevUtil;
 import com.aliyun.dataworks.common.spec.writer.SpecWriterContext;
 import com.aliyun.dataworks.common.spec.writer.Writer;
 import com.aliyun.dataworks.common.spec.writer.WriterFactory;
@@ -88,7 +93,7 @@ public class SpecUtilTest {
         Assert.assertNotNull(specification.getNodes());
         Assert.assertNotNull(specification.getFlow());
 
-        String label = specObj.getKind().getLabel();
+        String label = specObj.getKind();
         Assert.assertEquals(label.toLowerCase(), "CycleWorkflow".toLowerCase());
 
         // variable的node是否一致
@@ -348,6 +353,7 @@ public class SpecUtilTest {
         Assert.assertNotNull(specOr.getAssertion());
 
         System.out.println("join spec: " + SpecUtil.writeToSpec(specObj));
+        Assert.assertTrue(join_1.getJoin().getBranches().stream().allMatch(b -> StringUtils.isNotBlank(b.getName())));
     }
 
     @Test
@@ -355,7 +361,7 @@ public class SpecUtilTest {
         String spec = readJson("manual_flow.json");
         Specification<DataWorksWorkflowSpec> specObj = SpecUtil.parseToDomain(spec);
         Assert.assertNotNull(specObj);
-        Assert.assertSame(specObj.getKind(), SpecKind.MANUAL_WORKFLOW);
+        Assert.assertEquals(specObj.getKind(), SpecKind.MANUAL_WORKFLOW.getLabel());
     }
 
     @Test
@@ -561,6 +567,76 @@ public class SpecUtilTest {
     }
 
     @Test
+    public void testParamHubParser() {
+        String spec = "{\n"
+            + "        \"variables\": [\n"
+            + "          {\n"
+            + "            \"name\": \"my_const\",\n"
+            + "            \"type\": \"Constant\",\n"
+            + "            \"scope\": \"NodeContext\",\n"
+            + "            \"value\": \"cn-shanghai\"\n"
+            + "            \"description\": \"cn-shanghai\"\n"
+            + "          },\n"
+            + "          {\n"
+            + "            \"name\": \"my_var\",\n"
+            + "            \"type\": \"System\",\n"
+            + "            \"scope\": \"NodeContext\",\n"
+            + "            \"value\": \"${yyyymmdd}\"\n"
+            + "          },\n"
+            + "          {\n"
+            + "            \"name\": \"outputs\",\n"
+            + "            \"type\": \"PassThrough\",\n"
+            + "            \"scope\": \"NodeContext\",\n"
+            + "            \"referenceVariable\": {\n"
+            + "              \"name\": \"outputs\",\n"
+            + "              \"type\": \"NodeOutput\",\n"
+            + "              \"scope\": \"NodeContext\",\n"
+            + "              \"value\": \"${outputs}\",\n"
+            + "              \"node\": {\n"
+            + "                \"output\": \"autotest.28517448_out\"\n"
+            + "              }\n"
+            + "            }\n"
+            + "          },\n"
+            + "          {\n"
+            + "            \"name\": \"shell_const_1\",\n"
+            + "            \"type\": \"PassThrough\",\n"
+            + "            \"scope\": \"NodeContext\",\n"
+            + "            \"referenceVariable\": {\n"
+            + "              \"name\": \"shell_const_1\",\n"
+            + "              \"type\": \"NodeOutput\",\n"
+            + "              \"scope\": \"NodeContext\",\n"
+            + "              \"node\": {\n"
+            + "                \"output\": \"autotest.28517347_out\"\n"
+            + "              }\n"
+            + "            }\n"
+            + "          },\n"
+            + "          {\n"
+            + "            \"name\": \"shell_var_1\",\n"
+            + "            \"type\": \"PassThrough\",\n"
+            + "            \"scope\": \"NodeContext\",\n"
+            + "            \"referenceVariable\": {\n"
+            + "              \"name\": \"shell_var_1\",\n"
+            + "              \"type\": \"NodeOutput\",\n"
+            + "              \"scope\": \"NodeContext\",\n"
+            + "              \"node\": {\n"
+            + "                \"output\": \"autotest.28517347_out\"\n"
+            + "              }\n"
+            + "            }\n"
+            + "          }\n"
+            + "        ]\n"
+            + "      }";
+        SpecParserContext ctx = new SpecParserContext();
+        ctx.setVersion(SpecVersion.V_1_1_0.getLabel());
+        SpecParamHub paramHub = (SpecParamHub)SpecDevUtil.getObjectByParser(SpecParamHub.class, JSON.parseObject(spec), ctx);
+        log.info("para hub: {}", GsonUtils.toJsonString(paramHub));
+        Assert.assertNotNull(paramHub);
+        Assert.assertNotNull(paramHub.getVariables());
+        Assert.assertNotNull(paramHub.getVariables().stream().filter(v -> v.getName().equals("outputs")).findFirst()
+            .map(SpecVariable::getReferenceVariable).map(SpecVariable::getNode).map(SpecDepend::getOutput).map(SpecNodeOutput::getData)
+            .orElse(null));
+    }
+
+    @Test
     public void testParamHub() {
         String spec = readJson("param_hub.json");
         Specification<DataWorksWorkflowSpec> specObj = SpecUtil.parseToDomain(spec);
@@ -679,7 +755,8 @@ public class SpecUtilTest {
         Assert.assertNotNull(func.getFileResources());
         Assert.assertNotNull(func.getClassName());
         Assert.assertNotNull(func.getName());
-        Assert.assertNotNull(func.getCalcEngine());
+        Assert.assertNotNull(func.getDatasource());
+        Assert.assertNotNull(func.getRuntimeResource());
     }
 
     @Test

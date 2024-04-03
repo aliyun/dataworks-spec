@@ -33,9 +33,4 @@ public class SpecHdfsFile extends SpecObjectStorageFile {
     public SpecHdfsFile() {
         setStorage(new SpecHdfsStorage());
     }
-
-    /**
-     * Hdfs file path
-     */
-    private String path;
 }

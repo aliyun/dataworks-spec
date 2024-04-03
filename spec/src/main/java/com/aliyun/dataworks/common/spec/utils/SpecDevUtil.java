@@ -140,7 +140,7 @@ public class SpecDevUtil {
                 if (value == null) {
                     continue;
                 }
-                LabelEnum label = LabelEnum.getByLabel((Class<? extends LabelEnum>)type, value);
+                LabelEnum label = (LabelEnum)LabelEnum.getByLabel((Class)type, value);
                 if (label != null) {
                     setValue(object, field, label);
                 } else {

@@ -23,7 +23,7 @@
     <parent>
         <artifactId>migrationx</artifactId>
         <groupId>com.aliyun.dataworks</groupId>
-        <version>1.1.2</version>
+        <version>1.1.4</version>
     </parent>
 
     <artifactId>migrationx-domain</artifactId>
@@ -63,7 +63,7 @@
         <dependency>
             <groupId>com.aliyun.dataworks</groupId>
             <artifactId>migrationx-common</artifactId>
-            <version>1.1.2</version>
+            <version>1.1.4</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>

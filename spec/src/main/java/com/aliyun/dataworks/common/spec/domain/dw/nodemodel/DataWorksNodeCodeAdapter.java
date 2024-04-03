@@ -43,6 +43,7 @@ import com.aliyun.dataworks.common.spec.domain.dw.codemodel.OdpsSparkCode;
 import com.aliyun.dataworks.common.spec.domain.dw.types.CodeProgramType;
 import com.aliyun.dataworks.common.spec.domain.dw.types.ProductModule;
 import com.aliyun.dataworks.common.spec.domain.enums.SpecVersion;
+import com.aliyun.dataworks.common.spec.domain.interfaces.LabelEnum;
 import com.aliyun.dataworks.common.spec.domain.noref.SpecBranch;
 import com.aliyun.dataworks.common.spec.domain.noref.SpecLogic;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecNode;
@@ -53,9 +54,11 @@ import com.aliyun.dataworks.common.spec.domain.ref.runtime.emr.EmrJobSubmitMode;
 import com.aliyun.dataworks.common.spec.exception.SpecErrorCode;
 import com.aliyun.dataworks.common.spec.exception.SpecException;
 import com.aliyun.dataworks.common.spec.utils.GsonUtils;
+import com.aliyun.dataworks.common.spec.utils.ReflectUtils;
 import com.google.gson.JsonObject;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -266,19 +269,26 @@ public class DataWorksNodeCodeAdapter {
 
             Optional.ofNullable(rt.getEmrJobConfig()).ifPresent(emrJobConfig -> {
                 EmrAllocationSpec allocationSpec = new EmrAllocationSpec();
-                allocationSpec.setUserName(emrJobConfig.getSubmitter());
-                allocationSpec.setQueue(Optional.ofNullable(emrJobConfig.getQueue()).filter(StringUtils::isNotBlank).orElse("default"));
-                allocationSpec.setMemory(Optional.ofNullable(emrJobConfig.getMemory()).map(String::valueOf).orElse("2048"));
-                allocationSpec.setVcores(Optional.ofNullable(emrJobConfig.getCores()).map(String::valueOf).orElse("1"));
-                allocationSpec.setPriority(Optional.ofNullable(emrJobConfig.getPriority()).map(String::valueOf).orElse("1"));
-                allocationSpec.setUseGateway(Optional.ofNullable(emrJobConfig.getSubmitMode())
+                allocationSpec.setUserName((String)emrJobConfig.get("submitter"));
+                allocationSpec.setQueue(Optional.ofNullable((String)emrJobConfig.get("queue")).filter(StringUtils::isNotBlank).orElse("default"));
+                allocationSpec.setMemory(Optional.ofNullable(emrJobConfig.get("memory")).map(String::valueOf).orElse("2048"));
+                allocationSpec.setVcores(Optional.ofNullable(emrJobConfig.get("cores")).map(String::valueOf).orElse("1"));
+                allocationSpec.setPriority(Optional.ofNullable(emrJobConfig.get("priority")).map(String::valueOf).orElse("1"));
+                allocationSpec.setUseGateway(Optional.ofNullable((String)emrJobConfig.get("submitMode"))
+                    .map(mode -> LabelEnum.getByLabel(EmrJobSubmitMode.class, mode))
                     .map(mode -> Objects.equals(mode, EmrJobSubmitMode.LOCAL)).orElse(false));
-                allocationSpec.setReuseSession(Optional.ofNullable(emrJobConfig.getSessionEnabled()).orElse(false));
-                allocationSpec.setBatchMode(Optional.ofNullable(emrJobConfig.getExecuteMode())
+                allocationSpec.setReuseSession(Optional.ofNullable(emrJobConfig.get("sessionEnabled"))
+                    .map(String::valueOf).map(BooleanUtils::toBoolean).orElse(false));
+                allocationSpec.setBatchMode(Optional.ofNullable((String)emrJobConfig.get("executeMode"))
+                    .map(mode -> LabelEnum.getByLabel(EmrJobExecuteMode.class, mode))
                     .map(mode -> Objects.equals(mode, EmrJobExecuteMode.BATCH)).orElse(false));
+                allocationSpec.setEnableJdbcSql(Optional.ofNullable(emrJobConfig.get("enableJdbcSql"))
+                    .map(String::valueOf).map(BooleanUtils::toBoolean).orElse(false));
                 codeModel.getProperties().getEnvs().put(EmrCode.ENVS_KEY_FLOW_SKIP_SQL_ANALYZE, String.valueOf(allocationSpec.getBatchMode()));
                 Optional.ofNullable((JsonObject)GsonUtils.fromJsonString(GsonUtils.toJsonString(allocationSpec), JsonObject.class)).ifPresent(
                     json -> json.entrySet().forEach(entry -> allocationSpecProps.put(entry.getKey(), entry.getValue().getAsString())));
+                emrJobConfig.keySet().stream().filter(key -> ListUtils.emptyIfNull(ReflectUtils.getPropertyFields(allocationSpec)).stream()
+                    .noneMatch(f -> StringUtils.equals(f.getName(), key))).forEach(key -> allocationSpecProps.put(key, emrJobConfig.get(key)));
             });
         });
         codeModel.setLauncher(launcher);

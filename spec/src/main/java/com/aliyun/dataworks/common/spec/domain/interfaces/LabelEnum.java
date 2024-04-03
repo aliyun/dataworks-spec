@@ -38,11 +38,10 @@ public interface LabelEnum {
      * @param <T>       Enum value
      * @return Enum value or null
      */
-    @SuppressWarnings("unchecked")
-    static <T extends Enum<T> & LabelEnum> T getByLabel(Class<? extends LabelEnum> enumClass, String label) {
-        for (LabelEnum t : enumClass.getEnumConstants()) {
+    static <T extends Enum<T> & LabelEnum> T getByLabel(Class<T> enumClass, String label) {
+        for (T t : enumClass.getEnumConstants()) {
             if (t.getLabel().equalsIgnoreCase(label)) {
-                return (T)t;
+                return t;
             }
         }
         return null;

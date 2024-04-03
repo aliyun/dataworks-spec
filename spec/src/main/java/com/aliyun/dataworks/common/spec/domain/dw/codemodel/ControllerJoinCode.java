@@ -15,10 +15,12 @@
 
 package com.aliyun.dataworks.common.spec.domain.dw.codemodel;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import com.aliyun.dataworks.common.spec.domain.dw.types.CodeProgramType;
 import com.aliyun.dataworks.common.spec.utils.GsonUtils;
 import com.aliyun.dataworks.common.spec.utils.StringTypeObjectAdapter;
 import com.google.gson.annotations.JsonAdapter;
@@ -50,6 +52,9 @@ public class ControllerJoinCode extends AbstractBaseCode implements JsonFormCode
         private Integer logic;
         // 上游节点输出
         private String node;
+        private String nodeName;
+        private String nodeUuid;
+        private String projectIdentifier;
         // 运行状态等于
         private List<String> runStatus;
     }
@@ -80,5 +85,10 @@ public class ControllerJoinCode extends AbstractBaseCode implements JsonFormCode
     @Override
     public Map<String, Object> getTemplate() {
         return null;
+    }
+
+    @Override
+    public List<String> getProgramTypes() {
+        return Collections.singletonList(CodeProgramType.CONTROLLER_JOIN.name());
     }
 }

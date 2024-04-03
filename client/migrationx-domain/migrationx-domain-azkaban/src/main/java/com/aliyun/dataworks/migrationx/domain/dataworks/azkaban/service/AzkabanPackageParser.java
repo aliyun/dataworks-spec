@@ -15,17 +15,39 @@
 
 package com.aliyun.dataworks.migrationx.domain.dataworks.azkaban.service;
 
+import java.io.File;
+import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
 import azkaban.Constants;
 import azkaban.flow.Edge;
 import azkaban.flow.Flow;
 import azkaban.flow.Node;
-import azkaban.project.*;
+import azkaban.project.DirectoryFlowLoader;
+import azkaban.project.DirectoryYamlFlowLoader;
+import azkaban.project.FlowLoader;
+import azkaban.project.FlowLoaderFactory;
+import azkaban.project.Project;
 import azkaban.utils.Props;
+import com.aliyun.dataworks.common.spec.utils.ReflectUtils;
 import com.aliyun.dataworks.migrationx.domain.dataworks.azkaban.objects.ConfigProperty;
 import com.aliyun.dataworks.migrationx.domain.dataworks.azkaban.objects.Job;
 import com.aliyun.dataworks.migrationx.domain.dataworks.azkaban.objects.JobType;
 import com.aliyun.migrationx.common.utils.FileNameUtils;
-import com.aliyun.migrationx.common.utils.ReflectUtils;
 import com.google.common.base.Joiner;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
@@ -33,14 +55,6 @@ import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.lang.reflect.Field;
-import java.lang.reflect.ParameterizedType;
-import java.lang.reflect.Type;
-import java.util.*;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * @author sam.liux
@@ -197,7 +211,7 @@ public class AzkabanPackageParser {
         JobType jobType = JobType.getByName(type);
         Job job = JobType.newJobInstance(jobType);
         job.setName(node.getId());
-        if (props == null || StringUtils.isNotBlank(props.getSource())) {
+        if (StringUtils.isNotBlank(props.getSource())) {
             job.setJobFile(new File(projectDir, props.getSource()));
         }
         List<Field> fields = ReflectUtils.getPropertyFields(job);

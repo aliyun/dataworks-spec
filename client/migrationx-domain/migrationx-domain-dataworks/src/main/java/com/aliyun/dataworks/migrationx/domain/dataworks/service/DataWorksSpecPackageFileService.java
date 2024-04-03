@@ -156,8 +156,8 @@ public class DataWorksSpecPackageFileService extends AbstractPackageFileService<
 
     private void writeNodeSpec(File workflowDir, Node node) {
         Specification<DataWorksWorkflowSpec> specification = new Specification<>();
-        specification.setVersion(SpecVersion.V_1_1_0);
-        specification.setKind(SpecKind.CYCLE_WORKFLOW);
+        specification.setVersion(SpecVersion.V_1_1_0.getLabel());
+        specification.setKind(SpecKind.CYCLE_WORKFLOW.getLabel());
 
         node.setGlobalUuid(UUID.randomUUID().toString());
         completeNodeFolder(node);

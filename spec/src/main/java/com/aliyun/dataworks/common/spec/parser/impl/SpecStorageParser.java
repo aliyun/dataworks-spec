@@ -28,6 +28,8 @@ import com.aliyun.dataworks.common.spec.parser.Parser;
 import com.aliyun.dataworks.common.spec.parser.SpecParserContext;
 import com.aliyun.dataworks.common.spec.utils.SpecDevUtil;
 import org.apache.commons.collections4.MapUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * SpecStorageParser
@@ -40,13 +42,17 @@ import org.apache.commons.collections4.MapUtils;
  */
 @SpecParser
 public class SpecStorageParser implements Parser<SpecStorage> {
+    private static final Logger log = LoggerFactory.getLogger(SpecStorageParser.class);
+
     @Override
     public SpecStorage parse(Map<String, Object> rawContext, SpecParserContext specParserContext) {
         String storageTypeStr = MapUtils.getString(rawContext, SpecConstants.SPEC_KEY_TYPE);
 
         SpecStorageType storageType = LabelEnum.getByLabel(SpecStorageType.class, storageTypeStr);
         if (storageType == null) {
-            throw new SpecException(SpecErrorCode.PARSE_ERROR, "storage type " + storageTypeStr + " is not supported");
+            SpecException ex = new SpecException(SpecErrorCode.PARSE_ERROR, "storage type " + storageTypeStr + " is not supported");
+            log.warn("ignore parse storage error", ex);
+            return null;
         }
 
         SpecStorage storage = SpecStorage.of(storageType);

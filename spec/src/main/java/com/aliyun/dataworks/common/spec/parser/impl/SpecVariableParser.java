@@ -46,6 +46,7 @@ public class SpecVariableParser implements Parser<SpecVariable> {
     private static final String KEY_SCOPE = "scope";
     private static final String KEY_NAME = "name";
     private static final String KEY_NODE = "node";
+    private static final String KEY_DESC = "description";
     private static final String KEY_REFERENCE_VARIABLE = "referenceVariable";
     private static final String KEY_VALUE = "value";
     private static final String KEY_ID = "id";
@@ -67,8 +68,10 @@ public class SpecVariableParser implements Parser<SpecVariable> {
         variable.setId(id);
         parseName(variableMap, variable);
         parseScope(variableMap, variable);
-        variable.setType(LabelEnum.getByLabel(VariableType.class, type));
+        variable.setType(Optional.ofNullable((VariableType)LabelEnum.getByLabel(VariableType.class, type))
+            .orElseThrow(() -> new SpecException(SpecErrorCode.PARSE_ERROR, MessageFormat.format("invalid variable type {0}", type))));
         variable.setValue((String)variableMap.get(KEY_VALUE));
+        variable.setDescription((String)variableMap.get(KEY_DESC));
         SpecDevUtil.setSpecObject(variable, KEY_NODE, variableMap.get(KEY_NODE), contextMeta);
         SpecDevUtil.setSpecObject(variable, KEY_REFERENCE_VARIABLE, variableMap.get(KEY_REFERENCE_VARIABLE), contextMeta);
         return variable;

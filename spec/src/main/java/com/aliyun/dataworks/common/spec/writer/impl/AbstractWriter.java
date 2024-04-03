@@ -19,7 +19,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
@@ -32,6 +31,7 @@ import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.annotation.JSONField;
 
 import com.aliyun.dataworks.common.spec.domain.interfaces.LabelEnum;
+import com.aliyun.dataworks.common.spec.utils.SpecDevUtil;
 import com.aliyun.dataworks.common.spec.writer.SpecWriterContext;
 import com.aliyun.dataworks.common.spec.writer.Writer;
 import com.aliyun.dataworks.common.spec.writer.WriterFactory;
@@ -73,7 +73,7 @@ public abstract class AbstractWriter<T, V> implements Writer<T, V> {
 
         JSONObject json = new JSONObject();
 
-        List<Field> fields = new ArrayList<>(Arrays.asList(specObj.getClass().getDeclaredFields()));
+        List<Field> fields = SpecDevUtil.getPropertyFields(specObj);
         Optional.ofNullable(specObj.getClass().getSuperclass()).map(Class::getDeclaredFields).map(Arrays::asList).ifPresent(
             list -> fields.addAll(1, list));
 

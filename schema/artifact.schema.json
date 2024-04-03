@@ -98,7 +98,10 @@
                 "type": "string",
                 "enum": [
                     "System",
-                    "Constant"
+                    "Constant",
+                    "NodeOutput",
+                    "PassThrough",
+                    "NoKvVariableExpression"
                 ],
                 "meta:enum": {
                     "System": "系统变量，例如: $[yyyymmdd]",

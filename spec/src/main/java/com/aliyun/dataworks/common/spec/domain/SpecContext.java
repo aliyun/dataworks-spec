@@ -15,7 +15,6 @@
 
 package com.aliyun.dataworks.common.spec.domain;
 
-import com.aliyun.dataworks.common.spec.domain.enums.SpecVersion;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -26,5 +25,5 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode
 public class SpecContext {
-    private SpecVersion version;
+    private String version;
 }

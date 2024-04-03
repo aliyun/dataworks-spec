@@ -34,10 +34,10 @@ import com.aliyun.dataworks.common.spec.domain.ref.SpecTable;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecVariable;
 import com.aliyun.dataworks.common.spec.parser.impl.CombinedParser;
 import com.aliyun.dataworks.common.spec.parser.impl.DoWhileParser;
-import com.aliyun.dataworks.common.spec.parser.impl.ParamHubParser;
 import com.aliyun.dataworks.common.spec.parser.impl.SpecBranchParser;
 import com.aliyun.dataworks.common.spec.parser.impl.SpecForEachParser;
 import com.aliyun.dataworks.common.spec.parser.impl.SpecJoinParser;
+import com.aliyun.dataworks.common.spec.parser.impl.SpecParamHubParser;
 import com.aliyun.dataworks.common.spec.writer.SpecWriterContext;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
@@ -75,16 +75,16 @@ public class SpecNodeWriter extends DefaultJsonObjectWriter<SpecNode> {
         }
 
         List<String> removeKeyList = json.keySet().stream().filter(entry -> Stream
-            .of(ParamHubParser.PARAM_HUB, DoWhileParser.DO_WHILE, SpecForEachParser.FOREACH)
+            .of(SpecParamHubParser.PARAM_HUB, DoWhileParser.DO_WHILE, SpecForEachParser.FOREACH)
             .map(key -> key.replace("-", ""))
             .anyMatch(key -> StringUtils.equalsIgnoreCase(key, entry))).collect(Collectors.toList());
         ListUtils.emptyIfNull(removeKeyList).forEach(json::remove);
 
-        json.put(ParamHubParser.PARAM_HUB, writeByWriter(specObj.getParamHub()));
+        json.put(SpecParamHubParser.PARAM_HUB, writeByWriter(specObj.getParamHub()));
         json.put(DoWhileParser.DO_WHILE, writeByWriter(specObj.getDoWhile()));
         json.put(SpecForEachParser.FOREACH, writeByWriter(specObj.getForeach()));
         json.put(SpecBranchParser.BRANCH, writeByWriter(specObj.getBranch()));
-        json.put(SpecJoinParser.JOIN, writeByWriter(specObj.getJoin()));
+        json.put(SpecJoinParser.KEY_JOIN, writeByWriter(specObj.getJoin()));
         json.put(CombinedParser.KEY_TYPE, writeByWriter(specObj.getCombined()));
         return json;
     }
@@ -100,8 +100,8 @@ public class SpecNodeWriter extends DefaultJsonObjectWriter<SpecNode> {
             if (SpecTable.class.isAssignableFrom(clz)) {
                 key = "tables";
             } else if (SpecNodeOutput.class.isAssignableFrom(clz)) {
-                SpecVersion contextVersion = Optional.ofNullable(context).map(SpecContext::getVersion).orElse(SpecVersion.V_1_1_0);
-                key = SpecVersion.V_1_1_0.compareTo(contextVersion) > 0 ? "outputs" : "nodeOutputs";
+                String contextVersion = Optional.ofNullable(context).map(SpecContext::getVersion).orElse(SpecVersion.V_1_1_0.getLabel());
+                key = SpecVersion.V_1_0_0.getLabel().equalsIgnoreCase(contextVersion) ? "outputs" : "nodeOutputs";
             } else if (clz.equals(SpecVariable.class)) {
                 key = "variables";
             } else {

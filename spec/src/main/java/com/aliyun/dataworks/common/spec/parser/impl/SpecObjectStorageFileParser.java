@@ -39,15 +39,17 @@ import org.apache.commons.collections4.MapUtils;
 public class SpecObjectStorageFileParser implements Parser<SpecObjectStorageFile> {
     @Override
     public SpecObjectStorageFile parse(Map<String, Object> rawContext, SpecParserContext specParserContext) {
+        SpecObjectStorageFile file = new SpecObjectStorageFile();
+        SpecDevUtil.setSimpleField(rawContext, file);
         Map<?, ?> storageTypeStr = MapUtils.getMap(rawContext, SpecConstants.SPEC_KEY_STORAGE);
         SpecStorage storage = (SpecStorage)SpecDevUtil.getObjectByParser(SpecStorage.class, storageTypeStr, specParserContext);
         return Optional.ofNullable(storage)
             .map(st -> {
-                SpecObjectStorageFile file = SpecObjectStorageFile.newInstanceOf(st.getType());
-                file.setStorage(st);
-                SpecDevUtil.setSimpleField(rawContext, file);
-                SpecDevUtil.setEntityToCtx(file, specParserContext);
-                return file;
-            }).orElse(null);
+                SpecObjectStorageFile newFile = SpecObjectStorageFile.newInstanceOf(st.getType());
+                newFile.setStorage(st);
+                SpecDevUtil.setSimpleField(rawContext, newFile);
+                SpecDevUtil.setEntityToCtx(newFile, specParserContext);
+                return newFile;
+            }).orElse(file);
     }
 }

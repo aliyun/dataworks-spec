@@ -27,11 +27,13 @@ spec:
           emrJobConfig: # EMR Job Runtime config
             submitMode: Local # Local|Yarn, use gateway or header
             submitter: root # submit user
-            executeMode: Single # Batch|Single FLOW_SKIP_SQL_ANALYZE
             priority: 1
             queue: default
             cores: 1
             memory: 1024 # MB
+            enableJdbcSql: true
+            FLOW_SKIP_SQL_ANALYZE: xxx
+            xxx: xxx_feature
         # other configs
       inputs:
       outputs:

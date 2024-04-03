@@ -26,6 +26,10 @@ import com.aliyun.dataworks.common.spec.parser.SpecParserContext;
  */
 @com.aliyun.dataworks.common.spec.annotation.SpecParser
 public class SpecParser<T extends Spec> extends DefaultSpecParser<T> {
+    public boolean support(String kind) {
+        return false;
+    }
+
     @Override
     public T parse(Map<String, Object> rawContext, SpecParserContext specParserContext) {
         T specObj = instantiateSpecObject();

@@ -15,14 +15,20 @@
 
 package com.aliyun.dataworks.common.spec.domain.dw.codemodel;
 
-import com.aliyun.dataworks.common.spec.domain.dw.types.CalcEngineType;
-import com.aliyun.dataworks.common.spec.domain.dw.types.CodeProgramType;
-import org.apache.commons.lang3.StringUtils;
+import java.lang.reflect.Modifier;
+import java.util.Comparator;
+import java.util.List;
+import java.util.stream.Collectors;
+
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.ListUtils;
+import org.reflections.Reflections;
 
 /**
  * @author 聿剑
  * @date 2022/12/28
  */
+@Slf4j
 public class CodeModelFactory {
     @SuppressWarnings("unchecked")
     public static <M extends Code> CodeModel<M> getCodeModel(String programType, String content) {
@@ -37,34 +43,23 @@ public class CodeModelFactory {
     }
 
     private static Code parseCodeModel(String programType, String code) {
-        if (StringUtils.equalsIgnoreCase(programType, CodeProgramType.CONTROLLER_ASSIGNMENT.name())) {
-            return new MultiLanguageScriptingCode().parse(code);
-        }
-
-        if (StringUtils.equalsIgnoreCase(programType, CodeProgramType.CONTROLLER_CYCLE_END.name())) {
-            return new MultiLanguageScriptingCode().parse(code);
-        }
-
-        if (StringUtils.equalsIgnoreCase(programType, CodeProgramType.CONTROLLER_BRANCH.name())) {
-            return new ControllerBranchCode().parse(code);
-        }
-
-        if (StringUtils.equalsIgnoreCase(programType, CodeProgramType.CONTROLLER_JOIN.name())) {
-            return new ControllerJoinCode().parse(code);
-        }
-
-        if (StringUtils.equalsIgnoreCase(programType, CodeProgramType.DI.name())) {
-            return new DataIntegrationCode().parse(code);
-        }
-
-        if (CodeProgramType.matchEngine(programType, CalcEngineType.EMR)) {
-            return new EmrCode().parse(code);
-        }
-
-        if (StringUtils.equalsIgnoreCase(programType, CodeProgramType.ODPS_SPARK.name())) {
-            return new OdpsSparkCode().parse(code);
-        }
-
-        return new PlainTextCode().parse(code);
+        Reflections reflections = new Reflections(Code.class.getPackage().getName());
+        List<? extends AbstractBaseCode> list = reflections.getSubTypesOf(AbstractBaseCode.class).stream()
+            .filter(subType -> !Modifier.isAbstract(subType.getModifiers()) && !Modifier.isInterface(subType.getModifiers()))
+            .map(subType -> {
+                try {
+                    return subType.newInstance();
+                } catch (InstantiationException | IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
+            })
+            .filter(inst -> ListUtils.emptyIfNull(inst.getProgramTypes()).stream().anyMatch(t -> t.equalsIgnoreCase(programType)))
+            .collect(Collectors.toList());
+        log.info("code model list: {}", list);
+        Code theOne = list.stream().max(Comparator.comparing(AbstractBaseCode::getClassHierarchyLevel))
+            .map(inst -> inst.parse(code))
+            .orElseGet(() -> new PlainTextCode().parse(code));
+        log.info("code model: {}", theOne);
+        return theOne;
     }
 }

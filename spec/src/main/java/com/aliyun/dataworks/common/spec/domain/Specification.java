@@ -15,8 +15,6 @@
 
 package com.aliyun.dataworks.common.spec.domain;
 
-import com.aliyun.dataworks.common.spec.domain.enums.SpecKind;
-import com.aliyun.dataworks.common.spec.domain.enums.SpecVersion;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -27,7 +25,7 @@ import lombok.EqualsAndHashCode;
 @Data
 @EqualsAndHashCode(callSuper = true)
 public class Specification<T extends Spec> extends SpecEntity {
-    private SpecVersion version;
-    private SpecKind kind;
+    private String version;
+    private String kind;
     private T spec;
 }

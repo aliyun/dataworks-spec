@@ -22,10 +22,12 @@ import com.alibaba.fastjson2.JSONObject;
 import com.aliyun.dataworks.common.spec.annotation.SpecWriter;
 import com.aliyun.dataworks.common.spec.domain.SpecConstants;
 import com.aliyun.dataworks.common.spec.domain.Specification;
+import com.aliyun.dataworks.common.spec.domain.enums.SpecVersion;
 import com.aliyun.dataworks.common.spec.exception.SpecErrorCode;
 import com.aliyun.dataworks.common.spec.exception.SpecException;
 import com.aliyun.dataworks.common.spec.writer.SpecWriterContext;
 import com.google.common.base.Preconditions;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * Specification writer
@@ -56,21 +58,16 @@ public class SpecificationWriter extends DefaultJsonObjectWriter<Specification> 
         JSONObject jsonObject = writeJsonObject(specObj, true);
         Optional.ofNullable(specObj.getVersion()).orElseThrow(() -> new SpecException(SpecErrorCode.PARSE_ERROR, "version is null"));
 
-        switch (specObj.getVersion()) {
-            case V_1_0_0: {
-                jsonObject.remove(SpecConstants.SPEC_KEY_SPEC);
-                JSONObject spec = (JSONObject)writeByWriter(specObj.getSpec());
-                if (spec != null) {
-                    for (String key : spec.keySet()) {
-                        jsonObject.put(key, spec.get(key));
-                    }
+        if (StringUtils.equalsIgnoreCase(SpecVersion.V_1_0_0.getLabel(), specObj.getVersion())) {
+            jsonObject.remove(SpecConstants.SPEC_KEY_SPEC);
+            JSONObject spec = (JSONObject)writeByWriter(specObj.getSpec());
+            if (spec != null) {
+                for (String key : spec.keySet()) {
+                    jsonObject.put(key, spec.get(key));
                 }
-                break;
             }
-            case V_1_1_0: {
-                jsonObject.put(SpecConstants.SPEC_KEY_SPEC, writeByWriter(specObj.getSpec()));
-                break;
-            }
+        } else {
+            jsonObject.put(SpecConstants.SPEC_KEY_SPEC, writeByWriter(specObj.getSpec()));
         }
         return jsonObject;
     }

@@ -38,7 +38,7 @@ public class SpecFileResourceWriter extends DefaultJsonObjectWriter<SpecFileReso
     public JSONObject write(SpecFileResource specObj, SpecWriterContext context) {
         JSONObject json = writeJsonObject(specObj, true);
         json.put("file", writeByWriter(specObj.getFile()));
-        json.put("calcEngine", writeByWriter(specObj.getCalcEngine()));
+        json.put("datasource", writeByWriter(specObj.getDatasource()));
         return json;
     }
 }
