@@ -1,0 +1,27 @@
+{
+    "package-name": "apcahe-airflow-provider-dataworks",
+    "version": "1.0.0",
+    "description": "Apache Airflow Provider for Alibaba Cloud DataWorks",
+    "url": "https://github.com/apache/airflow",
+    "license": "Apache License 2.0",
+    "author": "Alibaba Cloud, Inc.",
+    "extra-link": [
+        {
+            "name": "apache-airflow",
+            "url": "https://airflow.apache.org/"
+        }
+    ],
+    "task-decorators": [
+        {
+            "name": "dataworks_node",
+            "class": "airflow.providers.dataworks.decorators.DataWorksNode"
+        }
+    ],
+    "connection-types": [],
+    "secret-backends": [],
+    "auth-backends": [],
+    "nodifications": [],
+    "executors": [],
+    "logging": [],
+    "config": []
+}
