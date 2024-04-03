@@ -38,6 +38,10 @@ import lombok.ToString;
 @ToString(callSuper = true)
 public class SpecFile extends SpecRefEntity {
     /**
+     * File path on file storage system
+     */
+    private String path;
+    /**
      * File extension
      */
     private String extension;

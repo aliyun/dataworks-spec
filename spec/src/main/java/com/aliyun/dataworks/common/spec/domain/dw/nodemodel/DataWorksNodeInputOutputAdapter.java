@@ -126,7 +126,7 @@ public class DataWorksNodeInputOutputAdapter {
     }
 
     private static boolean matchVariable(SpecVariable varA, SpecVariable varB) {
-        if (!StringUtils.isBlank(varA.getId()) && StringUtils.isBlank(varB.getId())) {
+        if (!StringUtils.isBlank(varA.getId()) && !StringUtils.isBlank(varB.getId())) {
             return StringUtils.equals(varA.getId(), varB.getId());
         }
 
@@ -186,12 +186,12 @@ public class DataWorksNodeInputOutputAdapter {
                     }
                     case NODE_OUTPUT: {
                         outCtx.setCtxType(OutputContext.CTX_TYPE_SCRIPT_OUTPUTS);
-                        outCtx.setValueExpr(getIoContextRefKey(i, true));
+                        outCtx.setValueExpr(i.getValue());
                         break;
                     }
                     case PASS_THROUGH: {
                         outCtx.setCtxType(OutputContext.CTX_TYPE_PARAMETER_NODE_OUTPUTS);
-                        outCtx.setValueExpr(getIoContextRefKey(i, true));
+                        outCtx.setValueExpr(getIoContextRefKey(i.getReferenceVariable(), true));
                         break;
                     }
                 }

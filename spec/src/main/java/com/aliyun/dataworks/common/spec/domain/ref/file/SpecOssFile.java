@@ -33,9 +33,4 @@ public class SpecOssFile extends SpecObjectStorageFile {
     public SpecOssFile() {
         setStorage(new SpecOssStorage());
     }
-
-    /**
-     * Oss object key
-     */
-    private String objectKey;
 }

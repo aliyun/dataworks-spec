@@ -15,6 +15,7 @@
 
 package com.aliyun.dataworks.common.spec.writer.impl;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -74,6 +75,10 @@ public class DataWorksWorkflowSpecWriter extends DefaultJsonObjectWriter<DataWor
 
         if (CollectionUtils.isNotEmpty(specObj.getDqcRules())) {
             jsonObject.put("dqcRules", writeByWriter(specObj.getDqcRules()));
+        }
+
+        if (CollectionUtils.isNotEmpty(specObj.getVariables())) {
+            jsonObject.put("variables", writerListByWriter(new ArrayList<>(specObj.getVariables())));
         }
         return jsonObject;
     }

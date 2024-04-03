@@ -15,11 +15,18 @@
 
 package com.aliyun.dataworks.common.spec.domain.ref.runtime.emr;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+
 import com.aliyun.dataworks.common.spec.domain.SpecRefEntity;
+import com.aliyun.dataworks.common.spec.domain.interfaces.LabelEnum;
+import com.aliyun.dataworks.common.spec.utils.SpecDevUtil;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.experimental.Accessors;
+import org.apache.commons.collections4.ListUtils;
 
 /**
  * EMR Job Config
@@ -69,4 +76,27 @@ public class EmrJobConfig extends SpecRefEntity {
      * e.g. true
      */
     private Boolean sessionEnabled;
+
+    /**
+     * Enable JDBC SQL
+     * e.g. true
+     */
+    private Boolean enableJdbcSql;
+
+    public Map<String, Object> toMap() {
+        Map<String, Object> map = new HashMap<>();
+        ListUtils.emptyIfNull(SpecDevUtil.getPropertyFields(this)).forEach(field -> {
+            field.setAccessible(true);
+            try {
+                Object val = field.get(this);
+                if (val instanceof LabelEnum) {
+                    val = ((LabelEnum)val).getLabel();
+                }
+                Optional.ofNullable(val).ifPresent(v -> map.put(field.getName(), v));
+            } catch (IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
+        });
+        return map;
+    }
 }

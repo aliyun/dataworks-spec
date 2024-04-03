@@ -16,9 +16,11 @@
 package com.aliyun.dataworks.common.spec.domain.dw.codemodel;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.aliyun.dataworks.common.spec.domain.dw.types.CodeProgramType;
 import com.aliyun.dataworks.common.spec.utils.GsonUtils;
 import com.google.common.base.Joiner;
 import com.google.gson.reflect.TypeToken;
@@ -100,5 +102,10 @@ public class OdpsSparkCode extends AbstractBaseCode {
         setResourceReferences(model.getResourceReferences());
         setSparkJson(model.getSparkJson());
         return this;
+    }
+
+    @Override
+    public List<String> getProgramTypes() {
+        return Collections.singletonList(CodeProgramType.ODPS_SPARK.name());
     }
 }

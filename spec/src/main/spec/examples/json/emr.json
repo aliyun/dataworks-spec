@@ -30,11 +30,13 @@
             "emrJobConfig": {
               "submitMode": "Local",
               "submitter": "root",
-              "executeMode": "Single",
               "priority": 1,
               "queue": "default",
               "cores": 1,
-              "memory": 1024
+              "memory": 1024,
+              "enableJdbcSql": true,
+              "FLOW_SKIP_SQL_ANALYZE": "xxx",
+              "xxx": "xxx_feature"
             }
           }
         },

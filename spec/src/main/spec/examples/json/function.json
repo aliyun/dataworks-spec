@@ -7,13 +7,11 @@
         "id": "res_2",
         "name": "file2.jar",
         "type": "jar",
-        "calcEngineType": "MaxCompute",
-        "registerToCalcEngine": true,
         "file": {
           "storage": {
             "type": "oss"
           },
-          "objectKey": "/path/to/file2.jar",
+          "path": "/path/to/file2.jar",
           "extension": ".jar"
         }
       }
@@ -24,18 +22,24 @@
         "name": "geo_loc",
         "type": "MATH",
         "className": "com.aliyun.odps.udf.example.GeoLocation",
-        "calcEngine": {
-          "type": "MaxCompute",
-          "project": "test_project",
-          "schema": "default"
+        "datasource": {
+          "type": "odps",
+          "name": "autotest"
         },
+        "runtimeResource": {
+          "resourceGroup": "group1"
+        },
+        "armResource": "arm_res1",
         "fileResources": [
           "{{res_2}}"
         ],
         "usageDescription": "This function is used to calculate the geographic location of the IP address.\nThe input is the IP address, and the output is the geographic location.\n",
         "argumentDescription": "- name: ip\n  desc: The IP address to be calculated.\n  type: STRING\n- name: city\n  desc: The city name corresponding to the IP address.\n  type: STRING\n- name: province\n  desc:\n",
         "returnValueDescription": "- name: city\n  desc: The city name corresponding to the IP address.\n  type: STRING\n- name: province\n  desc: The province name corresponding to the IP address.\n  type: STRING\n",
-        "usageExample": "# The input is the IP address, and the output is the geographic location.\nSELECT geo_loc('127.0.0.1', city, province) FROM table1;"
+        "usageExample": "# The input is the IP address, and the output is the geographic location.\nSELECT geo_loc('127.0.0.1', city, province) FROM table1;\n",
+        "embeddedCodeType": "python2",
+        "embeddedCode": "# The input is the IP address, and the output is the geographic location.\ndef evaluate(ip, city, province):\n    return city, province\n",
+        "resourceType": "embedded"
       }
     ]
   }

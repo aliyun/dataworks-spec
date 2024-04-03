@@ -1,7 +1,7 @@
 version: 1.1.0
 kind: CycleWorkflow
 spec:
-  # function example
+  # resource example
   files:
     oss:
       - id: file1
@@ -9,7 +9,7 @@ spec:
           type: oss
           endpoint: https://oss-cn-hangzhou.aliyuncs.com
           bucket: 'test-bucket'
-        objectKey: /path/to/file1.jar
+        path: /path/to/file1.jar
         extension: .jar
     hdfs:
       - id: file2
@@ -29,15 +29,18 @@ spec:
     - id: res_2
       name: file2.jar
       type: jar
-      calcEngine:
-        type: MaxCompute
-        project: test_project
-        schema: default
-        endpoint: https://service.odps.aliyun.com
+      script:
+        content: |
+          {
+            "ossKey": "OSS_KEY_xx"
+          }
+        path: /path/to/file2
+      runtimeResource:
+        resourceGroup: "S_resgroup_xx"
+      datasource:
+        name: "emr_0"
+        type: "emr"
       file:
         storage:
-          type: oss
-          endpoint: https://oss-cn-hangzhou.aliyuncs.com
-          bucket: 'test-bucket'
-        objectKey: /path/to/file2.jar
-        extension: .jar
+          type: hdfs
+        path: /path/to/file2.jar

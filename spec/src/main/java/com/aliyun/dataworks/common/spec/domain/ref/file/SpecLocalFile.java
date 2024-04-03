@@ -33,9 +33,4 @@ public class SpecLocalFile extends SpecObjectStorageFile {
     public SpecLocalFile() {
         setStorage(new SpecLocalStorage());
     }
-
-    /**
-     * path
-     */
-    private String path;
 }

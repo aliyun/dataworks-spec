@@ -113,6 +113,7 @@ public enum CodeProgramType {
     CDH_FUNCTION(281, "CDH_FUNCTION", CalcEngineType.HADOOP_CDH, LabelType.FUNCTION, null),
 
     PAI(1002, "pai", CalcEngineType.ALGORITHM, null, null),
+    PAI_STUDIO(1117, "pai_studio", CalcEngineType.ALGORITHM, null, null),
 
     HOLOGRES_DEVELOP(1091, "HOLOGRES_DEVELOP", CalcEngineType.HOLO, LabelType.DATA_PROCESS, ".sql"),
     HOLOGRES_SYNC(1092, "HOLOGRES_DEVELOP", CalcEngineType.HOLO, LabelType.DATA_PROCESS, ".json"),

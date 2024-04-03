@@ -16,8 +16,13 @@
 package com.aliyun.dataworks.common.spec.domain.dw.codemodel;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
+import com.aliyun.dataworks.common.spec.domain.dw.types.CalcEngineType;
+import com.aliyun.dataworks.common.spec.domain.dw.types.CodeProgramType;
 import com.aliyun.dataworks.common.spec.utils.GsonUtils;
 import com.google.gson.reflect.TypeToken;
 import lombok.Data;
@@ -56,6 +61,13 @@ public class EmrCode extends AbstractBaseCode {
             this.setDescription(mm.getDescription());
         });
         return this;
+    }
+
+    @Override
+    public List<String> getProgramTypes() {
+        return Arrays.stream(CodeProgramType.values())
+            .map(Enum::name)
+            .filter(named -> CodeProgramType.matchEngine(named, CalcEngineType.EMR)).collect(Collectors.toList());
     }
 
     @Override

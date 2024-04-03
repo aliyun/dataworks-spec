@@ -57,6 +57,14 @@ public class MapKeyMatchUtils {
         return map.keySet().stream().anyMatch(k -> Arrays.stream(key).anyMatch(k1 -> StringUtils.equalsIgnoreCase(k, k1)));
     }
 
+    public static <V> void removeIgnoreCaseSingleAndPluralForm(java.util.Map<String, V> map, String... key) {
+        if (map == null || key == null || key.length == 0) {
+            return;
+        }
+
+        map.keySet().stream().filter(k -> Arrays.stream(key).anyMatch(k1 -> matchIgnoreSinglePluralForm(k, k1))).findAny().ifPresent(map::remove);
+    }
+
     public static <V> V getIgnoreCaseSingleAndPluralForm(java.util.Map<String, V> map, String... key) {
         if (map == null || key == null || key.length == 0) {
             return null;
@@ -65,6 +73,21 @@ public class MapKeyMatchUtils {
         return map.keySet().stream()
             .filter(k -> Arrays.stream(key).anyMatch(k1 -> matchIgnoreSinglePluralForm(k, k1))).findAny().map(map::get)
             .orElse(null);
+    }
+
+    public static <V> void setIgnoreCaseSingleAndPluralFormValue(java.util.Map<String, V> map, V value, String... key) {
+        if (map == null || key == null || key.length == 0) {
+            return;
+        }
+
+        if (getIgnoreCaseSingleAndPluralForm(map, key) == null) {
+            map.put(key[0], value);
+        } else {
+            // update matched key value
+            map.entrySet().stream()
+                .filter(ent -> Arrays.stream(key).anyMatch(k1 -> matchIgnoreSinglePluralForm(ent.getKey(), k1)))
+                .forEach(ent -> map.put(ent.getKey(), value));
+        }
     }
 
     public static <V> V getValue(java.util.Map<String, V> map, BiPredicate<String, String> keyMatcher, String... key) {
@@ -76,5 +99,4 @@ public class MapKeyMatchUtils {
             .filter(k -> Arrays.stream(key).anyMatch(k1 -> keyMatcher.test(k, k1))).findAny().map(map::get)
             .orElse(null);
     }
-
 }

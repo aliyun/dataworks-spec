@@ -162,7 +162,7 @@ public class DataWorksNodeCodeAdapterTest {
         emrJobConfig.setQueue("ods");
         emrJobConfig.setPriority(5);
         emrJobConfig.setSessionEnabled(true);
-        runtime.setEmrJobConfig(emrJobConfig);
+        runtime.setEmrJobConfig(emrJobConfig.toMap());
         script.setRuntime(runtime);
         emrNode.setScript(script);
 

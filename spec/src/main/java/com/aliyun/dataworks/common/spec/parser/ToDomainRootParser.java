@@ -18,7 +18,6 @@ package com.aliyun.dataworks.common.spec.parser;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 import com.aliyun.dataworks.common.spec.domain.Spec;
@@ -27,15 +26,11 @@ import com.aliyun.dataworks.common.spec.domain.SpecEntity;
 import com.aliyun.dataworks.common.spec.domain.SpecRefEntity;
 import com.aliyun.dataworks.common.spec.domain.Specification;
 import com.aliyun.dataworks.common.spec.domain.enums.ArtifactType;
-import com.aliyun.dataworks.common.spec.domain.enums.SpecKind;
-import com.aliyun.dataworks.common.spec.domain.enums.SpecVersion;
-import com.aliyun.dataworks.common.spec.domain.interfaces.LabelEnum;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecNode;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecNodeOutput;
 import com.aliyun.dataworks.common.spec.exception.SpecErrorCode;
 import com.aliyun.dataworks.common.spec.exception.SpecException;
 import com.aliyun.dataworks.common.spec.parser.SpecParserContext.SpecEntityContext;
-import com.aliyun.dataworks.common.spec.parser.impl.DataWorksWorkflowSpecParser;
 import com.aliyun.dataworks.common.spec.parser.impl.SpecParser;
 import com.aliyun.dataworks.common.spec.utils.MapKeyMatchUtils;
 import com.aliyun.dataworks.common.spec.utils.SpecDevUtil;
@@ -84,30 +79,32 @@ public class ToDomainRootParser {
     }
 
     private void initialize() {
-        SpecKind kind = LabelEnum.getByLabel(SpecKind.class,
-            (String)MapKeyMatchUtils.getIgnoreCaseSingleAndPluralForm(specParserContext.getContextMap(), SpecConstants.SPEC_KEY_KIND));
-        SpecVersion version = LabelEnum.getByLabel(SpecVersion.class,
-            (String)MapKeyMatchUtils.getIgnoreCaseSingleAndPluralForm(specParserContext.getContextMap(), SpecConstants.SPEC_KEY_VERSION));
+        String kind = (String)MapKeyMatchUtils.getIgnoreCaseSingleAndPluralForm(specParserContext.getContextMap(), SpecConstants.SPEC_KEY_KIND);
+        String version = (String)MapKeyMatchUtils.getIgnoreCaseSingleAndPluralForm(specParserContext.getContextMap(), SpecConstants.SPEC_KEY_VERSION);
 
         log.info("spec kind: {}, version: {}", kind, version);
         this.specParserContext.setVersion(version);
-        SpecException kindInvalidEx = new SpecException(SpecErrorCode.PARSE_ERROR, "Not support spec kind: " + kind);
-        Optional.ofNullable(kind).orElseThrow(() -> kindInvalidEx);
-        switch (kind) {
-            case CYCLE_WORKFLOW:
-            case MANUAL_WORKFLOW: {
-                this.specification = new Specification<>();
-                this.specification.setContext(specParserContext);
-                this.specParser = new DataWorksWorkflowSpecParser();
-                break;
-            }
-            default: {
-                throw kindInvalidEx;
-            }
-        }
+        this.specification = new Specification<>();
+        this.specification.setContext(specParserContext);
+
+        this.specParser = getSpecParser(kind);
 
         Reflections reflections = new Reflections(SpecRefEntity.class.getPackage().getName());
         specRefEntityClasses = reflections.getSubTypesOf(SpecRefEntity.class);
+    }
+
+    private SpecParser<?> getSpecParser(String kind) {
+        Reflections reflections = new Reflections(SpecParser.class.getPackage().getName());
+        return reflections.getSubTypesOf(SpecParser.class).stream()
+            .map(parser -> {
+                try {
+                    return parser.newInstance();
+                } catch (InstantiationException | IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
+            })
+            .filter(parser -> parser.support(kind))
+            .findFirst().orElseThrow(() -> new SpecException(SpecErrorCode.PARSE_ERROR, "Not support spec kind: " + kind));
     }
 
     private void preParser() {

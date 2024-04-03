@@ -69,4 +69,18 @@ public interface Code {
      * @return Map<String, Object>
      */
     Map<String, Object> getTemplate();
+
+    /**
+     * 节点代码类型
+     *
+     * @return List of program type
+     */
+    List<String> getProgramTypes();
+
+    /**
+     * 类集成层级
+     *
+     * @return level
+     */
+    int getClassHierarchyLevel();
 }

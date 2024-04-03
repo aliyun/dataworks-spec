@@ -18,7 +18,6 @@ package com.aliyun.dataworks.common.spec.domain.ref.runtime;
 import java.util.Map;
 
 import com.aliyun.dataworks.common.spec.domain.SpecNoRefEntity;
-import com.aliyun.dataworks.common.spec.domain.ref.runtime.emr.EmrJobConfig;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -41,7 +40,7 @@ public class SpecScriptRuntime extends SpecNoRefEntity {
      * dataworks official emr job config
      * <a href="https://help.aliyun.com/zh/dataworks/user-guide/create-an-emr-spark-node?spm=a2c4g.11186623.0.0.5b997a6c6eiCoN#1983900a620np"></a>
      */
-    private EmrJobConfig emrJobConfig;
+    private Map<String, Object> emrJobConfig;
     /**
      * cdh job config
      */

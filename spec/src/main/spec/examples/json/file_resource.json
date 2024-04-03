@@ -11,7 +11,7 @@
             "endpoint": "https://oss-cn-hangzhou.aliyuncs.com",
             "bucket": "test-bucket"
           },
-          "objectKey": "/path/to/file1.jar",
+          "path": "/path/to/file1.jar",
           "extension": ".jar"
         }
       ],
@@ -42,20 +42,22 @@
         "id": "res_2",
         "name": "file2.jar",
         "type": "jar",
-        "calcEngine": {
-          "type": "MaxCompute",
-          "project": "test_project",
-          "schema": "default",
-          "endpoint": "https://service.odps.aliyun.com"
+        "script": {
+          "content": "{\n  \"ossKey\": \"OSS_KEY_xx\"\n}\n",
+          "path": "/path/to/file2"
+        },
+        "runtimeResource": {
+          "resourceGroup": "S_resgroup_xx"
+        },
+        "datasource": {
+          "name": "emr_0",
+          "type": "emr"
         },
         "file": {
           "storage": {
-            "type": "oss",
-            "endpoint": "https://oss-cn-hangzhou.aliyuncs.com",
-            "bucket": "test-bucket"
+            "type": "hdfs"
           },
-          "objectKey": "/path/to/file2.jar",
-          "extension": ".jar"
+          "path": "/path/to/file2.jar"
         }
       }
     ]

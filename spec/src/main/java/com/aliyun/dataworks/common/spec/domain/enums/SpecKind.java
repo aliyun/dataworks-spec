@@ -31,7 +31,16 @@ public enum SpecKind implements LabelEnum {
     /**
      * Manual workflow
      */
-    MANUAL_WORKFLOW("ManualWorkflow");
+    MANUAL_WORKFLOW("ManualWorkflow"),
+
+    /**
+     * TemporaryWorkflow
+     */
+    TEMPORARY_WORKFLOW("TemporaryWorkflow"),
+    /**
+     * PaiFlow
+     */
+    PAIFLOW("PaiFlow");
 
     private final String label;
 

@@ -16,8 +16,12 @@
 package com.aliyun.dataworks.common.spec.domain.dw.codemodel;
 
 import java.lang.reflect.Type;
+import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import com.aliyun.dataworks.common.spec.domain.dw.types.CodeProgramType;
 import com.aliyun.dataworks.common.spec.utils.GsonUtils;
 import com.google.gson.reflect.TypeToken;
 import lombok.EqualsAndHashCode;
@@ -54,6 +58,12 @@ public class MultiLanguageScriptingCode extends AbstractBaseCode {
             this.language = m.getLanguage();
         });
         return this;
+    }
+
+    @Override
+    public List<String> getProgramTypes() {
+        return Stream.of(CodeProgramType.CONTROLLER_ASSIGNMENT, CodeProgramType.CONTROLLER_CYCLE_END).map(Enum::name)
+            .distinct().collect(Collectors.toList());
     }
 
     @Override

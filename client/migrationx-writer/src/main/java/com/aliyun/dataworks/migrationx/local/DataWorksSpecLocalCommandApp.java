@@ -102,8 +102,8 @@ public class DataWorksSpecLocalCommandApp extends CommandApp {
 
         File flowSpecFile = new File(RegExUtils.replacePattern(filePath, "\\..*$", "") + ".flow");
         Specification<DataWorksWorkflowSpec> specification = new Specification<>();
-        specification.setKind(SpecKind.CYCLE_WORKFLOW);
-        specification.setVersion(SpecVersion.V_1_1_0);
+        specification.setKind(SpecKind.CYCLE_WORKFLOW.getLabel());
+        specification.setVersion(SpecVersion.V_1_1_0.getLabel());
         SpecNode specNode = new SpecNode();
         SpecScript specScript = new SpecScript();
         SpecScriptRuntime runtime = new SpecScriptRuntime();

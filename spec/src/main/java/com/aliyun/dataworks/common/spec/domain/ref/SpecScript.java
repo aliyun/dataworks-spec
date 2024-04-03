@@ -29,10 +29,6 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 public class SpecScript extends SpecFile {
     /**
-     * File path
-     */
-    private String path;
-    /**
      * Script language
      */
     private String language;

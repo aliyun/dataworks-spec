@@ -42,7 +42,7 @@ public enum SpecFileResourceType implements LabelEnum {
     /**
      * Text file resource type
      */
-    TEXT_FILE("textFile"),
+    FILE("file"),
     ;
 
     private final String label;

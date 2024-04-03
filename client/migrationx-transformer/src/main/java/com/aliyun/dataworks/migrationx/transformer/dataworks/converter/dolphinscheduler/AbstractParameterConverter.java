@@ -15,6 +15,17 @@
 
 package com.aliyun.dataworks.migrationx.transformer.dataworks.converter.dolphinscheduler;
 
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.stream.Collectors;
+
+import com.aliyun.dataworks.common.spec.utils.ReflectUtils;
 import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.Datasource;
 import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.DbType;
 import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.Project;
@@ -25,11 +36,6 @@ import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.v139.Pr
 import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.v139.TaskNode;
 import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.v139.TaskNodeConnect;
 import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.v139.TaskType;
-import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.DwNode;
-import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.DwNodeIo;
-import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.DwWorkflow;
-import com.aliyun.dataworks.migrationx.domain.dataworks.objects.types.NodeUseType;
-import com.aliyun.dataworks.migrationx.domain.dataworks.objects.types.RerunMode;
 import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.v139.task.AbstractParameters;
 import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.v139.task.conditions.ConditionsParameters;
 import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.v139.task.datax.DataxParameters;
@@ -44,17 +50,17 @@ import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.v139.ta
 import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.v139.task.sql.SqlParameters;
 import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.v139.task.sqoop.SqoopParameters;
 import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.v139.task.subprocess.SubProcessParameters;
+import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.DwNode;
+import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.DwNodeIo;
+import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.DwWorkflow;
+import com.aliyun.dataworks.migrationx.domain.dataworks.objects.types.NodeUseType;
+import com.aliyun.dataworks.migrationx.domain.dataworks.objects.types.RerunMode;
 import com.aliyun.migrationx.common.utils.GsonUtils;
-import com.aliyun.migrationx.common.utils.ReflectUtils;
 import com.google.common.base.Joiner;
 import com.google.gson.reflect.TypeToken;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
-
-import java.io.IOException;
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author 聿剑

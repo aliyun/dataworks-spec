@@ -15,6 +15,16 @@
 
 package com.aliyun.dataworks.migrationx.domain.dataworks.utils;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+
 import com.alibaba.druid.DbType;
 import com.alibaba.druid.sql.SQLUtils;
 import com.alibaba.druid.sql.ast.SQLStatement;
@@ -22,14 +32,19 @@ import com.alibaba.druid.sql.ast.expr.SQLIdentifierExpr;
 import com.alibaba.druid.sql.ast.expr.SQLInSubQueryExpr;
 import com.alibaba.druid.sql.ast.expr.SQLMethodInvokeExpr;
 import com.alibaba.druid.sql.ast.expr.SQLPropertyExpr;
-import com.alibaba.druid.sql.ast.statement.*;
+import com.alibaba.druid.sql.ast.statement.SQLExprTableSource;
+import com.alibaba.druid.sql.ast.statement.SQLInsertStatement;
+import com.alibaba.druid.sql.ast.statement.SQLSelect;
+import com.alibaba.druid.sql.ast.statement.SQLUpdateStatement;
+import com.alibaba.druid.sql.ast.statement.SQLWithSubqueryClause;
 import com.alibaba.druid.sql.dialect.hive.ast.HiveInsertStatement;
 import com.alibaba.druid.sql.dialect.hive.ast.HiveMultiInsertStatement;
 import com.alibaba.druid.sql.dialect.odps.visitor.OdpsASTVisitorAdapter;
 import com.alibaba.druid.sql.dialect.odps.visitor.OdpsSchemaStatVisitor;
 import com.alibaba.druid.sql.repository.Schema;
 import com.alibaba.druid.sql.visitor.SQLEvalVisitorImpl;
-import com.aliyun.migrationx.common.utils.ReflectUtils;
+
+import com.aliyun.dataworks.common.spec.utils.ReflectUtils;
 import com.google.common.base.Joiner;
 import lombok.Data;
 import lombok.ToString;
@@ -41,11 +56,6 @@ import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.*;
-import java.util.concurrent.atomic.AtomicReference;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * @author sam.liux

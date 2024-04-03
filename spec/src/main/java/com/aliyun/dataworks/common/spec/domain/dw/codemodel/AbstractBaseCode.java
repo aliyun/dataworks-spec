@@ -18,6 +18,7 @@ package com.aliyun.dataworks.common.spec.domain.dw.codemodel;
 import java.util.List;
 import java.util.Map;
 
+import com.aliyun.dataworks.common.spec.utils.ClassUtils;
 import com.aliyun.dataworks.common.spec.utils.GsonUtils;
 import com.google.gson.reflect.TypeToken;
 import lombok.Data;
@@ -62,5 +63,10 @@ public abstract class AbstractBaseCode implements Code {
         c.setSourceCode("");
         String content = c.getContent();
         return GsonUtils.fromJsonString(content, new TypeToken<Map<String, Object>>() {}.getType());
+    }
+
+    @Override
+    public int getClassHierarchyLevel() {
+        return ClassUtils.getClassHierarchyLevel(this);
     }
 }

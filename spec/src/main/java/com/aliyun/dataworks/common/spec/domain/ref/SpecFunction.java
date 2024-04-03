@@ -19,7 +19,8 @@ import java.util.List;
 
 import com.aliyun.dataworks.common.spec.domain.SpecRefEntity;
 import com.aliyun.dataworks.common.spec.domain.enums.FunctionType;
-import com.aliyun.dataworks.common.spec.domain.ref.calcengine.SpecCalcEngine;
+import com.aliyun.dataworks.common.spec.domain.enums.SpecEmbeddedCodeType;
+import com.aliyun.dataworks.common.spec.domain.enums.SpecEmbeddedResourceType;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -34,10 +35,15 @@ public class SpecFunction extends SpecRefEntity {
     private SpecScript script;
     private FunctionType type;
     private String className;
-    private SpecCalcEngine calcEngine;
+    private SpecDatasource datasource;
+    private SpecRuntimeResource runtimeResource;
     private List<SpecFileResource> fileResources;
+    private String armResource;
     private String usageDescription;
     private String argumentsDescription;
     private String returnValueDescription;
     private String usageExample;
+    private SpecEmbeddedCodeType embeddedCodeType;
+    private SpecEmbeddedResourceType resourceType;
+    private String embeddedCode;
 }

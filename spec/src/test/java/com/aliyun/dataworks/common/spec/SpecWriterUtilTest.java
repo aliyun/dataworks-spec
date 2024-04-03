@@ -35,7 +35,9 @@ import com.aliyun.dataworks.common.spec.domain.enums.DependencyType;
 import com.aliyun.dataworks.common.spec.domain.enums.NodeInstanceModeType;
 import com.aliyun.dataworks.common.spec.domain.enums.NodeRecurrenceType;
 import com.aliyun.dataworks.common.spec.domain.enums.NodeRerunModeType;
+import com.aliyun.dataworks.common.spec.domain.enums.SpecFileResourceType;
 import com.aliyun.dataworks.common.spec.domain.enums.SpecKind;
+import com.aliyun.dataworks.common.spec.domain.enums.SpecStorageType;
 import com.aliyun.dataworks.common.spec.domain.enums.SpecVersion;
 import com.aliyun.dataworks.common.spec.domain.enums.VariableScopeType;
 import com.aliyun.dataworks.common.spec.domain.enums.VariableType;
@@ -43,12 +45,16 @@ import com.aliyun.dataworks.common.spec.domain.noref.SpecDepend;
 import com.aliyun.dataworks.common.spec.domain.noref.SpecDoWhile;
 import com.aliyun.dataworks.common.spec.domain.noref.SpecFlowDepend;
 import com.aliyun.dataworks.common.spec.domain.noref.SpecForEach;
+import com.aliyun.dataworks.common.spec.domain.ref.SpecDatasource;
+import com.aliyun.dataworks.common.spec.domain.ref.SpecFileResource;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecNode;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecNodeOutput;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecRuntimeResource;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecScript;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecVariable;
+import com.aliyun.dataworks.common.spec.domain.ref.file.SpecObjectStorageFile;
 import com.aliyun.dataworks.common.spec.domain.ref.runtime.SpecScriptRuntime;
+import com.aliyun.dataworks.common.spec.domain.ref.storage.SpecStorage;
 import com.aliyun.dataworks.common.spec.utils.GsonUtils;
 import com.aliyun.dataworks.common.spec.writer.SpecWriterContext;
 import com.aliyun.dataworks.common.spec.writer.WriterFactory;
@@ -69,8 +75,8 @@ public class SpecWriterUtilTest {
         SpecWriterContext context = new SpecWriterContext();
         SpecificationWriter writer = (SpecificationWriter)WriterFactory.getWriter(Specification.class, context);
         Specification<DataWorksWorkflowSpec> spec = new Specification<>();
-        spec.setVersion(SpecVersion.V_1_0_0);
-        spec.setKind(SpecKind.CYCLE_WORKFLOW);
+        spec.setVersion(SpecVersion.V_1_0_0.getLabel());
+        spec.setKind(SpecKind.CYCLE_WORKFLOW.getLabel());
         spec.setMetadata(new HashMap<>());
         spec.setSpec(new DataWorksWorkflowSpec());
 
@@ -147,8 +153,8 @@ public class SpecWriterUtilTest {
     @Test
     public void testDoWhileForeachWriter() {
         Specification<DataWorksWorkflowSpec> spec = new Specification<>();
-        spec.setVersion(SpecVersion.V_1_1_0);
-        spec.setKind(SpecKind.CYCLE_WORKFLOW);
+        spec.setVersion(SpecVersion.V_1_1_0.getLabel());
+        spec.setKind(SpecKind.CYCLE_WORKFLOW.getLabel());
         DataWorksWorkflowSpec dwSpec = new DataWorksWorkflowSpec();
         spec.setSpec(dwSpec);
 
@@ -162,6 +168,37 @@ public class SpecWriterUtilTest {
 
         dwSpec.setNodes(Arrays.asList(foreach, dowhile));
 
+        System.out.println(SpecUtil.writeToSpec(spec));
+    }
+
+    @Test
+    public void testWriteFileResource() {
+        Specification<DataWorksWorkflowSpec> spec = new Specification<>();
+        DataWorksWorkflowSpec dataWorksWorkflowSpec = new DataWorksWorkflowSpec();
+        spec.setVersion(SpecVersion.V_1_1_0.getLabel());
+        spec.setKind(SpecKind.CYCLE_WORKFLOW.getLabel());
+        spec.setSpec(dataWorksWorkflowSpec);
+        SpecFileResource res = new SpecFileResource();
+        res.setName("test_res");
+        res.setType(SpecFileResourceType.FILE);
+        SpecRuntimeResource rt = new SpecRuntimeResource();
+        rt.setResourceGroup("S_resgroup_xx");
+        res.setRuntimeResource(rt);
+        SpecScript script = new SpecScript();
+        script.setPath("/tmp/test.txt");
+        script.setContent("OSS_KEY_xxx");
+        res.setScript(script);
+        SpecDatasource datasource = new SpecDatasource();
+        datasource.setName("emr_0");
+        datasource.setType("emr");
+        res.setDatasource(datasource);
+        SpecObjectStorageFile file = new SpecObjectStorageFile();
+        SpecStorage storage = new SpecStorage();
+        storage.setType(SpecStorageType.OSS);
+        file.setStorage(storage);
+        file.setPath("/tmp/test.txt");
+        res.setFile(file);
+        dataWorksWorkflowSpec.setFileResources(Collections.singletonList(res));
         System.out.println(SpecUtil.writeToSpec(spec));
     }
 }

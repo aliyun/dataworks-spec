@@ -1,0 +1,66 @@
+version: 1.1.0
+kind: CycleWorkflow
+spec:
+  nodes:
+    - id: c6a3bbe198fd4031bbe71ad3e66ceb91
+      name: paiflow_0
+      recurrence: Normal
+      timeout: 3
+      instanceMode: T+1
+      rerunMode: Allowed
+      rerunTimes: 3
+      rerunInterval: 180000
+      script:
+        path: test/Algorithm/pai/paiflow_0
+        language: yaml
+        content: |
+          ---
+          apiVersion: 1.0.0
+          metadata:
+            provider: aliyun
+            version: 1.0.0
+            identity: job-root-pipeline-identifier
+          spec:
+            name: paiflow_0
+            inputs:
+              parameters:
+                - name: xxx
+                  value: xxx
+        runtime:
+          engine: Pai
+          command: PAI_STUDIO
+          paiFlowConfig:
+            endpoint: paiflowinner-share.aliyuncs.com
+            region: inner
+            prgType: 1000138
+    - id: c6a3bbe198fd4031bbe71ad3e66ceb92
+      name: paiflow_1
+      recurrence: Normal
+      timeout: 3
+      instanceMode: T+1
+      rerunMode: Allowed
+      rerunTimes: 3
+      rerunInterval: 180000
+      script:
+        path: test/Algorithm/pai/paiflow_1
+        language: json
+        content: |
+          ---
+          apiVersion: 1.0.0
+          metadata:
+            provider: aliyun
+            version: 1.0.0
+            identity: job-root-pipeline-identifier
+          spec:
+            name: paiflow_0
+            inputs:
+              parameters:
+                - name: xxx
+                  value: xxx
+        runtime:
+          engine: Pai
+          command: PAI_STUDIO
+          paiFlowConfig:
+            endpoint: paiflowinner-share.aliyuncs.com
+            region: inner
+            prgType: 1000138

@@ -6,22 +6,22 @@ spec:
     - id: res_2
       name: file2.jar
       type: jar
-      calcEngineType: MaxCompute
-      registerToCalcEngine: true
       file:
         storage:
           type: oss
-        objectKey: /path/to/file2.jar
+        path: /path/to/file2.jar
         extension: .jar
   functions:
     - id: geo_loc
       name: geo_loc
       type: MATH
       className: com.aliyun.odps.udf.example.GeoLocation
-      calcEngine:
-        type: MaxCompute
-        project: test_project
-        schema: default
+      datasource:
+        type: odps
+        name: autotest
+      runtimeResource:
+        resourceGroup: "group1"
+      armResource: "arm_res1"
       fileResources: [ "{{res_2}}" ]
       usageDescription: |
         This function is used to calculate the geographic location of the IP address.
@@ -45,3 +45,10 @@ spec:
       usageExample: |
         # The input is the IP address, and the output is the geographic location.
         SELECT geo_loc('127.0.0.1', city, province) FROM table1;
+      embeddedCodeType: python2
+      embeddedCode: |
+        # The input is the IP address, and the output is the geographic location.
+        def evaluate(ip, city, province):
+            return city, province
+      resourceType: embedded
+

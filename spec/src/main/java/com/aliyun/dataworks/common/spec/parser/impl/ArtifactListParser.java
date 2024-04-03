@@ -67,9 +67,8 @@ public class ArtifactListParser implements Parser<List<SpecArtifact>> {
         List<Map<String, Object>> variables = (List<Map<String, Object>>)MapKeyMatchUtils.getIgnoreCaseSingleAndPluralForm(rawContext,
             ArtifactType.VARIABLE.getLabel());
         if (CollectionUtils.isNotEmpty(variables)) {
-            for (Map<String, Object> output : variables) {
-                output.put("type", ArtifactType.VARIABLE.getLabel());
-                SpecVariable specArtifact = (SpecVariable)SpecDevUtil.getObjectByParser(SpecVariable.class, output, specParserContext);
+            for (Map<String, Object> variable : variables) {
+                SpecVariable specArtifact = (SpecVariable)SpecDevUtil.getObjectByParser(SpecVariable.class, variable, specParserContext);
                 SpecDevUtil.setEntityToCtx(specArtifact, specParserContext);
                 specArtifacts.add(specArtifact);
             }
