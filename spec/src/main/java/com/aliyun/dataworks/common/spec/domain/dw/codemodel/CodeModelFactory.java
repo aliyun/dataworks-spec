@@ -55,11 +55,11 @@ public class CodeModelFactory {
             })
             .filter(inst -> ListUtils.emptyIfNull(inst.getProgramTypes()).stream().anyMatch(t -> t.equalsIgnoreCase(programType)))
             .collect(Collectors.toList());
-        log.info("code model list: {}", list);
+        log.debug("code model list: {}", list);
         Code theOne = list.stream().max(Comparator.comparing(AbstractBaseCode::getClassHierarchyLevel))
             .map(inst -> inst.parse(code))
             .orElseGet(() -> new PlainTextCode().parse(code));
-        log.info("code model: {}", theOne);
+        log.debug("code model: {}", theOne);
         return theOne;
     }
 }

@@ -31,6 +31,7 @@ import com.aliyun.dataworks.common.spec.domain.Specification;
 import com.aliyun.dataworks.common.spec.domain.adapter.SpecNodeAdapter;
 import com.aliyun.dataworks.common.spec.domain.dw.types.CodeProgramType;
 import com.aliyun.dataworks.common.spec.domain.enums.DependencyType;
+import com.aliyun.dataworks.common.spec.domain.enums.TriggerType;
 import com.aliyun.dataworks.common.spec.domain.enums.VariableType;
 import com.aliyun.dataworks.common.spec.domain.interfaces.Input;
 import com.aliyun.dataworks.common.spec.domain.interfaces.Output;
@@ -39,6 +40,7 @@ import com.aliyun.dataworks.common.spec.domain.noref.SpecFlowDepend;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecNode;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecNodeOutput;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecScript;
+import com.aliyun.dataworks.common.spec.domain.ref.SpecTrigger;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecVariable;
 import com.aliyun.dataworks.common.spec.domain.ref.runtime.SpecScriptRuntime;
 import org.apache.commons.collections4.CollectionUtils;
@@ -55,6 +57,10 @@ import org.slf4j.LoggerFactory;
 public class DataWorksNodeAdapter implements SpecNodeAdapter, DataWorksNode {
     public static final String TIMEOUT = "alisaTaskKillTimeout";
     public static final String IGNORE_BRANCH_CONDITION_SKIP = "ignoreBranchConditionSkip";
+    public static final Integer NODE_TYPE_NORMAL = 0;
+    public static final Integer NODE_TYPE_MANUAL = 1;
+    public static final Integer NODE_TYPE_PAUSE = 2;
+    public static final Integer NODE_TYPE_SKIP = 3;
 
     private static final Logger logger = LoggerFactory.getLogger(DataWorksNodeAdapter.class);
 
@@ -70,7 +76,7 @@ public class DataWorksNodeAdapter implements SpecNodeAdapter, DataWorksNode {
 
     @Override
     public SpecNode getSpecNode() {
-        return null;
+        return specNode;
     }
 
     @Override
@@ -211,5 +217,24 @@ public class DataWorksNodeAdapter implements SpecNodeAdapter, DataWorksNode {
             extConfig.put(IGNORE_BRANCH_CONDITION_SKIP, BooleanUtils.isTrue(ignoreBranchConditionSkip)));
 
         return extConfig.isEmpty() ? null : JSONObject.toJSONString(extConfig);
+    }
+
+    @Override
+    public Integer getNodeType() {
+        if (Optional.ofNullable(specNode.getTrigger()).map(SpecTrigger::getType).map(TriggerType.MANUAL::equals).orElse(false)) {
+            return NODE_TYPE_MANUAL;
+        }
+
+        return Optional.ofNullable(specNode.getRecurrence()).map(nodeRecurrenceType -> {
+            switch (nodeRecurrenceType) {
+                case PAUSE:
+                    return NODE_TYPE_PAUSE;
+                case SKIP:
+                    return NODE_TYPE_SKIP;
+                case NORMAL:
+                    return NODE_TYPE_NORMAL;
+            }
+            return null;
+        }).orElseThrow(() -> new RuntimeException("not support node type: " + specNode));
     }
 }

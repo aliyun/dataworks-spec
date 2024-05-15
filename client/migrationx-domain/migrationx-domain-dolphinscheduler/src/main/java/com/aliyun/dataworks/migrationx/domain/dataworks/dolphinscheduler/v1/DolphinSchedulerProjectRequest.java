@@ -15,12 +15,12 @@
 
 package com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.v1;
 
+import javax.validation.constraints.NotBlank;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.experimental.Accessors;
-
-import javax.validation.constraints.NotBlank;
 
 /**
  * @author 聿剑
@@ -33,4 +33,5 @@ import javax.validation.constraints.NotBlank;
 public class DolphinSchedulerProjectRequest extends DolphinSchedulerRequest {
     @NotBlank(message = "dolphinscheduler project name needed")
     private String projectName;
+    private String projectCode;
 }

@@ -35,6 +35,10 @@ public class SpecCalcEngine extends SpecRefEntity {
     private CalcEngineType type;
     private SpecDatasource datasource;
     private String endpoint;
-    private String project;
+    /**
+     * mc场景下database代指mcProject
+     */
+    private String database;
     private String schema;
+    private SpecCalcEngineVersion version;
 }

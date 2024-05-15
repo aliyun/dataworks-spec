@@ -15,7 +15,19 @@
 
 package com.aliyun.dataworks.migrationx.reader.dolphinscheduler;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.Project;
 import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.v1.BatchExportProcessDefinitionByIdsRequest;
+import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.v1.DolphinSchedulerApi;
 import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.v1.DolphinSchedulerApiService;
 import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.v1.DolphinSchedulerRequest;
 import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.v1.DownloadResourceRequest;
@@ -26,11 +38,13 @@ import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.v1.Quer
 import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.v1.QueryResourceListRequest;
 import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.v1.QueryUdfFuncListByPaginateRequest;
 import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.v1.Response;
+import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.v3.DolphinschedulerApiV3Service;
 import com.aliyun.migrationx.common.utils.GsonUtils;
 import com.aliyun.migrationx.common.utils.PaginateUtils;
 import com.aliyun.migrationx.common.utils.ZipUtils;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -40,16 +54,11 @@ import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.*;
-import java.util.stream.Collectors;
-
 /**
  * @author 聿剑
  * @date 2022/10/19
  */
+@Slf4j
 public class DolphinSchedulerReader {
     private static final Logger LOGGER = LoggerFactory.getLogger(DolphinSchedulerReader.class);
     private static final String PACKAGE_INFO_JSON = "package_info.json";
@@ -62,17 +71,25 @@ public class DolphinSchedulerReader {
     private static final String PROJECTS_JSON = "projects.json";
 
     private final String version;
-    private List<String> projects;
+    private final List<String> projects;
+    private List<Project> projectInfoList = new ArrayList<>();
     private final File exportFile;
     private Boolean skipResources = false;
-    private final DolphinSchedulerApiService dolphinSchedulerApiService;
+    private final DolphinSchedulerApi dolphinSchedulerApiService;
 
     public DolphinSchedulerReader(String endpoint, String token, String version, List<String> projects,
         File exportFile) {
         this.version = version;
         this.projects = projects;
         this.exportFile = exportFile;
-        this.dolphinSchedulerApiService = new DolphinSchedulerApiService(endpoint, token);
+        if (StringUtils.startsWith(version, "1.") || StringUtils.startsWith(version, "2.")) {
+            this.dolphinSchedulerApiService = new DolphinSchedulerApiService(endpoint, token);
+        } else if (StringUtils.startsWith(version, "3.")) {
+            this.dolphinSchedulerApiService = new DolphinschedulerApiV3Service(endpoint, token);
+        } else {
+            throw new RuntimeException("unsupported dolphinscheduler version: " + version);
+        }
+
     }
 
     public File export() throws Exception {
@@ -115,7 +132,10 @@ public class DolphinSchedulerReader {
         QueryProcessDefinitionByPaginateRequest request = new QueryProcessDefinitionByPaginateRequest();
         request.setPageNo(p.getPageNum());
         request.setPageSize(p.getPageSize());
-        request.setProjectName(project);
+        Project projectInfo = ListUtils.emptyIfNull(projectInfoList).stream()
+            .filter(prj -> StringUtils.equalsIgnoreCase(project, prj.getName())).findAny()
+            .orElseThrow(() -> new RuntimeException("project code not found by name: " + project));
+        request.setProjectCode(projectInfo.getCode());
         PaginateResponse<JsonObject> response = dolphinSchedulerApiService.queryProcessDefinitionByPaging(request);
         return Optional.ofNullable(response)
             .map(Response::getData)
@@ -126,7 +146,10 @@ public class DolphinSchedulerReader {
     private String batchExportProcessDefinitionByIds(List<Integer> ids, String project) throws Exception {
         BatchExportProcessDefinitionByIdsRequest request = new BatchExportProcessDefinitionByIdsRequest();
         request.setIds(ids);
-        request.setProjectName(project);
+        Project projectInfo = ListUtils.emptyIfNull(projectInfoList).stream()
+            .filter(prj -> StringUtils.equalsIgnoreCase(project, prj.getName())).findAny()
+            .orElseThrow(() -> new RuntimeException("project code not found by name: " + project));
+        request.setProjectCode(projectInfo.getCode());
         return dolphinSchedulerApiService.batchExportProcessDefinitionByIds(request);
     }
 
@@ -163,8 +186,9 @@ public class DolphinSchedulerReader {
                     StringUtils.equalsIgnoreCase(prjName, proj.get("name").getAsString())))
                 .collect(Collectors.toList());
         } else {
-            this.projects = ListUtils.emptyIfNull(projectsList).stream()
-                .map(proj -> proj.get("name").getAsString())
+            this.projectInfoList = ListUtils.emptyIfNull(projectsList).stream()
+                .map(proj -> GsonUtils.fromJsonString(GsonUtils.toJsonString(proj), new TypeToken<Project>() {}.getType()))
+                .map(proj -> (Project)proj)
                 .collect(Collectors.toList());
         }
 
@@ -188,15 +212,16 @@ public class DolphinSchedulerReader {
                 request.setPageNo(p.getPageNum());
                 request.setPageSize(p.getPageSize());
                 PaginateResponse<JsonObject> response = dolphinSchedulerApiService.queryDataSourceListByPaging(request);
+                log.info("response: {}", response);
                 FileUtils.writeStringToFile(
                     new File(datasourceDir, "datasource_page_" + p.getPageNum() + ".json"),
-                    GsonUtils.toJsonString(response.getData().getTotalList()),
+                    GsonUtils.toJsonString(Optional.ofNullable(response).map(Response::getData).map(PaginateData::getTotalList).orElse(null)),
                     StandardCharsets.UTF_8);
                 PaginateUtils.PaginateResult<JsonObject> paginateResult = new PaginateUtils.PaginateResult<>();
                 paginateResult.setPageNum(p.getPageNum());
                 paginateResult.setPageSize(p.getPageSize());
-                paginateResult.setData(response.getData().getTotalList());
-                paginateResult.setTotalCount(response.getData().getTotal());
+                paginateResult.setData(Optional.ofNullable(response).map(Response::getData).map(PaginateData::getTotalList).orElse(null));
+                paginateResult.setTotalCount(Optional.ofNullable(response).map(Response::getData).map(PaginateData::getTotal).orElse(0));
                 return paginateResult;
             } catch (Exception e) {
                 throw new RuntimeException(e);

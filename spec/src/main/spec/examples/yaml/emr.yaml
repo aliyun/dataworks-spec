@@ -13,7 +13,7 @@ spec:
       script:
         path: test/EMR_test_biz/EMR/hive1
         language: hive-sql # hive sql language
-        content: select 1 # sql code
+        content: { } # sql code
         runtime:
           engine: Hive
           command: EMR_HIVE # Node type

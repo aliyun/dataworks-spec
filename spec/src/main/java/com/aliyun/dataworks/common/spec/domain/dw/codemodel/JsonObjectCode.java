@@ -33,11 +33,11 @@ import org.apache.commons.lang3.StringUtils;
 @Accessors(chain = true)
 @EqualsAndHashCode(callSuper = true)
 public abstract class JsonObjectCode extends AbstractBaseCode {
-    private transient String content;
+    protected transient String rawContent;
 
     @Override
     public JsonObjectCode parse(String code) {
-        this.content = code;
+        this.rawContent = code;
         if (StringUtils.isBlank(code)) {
             return this;
         }
@@ -46,21 +46,26 @@ public abstract class JsonObjectCode extends AbstractBaseCode {
         if (joc == null) {
             return this;
         }
-        joc.setContent(code);
+        joc.setRawContent(code);
         return joc;
     }
 
     @Override
     public void setSourceCode(String sourceCode) {
-        this.content = sourceCode;
+        this.rawContent = sourceCode;
     }
 
     @Override
     public String getSourceCode() {
-        return content;
+        return rawContent;
     }
 
     public String getContent() {
         return super.getContent();
+    }
+
+    public JsonObjectCode setRawContent(String rawContent) {
+        this.rawContent = rawContent;
+        return this;
     }
 }

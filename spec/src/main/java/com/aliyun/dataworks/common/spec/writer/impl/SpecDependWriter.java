@@ -39,6 +39,7 @@ public class SpecDependWriter extends DefaultJsonObjectWriter<SpecDepend> {
         JSONObject json = writeJsonObject(specObj, true);
         Optional.ofNullable(specObj.getNodeId()).ifPresent(nodeId -> json.put("nodeId", nodeId.getId()));
         Optional.ofNullable(specObj.getOutput()).ifPresent(output -> json.put("output", output.getData()));
+        Optional.ofNullable(specObj.getOutput()).ifPresent(output -> json.put("refTableName", output.getRefTableName()));
         return json;
     }
 }

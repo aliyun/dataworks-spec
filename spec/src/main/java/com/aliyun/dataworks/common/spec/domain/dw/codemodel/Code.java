@@ -24,6 +24,15 @@ import java.util.Map;
  */
 public interface Code {
     /**
+     * 获取原始内容
+     *
+     * @return String
+     */
+    default String getRawContent() {
+        return getContent();
+    }
+
+    /**
      * get serialized code content string,
      * 给调度的节点代码整体完整内容
      *

@@ -15,47 +15,23 @@
 
 package com.aliyun.dataworks.migrationx.domain.dataworks.aliyunemr;
 
-import com.aliyuncs.emr.model.v20160408.DescribeFlowResponse;
+import java.util.List;
+import java.util.Map;
+
 import com.aliyuncs.emr.model.v20160408.ListFlowJobResponse;
 import com.aliyuncs.emr.model.v20160408.ListFlowProjectResponse;
 import com.aliyuncs.emr.model.v20160408.ListFlowResponse;
-
-import java.util.List;
-import java.util.Map;
+import lombok.Data;
 
 /**
  * @author sam.liux
  * @date 2020/12/15
  */
+@Data
 public class AliyunEmrProject {
     private ListFlowProjectResponse.Project project;
-    private Map<ListFlowResponse.FlowItem, DescribeFlowResponse> flows;
+    private Map<ListFlowResponse.FlowItem, Flow> flows;
     private List<ListFlowJobResponse.Job> jobs;
-
-    public ListFlowProjectResponse.Project getProject() {
-        return project;
-    }
-
-    public void setProject(ListFlowProjectResponse.Project project) {
-        this.project = project;
-    }
-
-    public Map<ListFlowResponse.FlowItem, DescribeFlowResponse> getFlows() {
-        return flows;
-    }
-
-    public void setFlows(
-        Map<ListFlowResponse.FlowItem, DescribeFlowResponse> flows) {
-        this.flows = flows;
-    }
-
-    public List<ListFlowJobResponse.Job> getJobs() {
-        return jobs;
-    }
-
-    public void setJobs(List<ListFlowJobResponse.Job> jobs) {
-        this.jobs = jobs;
-    }
 
     public ListFlowJobResponse.Job getJobById(String jobId) {
         return this.jobs.stream().filter(

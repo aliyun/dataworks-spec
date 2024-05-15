@@ -1,6 +1,7 @@
 {
   "version": "1.0.0",
   "kind": "ManualWorkflow",
+  "id": 1234,
   "scripts": [
     {
       "id": "file1",

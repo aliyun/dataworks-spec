@@ -15,7 +15,10 @@
 
 package com.aliyun.dataworks.common.spec.domain.ref;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 import com.aliyun.dataworks.common.spec.domain.SpecRefEntity;
 import com.aliyun.dataworks.common.spec.domain.enums.NodeInstanceModeType;
@@ -26,12 +29,14 @@ import com.aliyun.dataworks.common.spec.domain.interfaces.Output;
 import com.aliyun.dataworks.common.spec.domain.noref.SpecBranch;
 import com.aliyun.dataworks.common.spec.domain.noref.SpecCombined;
 import com.aliyun.dataworks.common.spec.domain.noref.SpecDoWhile;
+import com.aliyun.dataworks.common.spec.domain.noref.SpecFlowDepend;
 import com.aliyun.dataworks.common.spec.domain.noref.SpecForEach;
 import com.aliyun.dataworks.common.spec.domain.noref.SpecJoin;
 import com.aliyun.dataworks.common.spec.domain.noref.SpecNodeRef;
 import com.aliyun.dataworks.common.spec.domain.noref.SpecParamHub;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+import org.apache.commons.collections4.ListUtils;
 
 /**
  * @author yiwei.qyw
@@ -39,7 +44,7 @@ import lombok.EqualsAndHashCode;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class SpecNode extends SpecRefEntity {
+public class SpecNode extends SpecRefEntity implements ContainerNode {
     private NodeRecurrenceType recurrence;
 
     private Integer priority;
@@ -94,4 +99,34 @@ public class SpecNode extends SpecRefEntity {
     private String owner;
 
     private String description;
+
+    @Override
+    public List<SpecNode> getInnerNodes() {
+        List<SpecNode> nodes = new ArrayList<>();
+        Optional.ofNullable(doWhile).ifPresent(dw -> {
+            Optional.ofNullable(dw.getSpecWhile()).ifPresent(nodes::add);
+            nodes.addAll(ListUtils.emptyIfNull(dw.getNodes()));
+        });
+
+        Optional.ofNullable(foreach).ifPresent(fe -> nodes.addAll(ListUtils.emptyIfNull(foreach.getNodes())));
+        Optional.ofNullable(combined).ifPresent(cb -> nodes.addAll(ListUtils.emptyIfNull(cb.getNodes())));
+        return Collections.unmodifiableList(nodes);
+    }
+
+    @Override
+    public List<SpecFlowDepend> getInnerFlow() {
+        if (doWhile != null) {
+            return doWhile.getFlow();
+        }
+
+        if (foreach != null) {
+            return foreach.getFlow();
+        }
+
+        if (combined != null) {
+            return combined.getFlow();
+        }
+
+        return null;
+    }
 }

@@ -25,6 +25,7 @@ import com.aliyun.dataworks.common.spec.SpecUtil;
 import com.aliyun.dataworks.common.spec.domain.DataWorksWorkflowSpec;
 import com.aliyun.dataworks.common.spec.domain.Specification;
 import com.aliyun.dataworks.common.spec.domain.enums.DependencyType;
+import com.aliyun.dataworks.common.spec.domain.enums.NodeRecurrenceType;
 import com.aliyun.dataworks.common.spec.domain.noref.SpecDepend;
 import com.aliyun.dataworks.common.spec.domain.noref.SpecFlowDepend;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecNode;
@@ -33,6 +34,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -96,6 +98,11 @@ public class DataWorksNodeAdapterTest {
         Assert.assertNotNull(depInfo);
         Assert.assertEquals(DwNodeDependentTypeInfo.USER_DEFINE_AND_SELF, depInfo.getDependentType());
         Assert.assertEquals(3, CollectionUtils.size(depInfo.getDependentNodeIdList()));
+
+        DataWorksNodeAdapter adapter = new DataWorksNodeAdapter(specObj, specObj.getSpec().getNodes().get(0));
+        Assert.assertNotNull(adapter.getInputs());
+        Assert.assertTrue(adapter.getInputs().stream().filter(in -> in instanceof SpecNodeOutput)
+            .anyMatch(in -> StringUtils.equals("test_node_1", ((SpecNodeOutput)in).getRefTableName())));
     }
 
     private DwNodeDependentTypeInfo getDwNodeDependentTypeInfo(Specification<DataWorksWorkflowSpec> specification) {
@@ -130,6 +137,10 @@ public class DataWorksNodeAdapterTest {
         Assert.assertNotNull(dowhile.getDoWhile());
         Assert.assertNotNull(dowhile.getDoWhile().getSpecWhile());
         Assert.assertNotNull(dowhile.getDoWhile().getNodes());
+
+        DataWorksNodeAdapter dataWorksNodeAdapter = new DataWorksNodeAdapter(specObj, dowhile.getDoWhile().getSpecWhile());
+        System.out.println(dataWorksNodeAdapter.getCode());
+        System.out.println(dataWorksNodeAdapter.getInputs());
     }
 
     @Test
@@ -141,6 +152,7 @@ public class DataWorksNodeAdapterTest {
         System.out.println(spec);
         Specification<DataWorksWorkflowSpec> specObj = SpecUtil.parseToDomain(spec);
         Assert.assertNotNull(specObj);
+        System.out.println(SpecUtil.writeToSpec(specObj));
 
         DataWorksWorkflowSpec specification = specObj.getSpec();
         Assert.assertNotNull(specification);
@@ -151,6 +163,15 @@ public class DataWorksNodeAdapterTest {
 
         Assert.assertNotNull(foreach.getForeach());
         Assert.assertNotNull(foreach.getForeach().getNodes());
+        Assert.assertEquals(3, CollectionUtils.size(foreach.getInnerNodes()));
+        Assert.assertNotNull(foreach.getInnerFlow());
+
+        ListUtils.emptyIfNull(specObj.getSpec().getNodes().get(0).getInnerNodes()).forEach(inner -> {
+            DataWorksNodeAdapter adapter = new DataWorksNodeAdapter(specObj, inner);
+            log.info("name: {}, inputs: {}, outputs: {}", inner.getName(), adapter.getInputs(), adapter.getOutputs());
+            Assert.assertTrue(CollectionUtils.isNotEmpty(adapter.getOutputs()));
+            Assert.assertEquals(inner.getId(), ((SpecNodeOutput)adapter.getOutputs().get(0)).getData());
+        });
     }
 
     @Test
@@ -174,6 +195,7 @@ public class DataWorksNodeAdapterTest {
         log.info("para value: {}", adapter.getParaValue());
         Assert.assertNotNull(adapter.getParaValue());
         Assert.assertEquals("111111 222222", adapter.getParaValue());
+        Assert.assertEquals(3, (int)adapter.getNodeType());
     }
 
     @Test
@@ -205,6 +227,8 @@ public class DataWorksNodeAdapterTest {
         Assert.assertNotNull(adapter.getExtConfig());
         Assert.assertTrue(adapter.getExtConfig().contains(DataWorksNodeAdapter.IGNORE_BRANCH_CONDITION_SKIP));
         Assert.assertFalse(adapter.getExtConfig().contains(DataWorksNodeAdapter.TIMEOUT));
+
+        Assert.assertEquals(0, (int)adapter.getNodeType());
     }
 
     @Test
@@ -225,12 +249,15 @@ public class DataWorksNodeAdapterTest {
         spec.setSpec(dwSpec);
         SpecNode node = new SpecNode();
         node.setId("1");
+        node.setRecurrence(NodeRecurrenceType.PAUSE);
         DataWorksNodeAdapter dataWorksNodeAdapter = new DataWorksNodeAdapter(spec, node);
         DwNodeDependentTypeInfo info = dataWorksNodeAdapter.getDependentType(null);
         Assert.assertNotNull(info);
         Assert.assertEquals(info.getDependentType(), DwNodeDependentTypeInfo.USER_DEFINE);
         Assert.assertNotNull(info.getDependentNodeOutputList());
         Assert.assertTrue(info.getDependentNodeOutputList().contains("output1"));
+
+        Assert.assertEquals(2, (int)dataWorksNodeAdapter.getNodeType());
     }
 
     @Test
@@ -664,5 +691,32 @@ public class DataWorksNodeAdapterTest {
             .anyMatch(oc -> oc.getValueExpr().equals("${yyyyMMdd}")));
         Assert.assertTrue(adapter.getOutputContexts().stream().filter(oc -> oc.getKey().equals("p1"))
             .anyMatch(oc -> oc.getValueExpr().equals("ppppp111")));
+    }
+
+    @Test
+    public void testManual() throws IOException {
+        String spec = IOUtils.toString(
+            Objects.requireNonNull(DataWorksNodeAdapterTest.class.getClassLoader().getResource("nodemodel/manual.json")),
+            StandardCharsets.UTF_8);
+
+        System.out.println(spec);
+        Specification<DataWorksWorkflowSpec> specObj = SpecUtil.parseToDomain(spec);
+        Assert.assertNotNull(specObj);
+
+        DataWorksWorkflowSpec specification = specObj.getSpec();
+        Assert.assertNotNull(specification);
+        Assert.assertEquals(1, CollectionUtils.size(specification.getNodes()));
+
+        SpecNode shellNode = specification.getNodes().get(0);
+        Assert.assertNotNull(shellNode);
+
+        shellNode.setIgnoreBranchConditionSkip(true);
+        shellNode.setTimeout(0);
+
+        DataWorksNodeAdapter adapter = new DataWorksNodeAdapter(specObj, shellNode);
+        log.info("para value: {}", adapter.getParaValue());
+        Assert.assertNotNull(adapter.getParaValue());
+        Assert.assertEquals("2=222222 1=111111", adapter.getParaValue());
+        Assert.assertEquals(1, (int)adapter.getNodeType());
     }
 }

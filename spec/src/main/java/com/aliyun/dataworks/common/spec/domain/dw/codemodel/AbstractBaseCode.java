@@ -38,6 +38,11 @@ public abstract class AbstractBaseCode implements Code {
     protected List<String> resourceReferences;
 
     @Override
+    public String getRawContent() {
+        return getContent();
+    }
+
+    @Override
     public String getContent() {
         return GsonUtils.toJsonString(this);
     }
