@@ -166,6 +166,8 @@
             "rerunInterval": 18000,
             "script": {
               "path": "/循环节点0/cycle_end",
+              "content": "select True",
+              "language": "odps-sql",
               "runtime": {
                 "engine": "GENERAL",
                 "command": "CONTROLLER_CYCLE_END"

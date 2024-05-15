@@ -298,11 +298,7 @@ public class SpecDevUtil {
         }
 
         String key = object.getClass().getSimpleName() + "#" + id;
-
-        if (entityMap.containsKey(key)) {
-            throw new SpecException(SpecErrorCode.DUPLICATE_ID,
-                "Duplicate id:" + id + "\n" + "Type:" + object.getClass().getSimpleName());
-        }
+        
         entityMap.put(key, (SpecRefEntity)object);
     }
 

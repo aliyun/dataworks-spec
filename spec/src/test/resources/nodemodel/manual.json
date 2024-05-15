@@ -1,0 +1,109 @@
+{
+  "version": "1.1.0",
+  "kind": "ManualWorkflow",
+  "spec": {
+    "nodes": [
+      {
+        "id": "c6a3bbe198fd4031bbe71ad3e66ceb91",
+        "recurrence": "Normal",
+        "timeout": 3,
+        "instanceMode": "T+1",
+        "rerunMode": "Allowed",
+        "rerunTimes": 3,
+        "rerunInterval": 180000,
+        "script": {
+          "path": "聿剑测试/通用节点测试/dide_shell",
+          "language": "odps",
+          "content": "select 1",
+          "runtime": {
+            "engine": "MaxCompute",
+            "command": "PYODPS2"
+          },
+          "parameters": [
+            {
+              "artifactType": "Variable",
+              "name": "2",
+              "scope": "NodeParameter",
+              "type": "System",
+              "value": "222222",
+              "node": {
+                "output": "cd0a7f7e21ef49e6bebeb98438c9ebe9"
+              }
+            },
+            {
+              "artifactType": "Variable",
+              "name": "1",
+              "scope": "NodeParameter",
+              "type": "System",
+              "value": "111111",
+              "node": {
+                "output": "cd0a7f7e21ef49e6bebeb98438c9ebe9"
+              }
+            }
+          ]
+        },
+        "trigger": {
+          "type": "Manual"
+        },
+        "runtimeResource": {
+          "resourceGroup": "group_2",
+          "resourceGroupId": "2"
+        },
+        "name": "dide_shell",
+        "owner": "064152",
+        "inputs": {
+          "variables": [
+            {
+              "artifactType": "Variable",
+              "name": "sql_assign_0",
+              "scope": "NodeContext",
+              "type": "NodeOutput",
+              "value": "${outputs}",
+              "node": {
+                "output": "cd0a7f7e21ef49e6bebeb98438c9ebe9"
+              }
+            }
+          ]
+        },
+        "outputs": {
+          "variables": [
+            {
+              "artifactType": "Variable",
+              "name": "sql_assign_1",
+              "scope": "NodeContext",
+              "type": "NodeOutput",
+              "value": "${outputs}",
+              "node": {
+                "output": "c6a3bbe198fd4031bbe71ad3e66ceb91"
+              }
+            }
+          ],
+          "outputs": [
+            {
+              "artifactType": "Output",
+              "data": "c6a3bbe198fd4031bbe71ad3e66ceb91",
+              "refTableName": "sql_assign_1"
+            }
+          ]
+        },
+        "functions": [],
+        "fileResources": []
+      }
+    ],
+    "flow": [
+      {
+        "nodeId": "c6a3bbe198fd4031bbe71ad3e66ceb91",
+        "depends": [
+          {
+            "type": "Normal",
+            "output": "f6cbb79aa27540dc9d3f055a639436b1"
+          },
+          {
+            "type": "Normal",
+            "output": "cd0a7f7e21ef49e6bebeb98438c9ebe9"
+          }
+        ]
+      }
+    ]
+  }
+}

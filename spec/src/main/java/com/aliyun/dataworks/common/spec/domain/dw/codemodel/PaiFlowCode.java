@@ -16,7 +16,7 @@
 package com.aliyun.dataworks.common.spec.domain.dw.codemodel;
 
 import java.util.ArrayList;
-import java.util.Collections;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -210,6 +210,6 @@ public class PaiFlowCode extends AbstractBaseCode implements SpecDescribableCode
 
     @Override
     public List<String> getProgramTypes() {
-        return Collections.singletonList(CodeProgramType.PAI_STUDIO.name());
+        return Arrays.asList(CodeProgramType.PAI_STUDIO.name(), CodeProgramType.RECOMMEND_PLUS.name());
     }
 }

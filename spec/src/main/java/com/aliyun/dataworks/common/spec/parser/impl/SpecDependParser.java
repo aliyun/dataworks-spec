@@ -41,6 +41,7 @@ public class SpecDependParser extends DefaultSpecParser<SpecDepend> {
         Optional.ofNullable(rawContext.get("output")).map(o -> (String)o).ifPresent(output -> {
             SpecNodeOutput out = new SpecNodeOutput();
             out.setData(output);
+            Optional.ofNullable(rawContext.get("refTableName")).map(ref -> (String)ref).ifPresent(out::setRefTableName);
             specDepend.setOutput(out);
         });
         return specDepend;

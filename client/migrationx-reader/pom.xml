@@ -20,7 +20,7 @@
     <parent>
         <artifactId>migrationx</artifactId>
         <groupId>com.aliyun.dataworks</groupId>
-        <version>1.1.4</version>
+        <version>1.1.5</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -37,22 +37,22 @@
         <dependency>
             <groupId>com.aliyun.dataworks</groupId>
             <artifactId>migrationx-domain-core</artifactId>
-            <version>1.1.4</version>
+            <version>1.1.5</version>
         </dependency>
         <dependency>
             <groupId>com.aliyun.dataworks</groupId>
             <artifactId>migrationx-domain-aliyunemr</artifactId>
-            <version>1.1.4</version>
+            <version>1.1.5</version>
         </dependency>
         <dependency>
             <groupId>com.aliyun.dataworks</groupId>
             <artifactId>migrationx-domain-airflow</artifactId>
-            <version>1.1.4</version>
+            <version>1.1.5</version>
         </dependency>
         <dependency>
             <groupId>com.aliyun.dataworks</groupId>
             <artifactId>migrationx-domain-dolphinscheduler</artifactId>
-            <version>1.1.4</version>
+            <version>1.1.5</version>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -61,7 +61,7 @@
         <dependency>
             <groupId>com.aliyun.dataworks</groupId>
             <artifactId>migrationx-common</artifactId>
-            <version>1.1.4</version>
+            <version>1.1.5</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>

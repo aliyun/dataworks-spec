@@ -37,6 +37,7 @@ import com.aliyun.dataworks.common.spec.domain.dw.types.CodeProgramType;
 import com.aliyun.dataworks.common.spec.domain.dw.types.ModelTreeRoot;
 import com.aliyun.dataworks.migrationx.domain.dataworks.aliyunemr.AliyunEmrProject;
 import com.aliyun.dataworks.migrationx.domain.dataworks.aliyunemr.AliyunEmrService;
+import com.aliyun.dataworks.migrationx.domain.dataworks.aliyunemr.Flow;
 import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.Asset;
 import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.DwDatasource;
 import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.DwNode;
@@ -631,7 +632,7 @@ public class AliyunEmrWorkflowConverter extends AbstractBaseConverter implements
             ListFlowProjectResponse.Project project = GsonUtils.gson.fromJson(
                 prjJson, new TypeToken<ListFlowProjectResponse.Project>() {}.getType());
             List<ListFlowJobResponse.Job> jobs = loadProjectJobs(projectPath);
-            Map<ListFlowResponse.FlowItem, DescribeFlowResponse> flows = loadProjectFlows(projectPath);
+            Map<ListFlowResponse.FlowItem, Flow> flows = loadProjectFlows(projectPath);
 
             AliyunEmrProject aliyunEmrProject = new AliyunEmrProject();
             aliyunEmrProject.setProject(project);
@@ -642,10 +643,10 @@ public class AliyunEmrWorkflowConverter extends AbstractBaseConverter implements
         return projects;
     }
 
-    private static Map<ListFlowResponse.FlowItem, DescribeFlowResponse> loadProjectFlows(File projectPath)
+    private static Map<ListFlowResponse.FlowItem, Flow> loadProjectFlows(File projectPath)
         throws IOException {
         File flowFolder = new File(projectPath.getAbsolutePath() + File.separator + AliyunEmrService.FLOW_DIR_NAME);
-        Map<ListFlowResponse.FlowItem, DescribeFlowResponse> flows = new HashMap<>(100);
+        Map<ListFlowResponse.FlowItem, Flow> flows = new HashMap<>(100);
         File[] files = flowFolder.listFiles(f -> f.isFile() && f.getName().endsWith(AliyunEmrService.JSON_FILE_EXT));
         if (files == null) {
             return flows;
@@ -663,11 +664,11 @@ public class AliyunEmrWorkflowConverter extends AbstractBaseConverter implements
             File jobDetailFile = new File(
                 flowJsonFile.getAbsolutePath().replaceAll(AliyunEmrService.JSON_FILE_EXT + "$", "")
                     + AliyunEmrService.FLOW_DETAIL_EXT + AliyunEmrService.JSON_FILE_EXT);
-            DescribeFlowResponse flowDetail = null;
+            Flow flowDetail = null;
             if (jobDetailFile.exists()) {
                 String jobDetailJson = FileUtils.readFileToString(jobDetailFile, Charset.forName(
                     AliyunEmrService.FILE_ENCODE));
-                flowDetail = GsonUtils.gson.fromJson(jobDetailJson, new TypeToken<DescribeFlowResponse>() {}.getType());
+                flowDetail = GsonUtils.gson.fromJson(jobDetailJson, new TypeToken<Flow>() {}.getType());
             }
             flows.put(flowItem, flowDetail);
         }

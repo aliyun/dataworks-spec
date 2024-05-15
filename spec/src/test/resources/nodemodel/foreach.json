@@ -182,7 +182,7 @@
               "nodeId": "8401efef76224eacbf28cc284b11a788",
               "depends": [
                 {
-                  "nodeId": "d0e36d269ed0414d9acd08149f360129",
+                  "output": "d0e36d269ed0414d9acd08149f360129",
                   "type": "Normal"
                 }
               ]
@@ -191,7 +191,7 @@
               "nodeId": "227b06c3ab0549e3b77731b0c828dcec",
               "depends": [
                 {
-                  "nodeId": "8401efef76224eacbf28cc284b11a788",
+                  "output": "8401efef76224eacbf28cc284b11a788",
                   "type": "Normal"
                 }
               ]

@@ -89,4 +89,11 @@ public interface DataWorksNode {
      * @return the node ext config
      */
     String getExtConfig();
+
+    /**
+     * get schedule node type
+     *
+     * @return node type code
+     */
+    Integer getNodeType();
 }

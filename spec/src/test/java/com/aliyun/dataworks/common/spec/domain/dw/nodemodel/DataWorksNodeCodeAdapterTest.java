@@ -39,7 +39,9 @@ import com.aliyun.dataworks.common.spec.domain.ref.runtime.SpecScriptRuntime;
 import com.aliyun.dataworks.common.spec.domain.ref.runtime.emr.EmrJobConfig;
 import com.aliyun.dataworks.common.spec.domain.ref.runtime.emr.EmrJobExecuteMode;
 import com.aliyun.dataworks.common.spec.domain.ref.runtime.emr.EmrJobSubmitMode;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -47,6 +49,7 @@ import org.junit.Test;
  * @author 聿剑
  * @date 2023/11/9
  */
+@Slf4j
 public class DataWorksNodeCodeAdapterTest {
     @Test
     public void testAssignCode() {
@@ -267,5 +270,56 @@ public class DataWorksNodeCodeAdapterTest {
         Assert.assertEquals(true, allSpec.getUseGateway());
         Assert.assertTrue(CollectionUtils.isNotEmpty(cm.getCodeModel().getLauncher().getAllocationSpec().entrySet()));
         Assert.assertNotNull(cm.getCodeModel().getProperties());
+    }
+
+    @Test
+    public void testHologresDataSyncNode() {
+        String code = "{\n"
+            + "            \"content\": \"IMPORT FOREIGN SCHEMA shanghai_onlineTest_simple LIMIT TO (wq_test_dataworks_pt_001) from SERVER "
+            + "odps_server INTO public OPTIONS(prefix 'tmp_foreign_', suffix 'xozi4mmb', if_table_exist 'error',if_unsupported_type 'error');"
+            + "\\nDROP TABLE IF EXISTS \\\"public\\\".tmp_holo_8gwvxopb_wqtest;\\nBEGIN;\\nCREATE TABLE IF NOT EXISTS \\\"public\\\""
+            + ".tmp_holo_8gwvxopb_wqtest (\\n \\\"f1\\\" text NOT NULL,\\n \\\"f2\\\" text NOT NULL,\\n \\\"f4\\\" text NOT NULL,\\n \\\"f5\\\" "
+            + "text NOT NULL,\\n \\\"f3\\\" text NOT NULL,\\n \\\"f6\\\" text NOT NULL,\\n \\\"f7\\\" text NOT NULL,\\n \\\"f10\\\" text NOT NULL,"
+            + "\\n \\\"ds\\\" bigint NOT NULL,\\n \\\"pt\\\" text NOT NULL\\n);\\nCALL SET_TABLE_PROPERTY('\\\"public\\\""
+            + ".tmp_holo_8gwvxopb_wqtest', 'orientation', 'column');\\ncomment on column \\\"public\\\".tmp_holo_8gwvxopb_wqtest.pt is '分区字段';"
+            + "\\nCOMMIT;\\nINSERT INTO \\\"public\\\".tmp_holo_8gwvxopb_wqtest\\nSELECT \\n    CAST(\\\"f1\\\" as text),\\n    CAST(\\\"f2\\\" as "
+            + "text),\\n    CAST(\\\"f4\\\" as text),\\n    CAST(\\\"f5\\\" as text),\\n    CAST(\\\"f3\\\" as text),\\n    CAST(\\\"f6\\\" as "
+            + "text),\\n    CAST(\\\"f7\\\" as text),\\n    CAST(\\\"f10\\\" as text),\\n    CAST(\\\"ds\\\" as bigint),\\n    CAST(\\\"pt\\\" as "
+            + "text)\\nFROM \\\"public\\\".tmp_foreign_wq_test_dataworks_pt_001xozi4mmb\\nWHERE pt='${bizdate}';\\nDROP FOREIGN TABLE IF EXISTS "
+            + "\\\"public\\\".tmp_foreign_wq_test_dataworks_pt_001xozi4mmb;BEGIN;\\nDROP TABLE IF EXISTS \\\"public\\\".wqtest;\\nALTER TABLE "
+            + "\\\"public\\\".tmp_holo_8gwvxopb_wqtest RENAME TO wqtest;\\nCOMMIT;\\n\",\n"
+            + "            \"extraContent\": \"{\\\"connId\\\":\\\"yongxunqa_holo_shanghai\\\",\\\"dbName\\\":\\\"yongxunqa_hologres_db\\\","
+            + "\\\"syncType\\\":1,\\\"extendProjectName\\\":\\\"shanghai_onlineTest_simple\\\",\\\"schemaName\\\":\\\"public\\\","
+            + "\\\"tableName\\\":\\\"wqtest\\\",\\\"partitionColumn\\\":\\\"\\\",\\\"orientation\\\":\\\"column\\\","
+            + "\\\"columns\\\":[{\\\"name\\\":\\\"f1\\\",\\\"comment\\\":\\\"\\\",\\\"type\\\":\\\"STRING\\\",\\\"allowNull\\\":false,"
+            + "\\\"holoName\\\":\\\"f1\\\",\\\"holoType\\\":\\\"text\\\"},{\\\"name\\\":\\\"f2\\\",\\\"comment\\\":\\\"\\\","
+            + "\\\"type\\\":\\\"STRING\\\",\\\"allowNull\\\":false,\\\"holoName\\\":\\\"f2\\\",\\\"holoType\\\":\\\"text\\\"},"
+            + "{\\\"name\\\":\\\"f4\\\",\\\"comment\\\":\\\"\\\",\\\"type\\\":\\\"STRING\\\",\\\"allowNull\\\":false,\\\"holoName\\\":\\\"f4\\\","
+            + "\\\"holoType\\\":\\\"text\\\"},{\\\"name\\\":\\\"f5\\\",\\\"comment\\\":\\\"\\\",\\\"type\\\":\\\"STRING\\\","
+            + "\\\"allowNull\\\":false,\\\"holoName\\\":\\\"f5\\\",\\\"holoType\\\":\\\"text\\\"},{\\\"name\\\":\\\"f3\\\","
+            + "\\\"comment\\\":\\\"\\\",\\\"type\\\":\\\"STRING\\\",\\\"allowNull\\\":false,\\\"holoName\\\":\\\"f3\\\","
+            + "\\\"holoType\\\":\\\"text\\\"},{\\\"name\\\":\\\"f6\\\",\\\"comment\\\":\\\"\\\",\\\"type\\\":\\\"STRING\\\","
+            + "\\\"allowNull\\\":false,\\\"holoName\\\":\\\"f6\\\",\\\"holoType\\\":\\\"text\\\"},{\\\"name\\\":\\\"f7\\\","
+            + "\\\"comment\\\":\\\"\\\",\\\"type\\\":\\\"STRING\\\",\\\"allowNull\\\":false,\\\"holoName\\\":\\\"f7\\\","
+            + "\\\"holoType\\\":\\\"text\\\"},{\\\"name\\\":\\\"f10\\\",\\\"comment\\\":\\\"\\\",\\\"type\\\":\\\"STRING\\\","
+            + "\\\"allowNull\\\":false,\\\"holoName\\\":\\\"f10\\\",\\\"holoType\\\":\\\"text\\\"},{\\\"name\\\":\\\"ds\\\","
+            + "\\\"comment\\\":\\\"\\\",\\\"type\\\":\\\"BIGINT\\\",\\\"allowNull\\\":false,\\\"holoName\\\":\\\"ds\\\","
+            + "\\\"holoType\\\":\\\"bigint\\\"},{\\\"name\\\":\\\"pt\\\",\\\"comment\\\":\\\"分区字段\\\",\\\"type\\\":\\\"STRING\\\","
+            + "\\\"allowNull\\\":false,\\\"holoName\\\":\\\"pt\\\",\\\"holoType\\\":\\\"text\\\"}],\\\"serverName\\\":\\\"odps_server\\\","
+            + "\\\"extendTableName\\\":\\\"wq_test_dataworks_pt_001\\\",\\\"foreignSchemaName\\\":\\\"public\\\",\\\"foreignTableName\\\":\\\"\\\","
+            + "\\\"instanceId\\\":\\\"yongxunqa_holo_shanghai\\\",\\\"engineType\\\":\\\"Hologres\\\",\\\"clusteringKey\\\":[],"
+            + "\\\"bitmapIndexKey\\\":[],\\\"segmentKey\\\":[],\\\"dictionaryEncoding\\\":[]}\"\n"
+            + "        }";
+        SpecNode node = new SpecNode();
+        SpecScript scr = new SpecScript();
+        SpecScriptRuntime rt = new SpecScriptRuntime();
+        rt.setCommand(CodeProgramType.HOLOGRES_SYNC_DATA.name());
+        scr.setRuntime(rt);
+        scr.setContent(code);
+        node.setScript(scr);
+        DataWorksNodeCodeAdapter codeAdapter = new DataWorksNodeCodeAdapter(node);
+        String codeContent = codeAdapter.getCode();
+        log.info("code content: {}", codeContent);
+        Assert.assertTrue(StringUtils.startsWith(codeContent, "IMPORT FOREIGN SCHEMA shanghai_on"));
     }
 }

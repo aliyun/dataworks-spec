@@ -52,6 +52,7 @@ public class File {
     private String fileName;
     private Integer filePublish;
     private Integer fileType;
+    private String fileTypeStr;
     private String galaxyResultTableSql;
     private String galaxySourceTableSql;
     private String galaxyTaskConfig;

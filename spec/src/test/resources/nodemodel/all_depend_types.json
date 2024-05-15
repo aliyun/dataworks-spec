@@ -5,7 +5,7 @@
     "nodes": [
       {
         "id": "53046d47cb5842ec960921e4cdc28a73",
-        "recurrence": "Normal",
+        "recurrence": "Pause",
         "timeout": 3,
         "instanceMode": "T+1",
         "rerunMode": "Allowed",
@@ -145,7 +145,8 @@
         "depends": [
           {
             "type": "Normal",
-            "output": "5a550dd3c0fb40e5b1455ff3dd998da7"
+            "output": "5a550dd3c0fb40e5b1455ff3dd998da7",
+            "refTableName": "test_node_1"
           },
           {
             "type": "CrossCycleDependsOnOtherNode",

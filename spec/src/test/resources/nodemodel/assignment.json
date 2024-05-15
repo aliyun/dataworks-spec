@@ -5,7 +5,7 @@
     "nodes": [
       {
         "id": "c6a3bbe198fd4031bbe71ad3e66ceb91",
-        "recurrence": "Normal",
+        "recurrence": "Skip",
         "timeout": 3,
         "instanceMode": "T+1",
         "rerunMode": "Allowed",

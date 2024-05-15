@@ -38,7 +38,11 @@ import lombok.EqualsAndHashCode;
  */
 @Data
 @EqualsAndHashCode(callSuper = true)
-public class DataWorksWorkflowSpec extends SpecEntity implements Spec {
+public class DataWorksWorkflowSpec extends SpecRefEntity implements Spec {
+    private String name;
+    private String type;
+    private String owner;
+    private String description;
     private List<SpecVariable> variables;
     private List<SpecTrigger> triggers;
     private List<SpecScript> scripts;

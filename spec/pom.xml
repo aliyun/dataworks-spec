@@ -19,14 +19,14 @@
     <parent>
         <artifactId>dataworks-tool</artifactId>
         <groupId>com.aliyun.dataworks</groupId>
-        <version>1.1.4</version>
+        <version>1.1.5</version>
     </parent>
 
     <artifactId>dw-common-spec</artifactId>
     <packaging>jar</packaging>
 
     <name>dw-common-spec</name>
-    <version>1.1.4</version>
+    <version>1.1.5</version>
 
     <url>http://maven.apache.org</url>
 

@@ -17,28 +17,18 @@ package com.aliyun.dataworks.migrationx.domain.dataworks.aliyunemr;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
+
+import lombok.Data;
 
 /**
  * @author sam.liux
  * @date 2020/12/15
  */
+@Data
 public class AliyunEmrExportRequest {
     private File folder;
     private List<String> projects;
-
-    public File getFolder() {
-        return folder;
-    }
-
-    public void setFolder(File folder) {
-        this.folder = folder;
-    }
-
-    public List<String> getProjects() {
-        return projects;
-    }
-
-    public void setProjects(List<String> projects) {
-        this.projects = projects;
-    }
+    private Map<String, List<String>> projectFlowList;
+    private String folderFilter;
 }

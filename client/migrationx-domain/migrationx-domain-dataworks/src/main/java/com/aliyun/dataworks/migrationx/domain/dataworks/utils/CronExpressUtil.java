@@ -15,6 +15,7 @@
 
 package com.aliyun.dataworks.migrationx.domain.dataworks.utils;
 
+import com.aliyun.dataworks.migrationx.domain.dataworks.objects.types.CycleType;
 import com.aliyun.dataworks.migrationx.domain.dataworks.utils.quartz.CronExpression;
 import com.aliyun.dataworks.migrationx.domain.dataworks.utils.quartz.ExtendedQuartzCronExpression;
 import com.google.common.base.Joiner;
@@ -25,6 +26,8 @@ import org.slf4j.LoggerFactory;
 
 import java.text.ParseException;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -343,5 +346,33 @@ public class CronExpressUtil {
             }
         }
         return part;
+    }
+
+
+    public static Integer parseCronToCycleType(String cronExpression) {
+        if (StringUtils.isBlank(cronExpression) || "day".equalsIgnoreCase(cronExpression)) {
+            return CycleType.DAY.getCode();
+        }
+
+        try {
+            String[] cronExp = cronExpression.split("\\s+");
+            String pattern = "[-/,*]";
+            Pattern regex = Pattern.compile(pattern);
+
+            String minute = cronExp[1];
+            String hour = cronExp[2];
+
+            Matcher matchM = regex.matcher(minute);
+            Matcher matchH = regex.matcher(hour);
+
+            if (matchM.find() || matchH.find()) {
+                //计算得到的小时调度和分钟调度才重新算cycleType
+                return CycleType.NOT_DAY.getCode();
+            } else {
+                return CycleType.DAY.getCode();
+            }
+        } catch (Exception e) {
+            return CycleType.DAY.getCode();
+        }
     }
 }

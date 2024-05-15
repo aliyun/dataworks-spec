@@ -1,0 +1,29 @@
+### listProcessDefinitions
+GET /dolphinscheduler/projects/{{projectCode}}/process-definition/list HTTP/1.1
+Host: {{api_endpoint}}
+token: {{token}}
+
+### batchExportProcessDefinitions
+POST /dolphinscheduler/projects/{{projectCode}}/process-definition/batch-export?codes=13198469779680 HTTP/1.1
+Host: {{api_endpoint}}
+token: {{token}}
+
+### queryResourceList
+GET /dolphinscheduler/resources/query-by-type?type=FILE HTTP/1.1
+Host: {{api_endpoint}}
+token: {{token}}
+
+### queryProjectListPaging
+GET /dolphinscheduler/projects?pageNo=1&pageSize=10 HTTP/1.1
+Host: {{api_endpoint}}
+token: {{token}}
+
+### queryProjectList
+GET /dolphinscheduler/projects/list HTTP/1.1
+Host: {{api_endpoint}}
+token: {{token}}
+
+### getProcessDefinition
+GET /dolphinscheduler/projects/{{projectCode}}/process-definition/13198469779680 HTTP/1.1
+Host: {{api_endpoint}}
+token: {{token}}

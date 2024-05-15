@@ -18,6 +18,7 @@ package com.aliyun.dataworks.common.spec.parser;
 import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import com.aliyun.dataworks.common.spec.domain.Spec;
@@ -26,6 +27,7 @@ import com.aliyun.dataworks.common.spec.domain.SpecEntity;
 import com.aliyun.dataworks.common.spec.domain.SpecRefEntity;
 import com.aliyun.dataworks.common.spec.domain.Specification;
 import com.aliyun.dataworks.common.spec.domain.enums.ArtifactType;
+import com.aliyun.dataworks.common.spec.domain.noref.SpecDepend;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecNode;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecNodeOutput;
 import com.aliyun.dataworks.common.spec.exception.SpecErrorCode;
@@ -172,6 +174,11 @@ public class ToDomainRootParser {
                 SpecNodeOutput ar = new SpecNodeOutput();
                 ar.setData((String)refElm.getEntityValue());
                 ar.setArtifactType(ArtifactType.NODE_OUTPUT);
+                Optional.ofNullable(refElm.getOwnerObject())
+                    .filter(oo -> oo instanceof SpecDepend)
+                    .map(oo -> ((SpecDepend)oo).getOutput())
+                    .map(SpecNodeOutput::getRefTableName)
+                    .ifPresent(ar::setRefTableName);
                 SpecDevUtil.setValue(ownerObject, refElm.getEntityField(), ar);
                 return;
             }

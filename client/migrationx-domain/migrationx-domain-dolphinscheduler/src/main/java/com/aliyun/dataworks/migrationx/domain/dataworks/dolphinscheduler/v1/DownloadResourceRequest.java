@@ -15,12 +15,12 @@
 
 package com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.v1;
 
+import javax.validation.constraints.NotNull;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.experimental.Accessors;
-
-import javax.validation.constraints.NotNull;
 
 /**
  * @author 聿剑
@@ -33,4 +33,5 @@ import javax.validation.constraints.NotNull;
 public class DownloadResourceRequest extends DolphinSchedulerRequest {
     @NotNull(message = "resource id needed")
     private Integer id;
+    private String fullName;
 }

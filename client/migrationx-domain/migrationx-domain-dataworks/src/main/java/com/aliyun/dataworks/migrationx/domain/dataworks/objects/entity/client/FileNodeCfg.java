@@ -15,12 +15,17 @@
 
 package com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.client;
 
+import java.util.Date;
+import java.util.List;
+
+import com.alibaba.fastjson.JSON;
+
+import com.aliyun.migrationx.common.utils.GsonUtils;
 import lombok.Data;
 import lombok.ToString;
 import lombok.experimental.Accessors;
-
-import java.util.Date;
-import java.util.List;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author sam.liux
@@ -66,4 +71,16 @@ public class FileNodeCfg {
     Integer taskRerunInterval;
     Integer taskRerunTime;
     String extConfig;
+
+    public void setOutputByOutputList() {
+        if (StringUtils.isBlank(output) && !CollectionUtils.isEmpty(outputList)) {
+            this.output = GsonUtils.toJsonString(outputList);
+        }
+    }
+
+    public void setInputByInputList() {
+        if (StringUtils.isBlank(input) && !CollectionUtils.isEmpty(inputList)) {
+            this.input = GsonUtils.toJsonString(inputList);
+        }
+    }
 }

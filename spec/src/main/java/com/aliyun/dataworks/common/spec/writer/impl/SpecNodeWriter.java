@@ -90,6 +90,10 @@ public class SpecNodeWriter extends DefaultJsonObjectWriter<SpecNode> {
     }
 
     private <T extends NodeIO> JSONObject writeIo(List<T> ioList) {
+        if (ioList == null) {
+            return null;
+        }
+
         JSONObject ioJson = new JSONObject();
         Map<Class<?>, List<T>> ioGroup = ListUtils.emptyIfNull(ioList).stream().collect(Collectors.groupingBy(Object::getClass));
 

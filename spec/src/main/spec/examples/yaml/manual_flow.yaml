@@ -2,6 +2,7 @@ version: 1.1.0
 kind: ManualWorkflow # Manual workflow
 spec:
   # define entities of each type
+  id: 12345
   scripts:
     - id: file1
       path: /path/to/datax_1.json

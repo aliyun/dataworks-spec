@@ -39,7 +39,9 @@ public enum CalcEngineType implements IntEnum<CalcEngineType>, LocaleAware, Labe
     FLINK(15, "Flink", "Flink"),
     DATABASE(100, "Database", "数据库"),
     DI(101, "Data Integration", "数据集成"),
-    ALGORITHM(102, "Algorithm", "算法");
+    ALGORITHM(102, "Algorithm", "算法"),
+    STAR_ROCKS(10001, "StarRocks", "StarRocks"),
+    HIVE(10002, "Hive", "Hive");
 
     private final int value;
     private final String name;

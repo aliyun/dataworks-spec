@@ -64,17 +64,47 @@ public class DataWorksNodeInputOutputAdapter {
     }
 
     public List<Input> getInputs() {
-        List<Input> inputs = ListUtils.emptyIfNull(specNode.getInputs()).stream()
+        SpecNode outerNode = ListUtils.emptyIfNull(specification.getNodes()).stream()
+            // current SpecNode is inner node of other node
+            .filter(node -> ListUtils.emptyIfNull(node.getInnerNodes()).stream()
+                .anyMatch(innerNode -> StringUtils.equals(innerNode.getId(), specNode.getId())))
+            .findAny().orElse(null);
+        if (outerNode != null) {
+            return getInputList(outerNode.getInnerFlow(), outerNode.getInnerNodes(), specNode);
+        }
+        return getInputList(specification.getFlow(), specification.getNodes(), specNode);
+    }
+
+    private List<Input> getInputList(List<SpecFlowDepend> flow, List<SpecNode> allNodes, SpecNode node) {
+        List<Input> inputs = ListUtils.emptyIfNull(node.getInputs()).stream()
             .filter(o -> o instanceof SpecNodeOutput)
             .map(o -> (SpecArtifact)o)
             .filter(o -> ArtifactType.NODE_OUTPUT.equals(o.getArtifactType()))
             .collect(Collectors.toList());
 
-        Optional<SpecFlowDepend> specNodeFlowDepend = ListUtils.emptyIfNull(specification.getFlow()).stream()
-            .filter(fd -> StringUtils.equalsIgnoreCase(specNode.getId(), fd.getNodeId().getId()))
+        Optional<SpecFlowDepend> specNodeFlowDepend = ListUtils.emptyIfNull(flow).stream()
+            .filter(fd -> StringUtils.equalsIgnoreCase(node.getId(), fd.getNodeId().getId()))
             .peek(fd -> log.info("node flow depends source nodeId: {}, depends: {}",
                 JSON.toJSONString(fd.getNodeId()), JSON.toJSONString(fd.getDepends())))
             .findFirst();
+
+        specNodeFlowDepend
+            .map(SpecFlowDepend::getDepends)
+            .orElse(ListUtils.emptyIfNull(null))
+            .stream()
+            .filter(dep -> DependencyType.NORMAL.equals(dep.getType()))
+            .filter(dep -> dep.getOutput() == null || StringUtils.isBlank(dep.getOutput().getData()))
+            .filter(dep -> dep.getNodeId() != null)
+            .map(out -> ListUtils.emptyIfNull(allNodes).stream().filter(n -> StringUtils.equals(out.getNodeId().getId(), n.getId()))
+                .findAny().flatMap(depNode -> depNode.getOutputs().stream()
+                    .filter(o -> o instanceof SpecNodeOutput).map(o -> (SpecNodeOutput)o).findAny())
+                .map(output -> {
+                    SpecNodeOutput io = new SpecNodeOutput();
+                    io.setData(output.getData());
+                    io.setRefTableName(output.getRefTableName());
+                    return io;
+                }).orElse(null))
+            .filter(Objects::nonNull).forEach(inputs::add);
 
         specNodeFlowDepend
             .map(SpecFlowDepend::getDepends)

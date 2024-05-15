@@ -24,6 +24,7 @@ import com.aliyun.dataworks.common.spec.domain.enums.SpecKind;
 import com.aliyun.dataworks.common.spec.parser.Parser;
 import com.aliyun.dataworks.common.spec.parser.SpecParserContext;
 import com.aliyun.dataworks.common.spec.parser.SpecParserFactory;
+import com.aliyun.dataworks.common.spec.utils.SpecDevUtil;
 
 /**
  * @author 聿剑
@@ -39,6 +40,7 @@ public class DataWorksWorkflowSpecParser extends SpecParser<DataWorksWorkflowSpe
     public DataWorksWorkflowSpec parse(Map<String, Object> rawContext, SpecParserContext specParserContext) {
         DataWorksWorkflowSpec specObj = instantiateSpecObject();
         specParserContext.setIgnoreMissingFields(true);
+        SpecDevUtil.setSimpleField(rawContext, specObj);
         parseSpecObjectFields(specObj, rawContext, specParserContext);
         return specObj;
     }

@@ -16,11 +16,9 @@
 package com.aliyun.dataworks.common.spec.domain.dw.nodemodel;
 
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
@@ -39,7 +37,6 @@ import com.aliyun.dataworks.common.spec.domain.dw.codemodel.EmrCode;
 import com.aliyun.dataworks.common.spec.domain.dw.codemodel.EmrJobType;
 import com.aliyun.dataworks.common.spec.domain.dw.codemodel.EmrLauncher;
 import com.aliyun.dataworks.common.spec.domain.dw.codemodel.MultiLanguageScriptingCode;
-import com.aliyun.dataworks.common.spec.domain.dw.codemodel.OdpsSparkCode;
 import com.aliyun.dataworks.common.spec.domain.dw.types.CodeProgramType;
 import com.aliyun.dataworks.common.spec.domain.dw.types.ProductModule;
 import com.aliyun.dataworks.common.spec.domain.enums.SpecVersion;
@@ -74,30 +71,6 @@ public class DataWorksNodeCodeAdapter {
     private static final List<String> JOIN_BRANCH_LOGICS = Arrays.asList(LOGIC_OR, LOGIC_AND);
 
     private final SpecNode specNode;
-    private static final Map<Class<? extends Code>, List<CodeProgramType>> CODE_TYPE_MAP;
-
-    static {
-        CODE_TYPE_MAP = new HashMap<>();
-        CODE_TYPE_MAP.put(MultiLanguageScriptingCode.class,
-            Arrays.asList(CodeProgramType.CONTROLLER_ASSIGNMENT, CodeProgramType.CONTROLLER_CYCLE_END));
-        CODE_TYPE_MAP.put(OdpsSparkCode.class, Collections.singletonList(CodeProgramType.ODPS_SPARK));
-        CODE_TYPE_MAP.put(ControllerJoinCode.class, Collections.singletonList(CodeProgramType.CONTROLLER_JOIN));
-        CODE_TYPE_MAP.put(ControllerBranchCode.class, Collections.singletonList(CodeProgramType.CONTROLLER_BRANCH));
-        CODE_TYPE_MAP.put(DataIntegrationCode.class, Collections.singletonList(CodeProgramType.DI));
-        CODE_TYPE_MAP.put(EmrCode.class, Arrays.asList(
-            CodeProgramType.EMR_HIVE,
-            CodeProgramType.EMR_SPARK,
-            CodeProgramType.EMR_SPARK_SQL,
-            CodeProgramType.EMR_MR,
-            CodeProgramType.EMR_SHELL,
-            CodeProgramType.EMR_SPARK_SHELL,
-            CodeProgramType.EMR_PRESTO,
-            CodeProgramType.EMR_IMPALA,
-            CodeProgramType.EMR_SCOOP,
-            CodeProgramType.EMR_SPARK_STREAMING,
-            CodeProgramType.EMR_HIVE_CLI,
-            CodeProgramType.EMR_STREAMING_SQL));
-    }
 
     public DataWorksNodeCodeAdapter(SpecNode specNode) {
         this.specNode = specNode;
@@ -110,32 +83,38 @@ public class DataWorksNodeCodeAdapter {
         SpecScriptRuntime runtime = Optional.ofNullable(script.getRuntime()).orElseThrow(
             () -> new SpecException(SpecErrorCode.PARSE_ERROR, "node.script.runtime is null"));
 
-        Class<? extends Code> codeClass = CODE_TYPE_MAP.entrySet().stream()
-            .filter(entry -> entry.getValue().stream().anyMatch(type -> StringUtils.equalsIgnoreCase(type.name(), runtime.getCommand())))
-            .findAny().map(Entry::getKey).orElse(null);
+        try {
+            String command = runtime.getCommand();
+            CodeModel<Code> codeModel = CodeModelFactory.getCodeModel(command, null);
+            Code code = codeModel.getCodeModel();
+            Class<? extends Code> codeClass = code.getClass();
 
-        if (codeClass == null) {
-            return script.getContent();
-        }
+            // logics of get code content for special node code
+            if (MultiLanguageScriptingCode.class.equals(codeClass)) {
+                return getMultiLanguageScriptingCode(script);
+            }
 
-        if (MultiLanguageScriptingCode.class.equals(codeClass)) {
-            return getMultiLanguageScriptingCode(script);
-        }
+            if (ControllerBranchCode.class.equals(codeClass)) {
+                return getControllerBranchCode(specNode, script);
+            }
 
-        if (ControllerBranchCode.class.equals(codeClass)) {
-            return getControllerBranchCode(specNode, script);
-        }
+            if (ControllerJoinCode.class.equals(codeClass)) {
+                return getControllerJoinCode(specNode);
+            }
 
-        if (ControllerJoinCode.class.equals(codeClass)) {
-            return getControllerJoinCode(specNode);
-        }
+            if (DataIntegrationCode.class.equals(codeClass)) {
+                return getDiCode(script);
+            }
 
-        if (DataIntegrationCode.class.equals(codeClass)) {
-            return getDiCode(script);
-        }
+            if (codeClass.equals(EmrCode.class)) {
+                return getEmrCode(script);
+            }
 
-        if (codeClass.equals(EmrCode.class)) {
-            return getEmrCode(script);
+            // common default logic to get content
+            code.setSourceCode(script.getContent());
+            return code.getContent();
+        } catch (Exception ex) {
+            log.warn("get code model error: ", ex);
         }
         return script.getContent();
     }

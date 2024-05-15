@@ -32,6 +32,10 @@ public enum SpecKind implements LabelEnum {
      * Manual workflow
      */
     MANUAL_WORKFLOW("ManualWorkflow"),
+    /**
+     * Single Manual Node
+     */
+    MANUAL_NODE("ManualNode"),
 
     /**
      * TemporaryWorkflow
@@ -40,7 +44,31 @@ public enum SpecKind implements LabelEnum {
     /**
      * PaiFlow
      */
-    PAIFLOW("PaiFlow");
+    PAIFLOW("PaiFlow"),
+    /**
+     * BatchDeployment
+     */
+    BATCH_DEPLOYMENT("BatchDeployment"),
+    /**
+     * DataSource
+     */
+    DATASOURCE("DataSource"),
+    /**
+     * DataQuality
+     */
+    DATA_QUALITY("DataQuality"),
+    /**
+     * DataService
+     */
+    DATA_SERVICE("DataService"),
+    /**
+     * DataCatalog
+     */
+    DATA_CATALOG("DataCatalog"),
+    /**
+     * Table
+     */
+    TABLE("Table");
 
     private final String label;
 

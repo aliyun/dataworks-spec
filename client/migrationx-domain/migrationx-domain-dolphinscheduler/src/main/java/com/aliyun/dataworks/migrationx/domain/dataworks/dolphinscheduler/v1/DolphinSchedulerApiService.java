@@ -15,6 +15,18 @@
 
 package com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.v1;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.net.URI;
+import java.nio.charset.StandardCharsets;
+import java.text.MessageFormat;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
 import com.aliyun.migrationx.common.http.HttpClientUtil;
 import com.aliyun.migrationx.common.utils.GsonUtils;
 import com.google.common.base.Joiner;
@@ -30,18 +42,6 @@ import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.util.EntityUtils;
-
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.net.URI;
-import java.nio.charset.StandardCharsets;
-import java.text.MessageFormat;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 /**
  * @author 聿剑
@@ -155,8 +155,7 @@ public class DolphinSchedulerApiService implements DolphinSchedulerApi {
         HttpClientUtil client = new HttpClientUtil();
         HttpGet httpGet = new HttpGet();
         httpGet.setHeader("token", token);
-        String url = MessageFormat.format("{0}/dolphinscheduler/projects/query-project-list",
-            endpoint, request.getPageNo(), request.getPageSize());
+        String url = MessageFormat.format("{0}/dolphinscheduler/projects/query-project-list", endpoint);
         httpGet.setURI(new URI(url));
         String responseStr = client.executeAndGet(httpGet);
         return GsonUtils.fromJsonString(responseStr, new TypeToken<Response<List<JsonObject>>>() {}.getType());

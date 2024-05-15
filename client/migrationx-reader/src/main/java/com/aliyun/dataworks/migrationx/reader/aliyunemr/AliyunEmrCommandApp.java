@@ -15,17 +15,6 @@
 
 package com.aliyun.dataworks.migrationx.reader.aliyunemr;
 
-import com.aliyun.dataworks.migrationx.domain.dataworks.aliyunemr.AliyunEmrExportRequest;
-import com.aliyun.dataworks.migrationx.domain.dataworks.aliyunemr.AliyunEmrExporterConstants;
-import com.aliyun.dataworks.migrationx.domain.dataworks.aliyunemr.AliyunEmrService;
-import com.aliyun.migrationx.common.command.appbase.CommandApp;
-import com.aliyun.migrationx.common.utils.ZipUtils;
-import com.aliyuncs.exceptions.ClientException;
-import org.apache.commons.cli.*;
-import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -34,8 +23,25 @@ import java.util.Date;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+import com.aliyun.dataworks.migrationx.domain.dataworks.aliyunemr.AliyunEmrExportRequest;
+import com.aliyun.dataworks.migrationx.domain.dataworks.aliyunemr.AliyunEmrExporterConstants;
+import com.aliyun.dataworks.migrationx.domain.dataworks.aliyunemr.AliyunEmrService;
+import com.aliyun.migrationx.common.command.appbase.CommandApp;
+import com.aliyun.migrationx.common.utils.ZipUtils;
+import com.aliyuncs.exceptions.ClientException;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * 阿里云EMR工作流导出工具
+ *
  * @author sam.liux
  * @date 2019/06/27
  */
@@ -56,6 +62,8 @@ public class AliyunEmrCommandApp extends CommandApp {
     private static final String OPT_HELP_LONG = "help";
     private static final String OPT_PROJECTS = "p";
     private static final String OPT_PROJECTS_LONG = "projects";
+    private static final String OPT_FOLDER_FILTER = "ff";
+    private static final String OPT_FOLDER_FILTER_LONG = "folderFilter";
 
     public static void main(String[] args) throws ParseException, IOException, ClientException {
         Options options = new Options();
@@ -65,6 +73,7 @@ public class AliyunEmrCommandApp extends CommandApp {
         options.addOption(OPT_REGION_ID, OPT_REGION_ID_LONG, true, "region id, cn-shanghai etc.");
         options.addOption(OPT_PROJECTS, OPT_PROJECTS_LONG, true, "emr project, multiply projects separated by comma, prj_01,prj_02 etc.");
         options.addOption(OPT_EXPORT_FILE, OPT_EXPORT_DIR_LONG, true, "/home/admin/emr_dumps/aaa.zip etc.");
+        options.addOption(OPT_FOLDER_FILTER, OPT_FOLDER_FILTER_LONG, true, "/FLOW/folder1/folder2");
         options.addOption(OPT_HELP, OPT_HELP_LONG, false, "show help.");
 
         CommandLineParser parser = new DefaultParser();
@@ -102,6 +111,7 @@ public class AliyunEmrCommandApp extends CommandApp {
         String regionId = cli.getOptionValue(OPT_REGION_ID);
         String projects = cli.getOptionValue(OPT_PROJECTS);
         String exportFile = cli.getOptionValue(OPT_EXPORT_FILE, new File("./emr_dumps/").getAbsolutePath());
+        String folderFilter = cli.getOptionValue(OPT_FOLDER_FILTER);
         AliyunEmrService client = new AliyunEmrService(accessId, accessKey, endpoint, regionId);
 
         SimpleDateFormat dateTimeFormatter = new SimpleDateFormat(AliyunEmrExporterConstants.EXPORTER_OUTPUT_DIR_DATE_FORMAT);
@@ -110,6 +120,7 @@ public class AliyunEmrCommandApp extends CommandApp {
         LOGGER.info("workspace folder: {}", folder);
         AliyunEmrExportRequest exportRequest = new AliyunEmrExportRequest();
         exportRequest.setFolder(folder);
+        exportRequest.setFolderFilter(folderFilter);
         if (StringUtils.isNotBlank(projects)) {
             String[] tokens = StringUtils.split(projects, ",");
             if (tokens != null) {

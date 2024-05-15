@@ -45,6 +45,11 @@ public class CodeModel<T extends Code> implements Code {
     }
 
     @Override
+    public String getRawContent() {
+        return Optional.ofNullable(codeModel).map(Code::getRawContent).orElse(null);
+    }
+
+    @Override
     public void setSourceCode(String sourceCode) {
         codeModel.setSourceCode(sourceCode);
     }
