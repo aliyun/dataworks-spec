@@ -43,7 +43,8 @@
         <spark.launcher.version>2.4.3</spark.launcher.version>
         <oozie.version>5.1.0</oozie.version>
         <druid-version>1.2.9_preview_04</druid-version>
-        <azkaban.version>3.71.0-3</azkaban.version>
+        <azkaban.version>3.58.0</azkaban.version>
+        <azkaban.spi.version>3.50.3</azkaban.spi.version>
         <powermock.version>2.0.9</powermock.version>
     </properties>
     <dependencyManagement>
@@ -72,7 +73,7 @@
             <dependency>
                 <groupId>com.linkedin.azkaban</groupId>
                 <artifactId>az-core</artifactId>
-                <version>${azkaban.version}-1</version>
+                <version>${azkaban.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.linkedin.azkaban</groupId>
@@ -82,7 +83,7 @@
             <dependency>
                 <groupId>com.linkedin.azkaban</groupId>
                 <artifactId>azkaban-spi</artifactId>
-                <version>${azkaban.version}</version>
+                <version>${azkaban.`spi.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.yaml</groupId>
