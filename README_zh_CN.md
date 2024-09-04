@@ -429,7 +429,7 @@ MigrationX 是一款基于 FlowSpec 规范的工作流迁移工具，它可以�
 
 ## 整体架构
 
-![image](docs/images/architecture.jpg)
+![image](docs/images/architecture-cn.jpg)
 
 ### 领域模型
 
