@@ -37,6 +37,7 @@ import com.aliyun.migrationx.common.utils.DateUtils;
 import com.aliyun.migrationx.common.utils.GsonUtils;
 import com.aliyun.teaopenapi.models.Config;
 import com.aliyun.teautil.models.RuntimeOptions;
+
 import com.google.common.base.Joiner;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.cli.CommandLine;
@@ -56,6 +57,8 @@ public class DataWorksMigrationAssistWriter extends CommandApp {
     private static final String IDE_URL_TEMPLATE = "https://ide2-{0}.data.aliyun.com/?defaultProjectId={1}";
     private static final String MIGRATION_REPORT_URL_TEMPLATE = "https://migration-{0}.data.aliyun.com/?defaultProjectId={1}#/import/{2}/report";
 
+    private static final String DATA_WORKS_ENDPOINT = "dataworks.%s.aliyuncs.com";
+
     @Override
     public void run(String[] args) throws Exception {
         CommandLine commandLine = getCommandLine(getOptions(), args);
@@ -70,10 +73,18 @@ public class DataWorksMigrationAssistWriter extends CommandApp {
         Config config = new Config();
         config.setAccessKeyId(accessId);
         config.setAccessKeySecret(accessKey);
-        config.setEndpoint(endpoint);
+
         if (StringUtils.isNotBlank(regionId)) {
             config.setRegionId(regionId);
+            if (endpoint == null) {
+                endpoint = String.format(DATA_WORKS_ENDPOINT, regionId);
+            }
         }
+        config.setEndpoint(endpoint);
+        if (endpoint == null && regionId == null) {
+            throw new RuntimeException("no region or endpoint args");
+        }
+        log.info("do import with endpoint {}, region {}, projectId {}, file {}", endpoint, regionId, projectId, file);
         Client client = new Client(config);
 
         doImport(packageType, file, projectId, regionId, client);
@@ -122,16 +133,16 @@ public class DataWorksMigrationAssistWriter extends CommandApp {
             summaryReq.setProjectId(projectId);
             GetMigrationSummaryResponse summaryResp = client.getMigrationSummary(summaryReq);
             log.info("GetMigrationSummary Response, migration task name: {}, status: {}, update time: {}",
-                summaryResp.getBody().getData().getName(), summaryResp.getBody().getData().getStatus(),
-                DateUtils.convertLongToDate(summaryResp.getBody().getData().getGmtModified()));
+                    summaryResp.getBody().getData().getName(), summaryResp.getBody().getData().getStatus(),
+                    DateUtils.convertLongToDate(summaryResp.getBody().getData().getGmtModified()));
 
             GetMigrationProcessRequest progressReq = new GetMigrationProcessRequest();
             progressReq.setMigrationId(migrationId);
             progressReq.setProjectId(projectId);
             GetMigrationProcessResponse progressResp = client.getMigrationProcess(progressReq);
             String progressInfo = progressResp.getBody().getData().stream()
-                .map(st -> Joiner.on(" : ").join(st.getTaskName(), st.getTaskStatus()))
-                .collect(Collectors.joining(" | "));
+                    .map(st -> Joiner.on(" : ").join(st.getTaskName(), st.getTaskStatus()))
+                    .collect(Collectors.joining(" | "));
             log.info("GetMigrationProgress Response: \n{}", progressInfo);
 
             String status = summaryResp.getBody().getData().getStatus();
@@ -160,8 +171,8 @@ public class DataWorksMigrationAssistWriter extends CommandApp {
 
     protected Options getOptions() {
         Options options = new Options();
-        options.addRequiredOption("e", "endpoint", true,
-            "DataWorks OpenAPI endpoint, example: http://dataworks.cn-shanghai.aliyuncs.com");
+        options.addOption("e", "endpoint", true,
+                "DataWorks OpenAPI endpoint, example: http://dataworks.cn-shanghai.aliyuncs.com");
         options.addRequiredOption("i", "accessKeyId", true, "Access key id");
         options.addRequiredOption("k", "accessKey", true, "Access key secret");
         options.addRequiredOption("r", "regionId", true, "Region id, example: cn-shanghai");

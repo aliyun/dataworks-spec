@@ -27,6 +27,8 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import com.alibaba.fastjson2.JSON;
+
 import com.aliyun.dataworks.common.spec.domain.SpecRefEntity;
 import com.aliyun.dataworks.common.spec.domain.interfaces.LabelEnum;
 import com.aliyun.dataworks.common.spec.exception.SpecErrorCode;
@@ -231,7 +233,7 @@ public class SpecDevUtil {
         } else if (split.length == 1) {
             refMsg.setId(split[0]);
         } else {
-            throw new SpecException(SpecErrorCode.REFID_PARSER_ERROR, "The reference id format is incorrect: " + refId);
+            throw new SpecException(SpecErrorCode.REF_ID_PARSER_ERROR, "The reference id format is incorrect: " + refId);
         }
         return refMsg;
     }
@@ -298,7 +300,7 @@ public class SpecDevUtil {
         }
 
         String key = object.getClass().getSimpleName() + "#" + id;
-        
+
         entityMap.put(key, (SpecRefEntity)object);
     }
 
@@ -426,6 +428,7 @@ public class SpecDevUtil {
         }
         ArrayList<Object> list = new ArrayList<>();
         Parser parser = SpecParserFactory.getParser(simpleName);
+
         for (Object elmCtx : value) {
             if (elmCtx instanceof String) {
                 // reference type
@@ -433,8 +436,14 @@ public class SpecDevUtil {
                 setRefContext(list, elmCtx, parserContext, declaredField, simpleName);
                 continue;
             }
-            Object parse = parser.parse((Map<String, Object>)elmCtx, parserContext);
-            setEntityToCtx(parse, parserContext);
+
+            Object parse;
+            if (parser == null) {
+                parse = JSON.parseObject(JSON.toJSONString(elmCtx), fieldClz);
+            } else {
+                parse = parser.parse((Map<String, Object>)elmCtx, parserContext);
+                setEntityToCtx(parse, parserContext);
+            }
             list.add(parse);
         }
         return list;

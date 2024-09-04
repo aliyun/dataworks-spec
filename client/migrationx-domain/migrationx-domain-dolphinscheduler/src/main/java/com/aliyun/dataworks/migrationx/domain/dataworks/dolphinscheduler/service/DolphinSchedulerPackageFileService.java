@@ -15,16 +15,17 @@
 
 package com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.service;
 
-import com.aliyun.dataworks.migrationx.domain.dataworks.standard.service.AbstractPackageFileService;
+import java.io.File;
+import java.util.Optional;
+
 import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.DolphinSchedulerPackage;
+import com.aliyun.dataworks.migrationx.domain.dataworks.standard.service.AbstractPackageFileService;
 import com.aliyun.migrationx.common.exception.BizException;
 import com.aliyun.migrationx.common.exception.ErrorCode;
 import com.aliyun.migrationx.common.utils.ZipUtils;
+
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-
-import java.io.File;
-import java.util.Optional;
 
 /**
  * @author 聿剑
@@ -38,27 +39,33 @@ public class DolphinSchedulerPackageFileService extends AbstractPackageFileServi
     @Override
     protected boolean isProjectRoot(File file) {
         return file.isFile() && (
-            StringUtils.equals(file.getName(), "projects.json")
-                || StringUtils.equals(file.getName(), "package_info.json")
+                StringUtils.equals(file.getName(), "projects.json")
+                        || StringUtils.equals(file.getName(), "package_info.json")
         );
     }
 
     @Override
     public void load(DolphinSchedulerPackage dolphinSchedulerPackage) throws Exception {
-        File unzippedDir = ZipUtils.decompress(dolphinSchedulerPackage.getPackageFile());
+        File unzippedDir;
+        if (dolphinSchedulerPackage.getPackageFile().isFile()) {
+            unzippedDir = ZipUtils.decompress(dolphinSchedulerPackage.getPackageFile());
+        } else {
+            unzippedDir = dolphinSchedulerPackage.getPackageFile();
+        }
+
         DolphinSchedulerPackageLoader loader = DolphinSchedulerPackageLoader.create(unzippedDir);
+        loader.loadPackage();
         this.dolphinSchedulerPackage = loader.getDolphinSchedulerPackage();
     }
 
     @Override
     public DolphinSchedulerPackage getPackage() throws Exception {
         return Optional.ofNullable(dolphinSchedulerPackage)
-            .orElseThrow(() -> new BizException(ErrorCode.PACKAGE_NOT_LOADED));
+                .orElseThrow(() -> new BizException(ErrorCode.PACKAGE_NOT_LOADED));
     }
 
     @Override
     public void write(DolphinSchedulerPackage pacakgeModelObject, File targetPackageFile) throws Exception {
         throw new UnsupportedOperationException("not implemented yet");
-
     }
 }

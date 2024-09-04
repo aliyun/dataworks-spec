@@ -15,22 +15,36 @@
 
 package com.aliyun.dataworks.migrationx.transformer.core.controller;
 
+import java.lang.reflect.Field;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.FutureTask;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+
 import com.aliyun.dataworks.migrationx.transformer.core.annotation.DependsOn;
+import com.aliyun.dataworks.migrationx.transformer.core.report.ReportItem;
 import com.aliyun.dataworks.migrationx.transformer.core.report.ReportItemType;
 import com.aliyun.dataworks.migrationx.transformer.core.report.ReportRiskLevel;
-import com.aliyun.dataworks.migrationx.transformer.core.report.ReportItem;
+
 import com.google.common.base.Joiner;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.util.CollectionUtils;
-
-import java.lang.reflect.Field;
-import java.util.*;
-import java.util.concurrent.*;
-import java.util.stream.Collectors;
 
 /**
  * 任务执行流管理
@@ -52,12 +66,12 @@ public class TaskDag {
     private Map<String, FutureTask> futureTaskMap = new ConcurrentHashMap<>();
 
     private ThreadPoolExecutor threadPoolExecutor = new ThreadPoolExecutor(
-        50,
-        100,
-        5,
-        TimeUnit.SECONDS,
-        new ArrayBlockingQueue<>(100),
-        new ThreadFactoryBuilder().build()
+            50,
+            100,
+            5,
+            TimeUnit.SECONDS,
+            new ArrayBlockingQueue<>(100),
+            new ThreadFactoryBuilder().build()
     );
 
     class AtomTask implements Callable<Task> {
@@ -70,10 +84,10 @@ public class TaskDag {
         @Override
         public Task call() throws Exception {
             Thread.currentThread().setName(
-                Joiner.on("-").join(
-                    task.getName(),
-                    Thread.currentThread().getId()
-                )
+                    Joiner.on("-").join(
+                            task.getName(),
+                            Thread.currentThread().getId()
+                    )
             );
             List<Task> dependencies = task.getDependencies();
             task.setTaskStatus(TaskStatus.WAITING);
@@ -116,15 +130,15 @@ public class TaskDag {
 
     public List<Task> getTasks() {
         return tasks.values().stream()
-            .map(Map::values)
-            .flatMap(Collection::stream)
-            .map(AtomTask::getTask)
-            .collect(Collectors.toList());
+                .map(Map::values)
+                .flatMap(Collection::stream)
+                .map(AtomTask::getTask)
+                .collect(Collectors.toList());
     }
 
     public <T> T getTask(TaskStage taskStage, String name, Class<T> clazz) {
         Map<String, AtomTask> map = tasks.get(taskStage);
-        if (CollectionUtils.isEmpty(map)) {
+        if (MapUtils.isEmpty(map)) {
             return null;
         }
 
@@ -139,7 +153,7 @@ public class TaskDag {
             throw new RuntimeException("task " + name + " is still running");
         }
 
-        Task<T> task = (Task<T>)futureTask.get();
+        Task<T> task = (Task<T>) futureTask.get();
         return task.getTemplateParameterType().cast(task.getResult());
     }
 
@@ -174,9 +188,9 @@ public class TaskDag {
                     // 有DependsOn注解，且是Task<?>的子类
                     if (anno != null && Task.class.isAssignableFrom(field.getDeclaringClass())) {
                         List<Task> candidateTasks = getTasks().stream()
-                            .filter(t -> t.getClass().equals(field.getType()) || t.getClass()
-                                .equals(field.getGenericType()))
-                            .collect(Collectors.toList());
+                                .filter(t -> t.getClass().equals(field.getType()) || t.getClass()
+                                        .equals(field.getGenericType()))
+                                .collect(Collectors.toList());
                         if (candidateTasks.size() == 1) {
                             injectTaskDepend(task, field, candidateTasks.get(0));
                         }
@@ -184,16 +198,16 @@ public class TaskDag {
                         if (candidateTasks.size() > 1) {
                             if (StringUtils.isBlank(anno.qualifier())) {
                                 throw new RuntimeException(
-                                    "multi candidate task found by DependsOn: " + field.getType().getName() +
-                                        ", but without qualifier specified on DependsOn annotation");
+                                        "multi candidate task found by DependsOn: " + field.getType().getName() +
+                                                ", but without qualifier specified on DependsOn annotation");
                             }
                         }
 
                         if (anno.types() != null && anno.types().length > 0) {
                             ArrayList<Class<? extends Task<?>>> typesArr = new ArrayList(Arrays.asList(anno.types()));
                             candidateTasks = getTasks().stream()
-                                .filter(t -> typesArr.contains(t.getClass()))
-                                .collect(Collectors.toList());
+                                    .filter(t -> typesArr.contains(t.getClass()))
+                                    .collect(Collectors.toList());
                             if (!CollectionUtils.isEmpty(candidateTasks)) {
                                 Task[] arr = new Task[candidateTasks.size()];
                                 candidateTasks.toArray(arr);
@@ -203,7 +217,7 @@ public class TaskDag {
 
                         if (CollectionUtils.isEmpty(candidateTasks)) {
                             throw new RuntimeException(
-                                "no candidate task found by DependsOn: " + field.getType().getName());
+                                    "no candidate task found by DependsOn: " + field.getType().getName());
                         }
                     }
                 }
@@ -248,9 +262,9 @@ public class TaskDag {
 
     private Task<?> getTaskByName(String name) {
         return getTasks().stream()
-            .filter(task -> task.getName().equalsIgnoreCase(name))
-            .findFirst()
-            .orElse(null);
+                .filter(task -> task.getName().equalsIgnoreCase(name))
+                .findFirst()
+                .orElse(null);
     }
 
     private void addTask(TaskStage taskStage, Task task) {
@@ -285,17 +299,17 @@ public class TaskDag {
             TaskStage prevStage = stages.get(prevIndex);
             Map<String, AtomTask> curStageTasks = tasks.get(currStage);
             Map<String, AtomTask> prevStageTasks = tasks.get(prevStage);
-            if (CollectionUtils.isEmpty(curStageTasks) || CollectionUtils.isEmpty(prevStageTasks)) {
+            if (MapUtils.isEmpty(curStageTasks) || MapUtils.isEmpty(prevStageTasks)) {
                 continue;
             }
 
             prevStageTasks.values().stream()
-                .map(AtomTask::getTask)
-                .forEach(prevTask ->
-                    curStageTasks.values().stream()
-                        .map(AtomTask::getTask)
-                        .forEach(curTask -> curTask.dependsOn(prevTask))
-                );
+                    .map(AtomTask::getTask)
+                    .forEach(prevTask ->
+                            curStageTasks.values().stream()
+                                    .map(AtomTask::getTask)
+                                    .forEach(curTask -> curTask.dependsOn(prevTask))
+                    );
         }
     }
 
@@ -321,12 +335,12 @@ public class TaskDag {
             LOGGER.info("{}", stage);
             Map<String, AtomTask> atomTaskMap = tasks.get(stage);
             Optional.ofNullable(atomTaskMap).ifPresent(map -> map.values().stream()
-                .map(AtomTask::getTask)
-                .forEach(task -> {
-                    List<Task<?>> depends = task.getDependencies();
-                    LOGGER.info("\t{}, depends: {}", task.getName(),
-                        depends.stream().map(Task::getName).collect(Collectors.toList()));
-                })
+                    .map(AtomTask::getTask)
+                    .forEach(task -> {
+                        List<Task<?>> depends = task.getDependencies();
+                        LOGGER.info("\t{}, depends: {}", task.getName(),
+                                depends.stream().map(Task::getName).collect(Collectors.toList()));
+                    })
             );
         }
         LOGGER.info("======================= Task Dag End ===========================");

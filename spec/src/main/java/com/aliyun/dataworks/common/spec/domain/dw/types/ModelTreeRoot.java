@@ -52,7 +52,8 @@ public enum ModelTreeRoot implements LocaleAware {
             }
             if (root.getRootKey().equalsIgnoreCase(keyword)
                 || root.getName().equalsIgnoreCase(keyword)
-                || root.getEnglishName().equalsIgnoreCase(keyword)) {
+                || root.getEnglishName().equalsIgnoreCase(keyword)
+                || root.getModule().equalsIgnoreCase(keyword)) {
                 return root;
             }
         }

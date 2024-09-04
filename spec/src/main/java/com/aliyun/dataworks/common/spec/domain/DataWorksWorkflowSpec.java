@@ -15,8 +15,10 @@
 
 package com.aliyun.dataworks.common.spec.domain;
 
+import java.util.Arrays;
 import java.util.List;
 
+import com.aliyun.dataworks.common.spec.domain.enums.SpecKind;
 import com.aliyun.dataworks.common.spec.domain.noref.SpecFlowDepend;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecArtifact;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecDatasource;
@@ -29,8 +31,20 @@ import com.aliyun.dataworks.common.spec.domain.ref.SpecRuntimeResource;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecScript;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecTrigger;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecVariable;
+import com.aliyun.dataworks.common.spec.domain.ref.component.SpecComponent;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
+
+import static com.aliyun.dataworks.common.spec.domain.enums.SpecKind.BATCH_DEPLOYMENT;
+import static com.aliyun.dataworks.common.spec.domain.enums.SpecKind.COMPONENT;
+import static com.aliyun.dataworks.common.spec.domain.enums.SpecKind.CYCLE_WORKFLOW;
+import static com.aliyun.dataworks.common.spec.domain.enums.SpecKind.DATASOURCE;
+import static com.aliyun.dataworks.common.spec.domain.enums.SpecKind.DATA_CATALOG;
+import static com.aliyun.dataworks.common.spec.domain.enums.SpecKind.DATA_QUALITY;
+import static com.aliyun.dataworks.common.spec.domain.enums.SpecKind.MANUAL_NODE;
+import static com.aliyun.dataworks.common.spec.domain.enums.SpecKind.MANUAL_WORKFLOW;
+import static com.aliyun.dataworks.common.spec.domain.enums.SpecKind.PAIFLOW;
+import static com.aliyun.dataworks.common.spec.domain.enums.SpecKind.TEMPORARY_WORKFLOW;
 
 /**
  * @author yiwei.qyw
@@ -54,5 +68,21 @@ public class DataWorksWorkflowSpec extends SpecRefEntity implements Spec {
     private List<SpecFileResource> fileResources;
     private List<SpecFunction> functions;
     private List<SpecNode> nodes;
+    private List<SpecComponent> components;
     private List<SpecFlowDepend> flow;
+
+    @Override
+    public List<SpecKind> getKinds() {
+        return Arrays.asList(
+            CYCLE_WORKFLOW,
+            MANUAL_WORKFLOW,
+            MANUAL_NODE,
+            TEMPORARY_WORKFLOW,
+            PAIFLOW,
+            BATCH_DEPLOYMENT,
+            DATASOURCE,
+            DATA_QUALITY,
+            DATA_CATALOG,
+            COMPONENT);
+    }
 }

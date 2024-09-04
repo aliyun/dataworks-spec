@@ -15,6 +15,14 @@
 
 package com.aliyun.dataworks.migrationx.transformer.core.collector;
 
+import java.io.File;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
 import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.DwResource;
 import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.DwWorkflow;
 import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.Node;
@@ -23,12 +31,9 @@ import com.aliyun.dataworks.migrationx.transformer.core.common.Constants;
 import com.aliyun.dataworks.migrationx.transformer.core.controller.Task;
 import com.aliyun.dataworks.migrationx.transformer.core.controller.TaskStage;
 import com.aliyun.dataworks.migrationx.transformer.core.loader.ProjectResourceLoader;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.util.CollectionUtils;
 
-import java.io.File;
-import java.util.*;
-import java.util.stream.Collectors;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author sam.liux
@@ -53,13 +58,13 @@ public class WorkflowCollector extends Task<List<DwWorkflow>> {
         // collect workflow list of all depend tasks, and reduce duplicated by workflow uuid
         for (TaskStage stage : stages) {
             dependencies.stream()
-                .filter(task -> task.getStage().equals(stage))
-                .filter(task -> task.getResult() instanceof List)
-                .filter(task -> !CollectionUtils.isEmpty((List)task.getResult()))
-                .filter(task -> ((List)task.getResult()).get(0) instanceof DwWorkflow)
-                .map(task -> (List<DwWorkflow>)task.getResult())
-                .flatMap(List::stream)
-                .forEach(dwWorkflow -> uuidWorkflowMap.put(dwWorkflow.getDmObjectUuid(), dwWorkflow));
+                    .filter(task -> task.getStage().equals(stage))
+                    .filter(task -> task.getResult() instanceof List)
+                    .filter(task -> !CollectionUtils.isEmpty((List) task.getResult()))
+                    .filter(task -> ((List) task.getResult()).get(0) instanceof DwWorkflow)
+                    .map(task -> (List<DwWorkflow>) task.getResult())
+                    .flatMap(List::stream)
+                    .forEach(dwWorkflow -> uuidWorkflowMap.put(dwWorkflow.getDmObjectUuid(), dwWorkflow));
         }
 
         List<DwWorkflow> workflows = uuidWorkflowMap.values().stream().collect(Collectors.toList());
@@ -67,22 +72,22 @@ public class WorkflowCollector extends Task<List<DwWorkflow>> {
 
         // 如果本地提供了对应名称的资源文件，则使用提供的资源文件，否则用placeholder
         dependencies.stream()
-            .filter(task -> task instanceof ProjectResourceLoader)
-            .findFirst().ifPresent(loader -> {
-                    ProjectResourceLoader projectResourceLoader = (ProjectResourceLoader)loader;
-                    List<DwResource> resources = projectResourceLoader.getResult();
-                    workflows.stream()
-                        .map(Workflow::getResources)
-                        .flatMap(List::stream)
-                        .forEach(resource -> {
-                            resources.stream().forEach(res -> {
-                                if (res.getName().equals(resource.getName())) {
-                                    ((DwResource)resource).setLocalPath(res.getLocalPath());
-                                }
-                            });
-                        });
-                }
-            );
+                .filter(task -> task instanceof ProjectResourceLoader)
+                .findFirst().ifPresent(loader -> {
+                            ProjectResourceLoader projectResourceLoader = (ProjectResourceLoader) loader;
+                            List<DwResource> resources = projectResourceLoader.getResult();
+                            workflows.stream()
+                                    .map(Workflow::getResources)
+                                    .flatMap(List::stream)
+                                    .forEach(resource -> {
+                                        resources.stream().forEach(res -> {
+                                            if (res.getName().equals(resource.getName())) {
+                                                ((DwResource) resource).setLocalPath(res.getLocalPath());
+                                            }
+                                        });
+                                    });
+                        }
+                );
 
         return workflows;
     }
@@ -91,10 +96,10 @@ public class WorkflowCollector extends Task<List<DwWorkflow>> {
         for (Node node : workflow.getNodes()) {
             if (StringUtils.isEmpty(node.getRef())) {
                 String path = Constants.WORKFLOWS_DIR_PRJ_RELATED +
-                    File.separator + workflow.getName() +
-                    File.separator + Constants.NODES_DIR +
-                    File.separator + node.getName() +
-                    File.separator + node.getName();
+                        File.separator + workflow.getName() +
+                        File.separator + Constants.NODES_DIR +
+                        File.separator + node.getName() +
+                        File.separator + node.getName();
                 node.setRef(path);
             }
         }

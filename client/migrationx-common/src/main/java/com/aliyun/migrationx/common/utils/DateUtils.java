@@ -15,23 +15,26 @@
 
 package com.aliyun.migrationx.common.utils;
 
-import org.apache.commons.lang3.StringUtils;
-
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+
+import org.apache.commons.lang3.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author 聿剑
  * @date 2023/01/12
  */
 public class DateUtils {
-    public static final String PATTERN_YYYY_MM_DD = "yyyy-MM-dd";
-    public static final String PATTERN_YYYYMMDD = "yyyyMMdd";
-    public static final String PATTERN_YYYYMMDD_HH_MM_SS = "yyyyMMdd HH:mm:ss";
-    public static final String PATTERN_YYYY_MM_DD_HH_MM_SS = "yyyy-MM-dd HH:mm:ss";
+    private static final Logger logger = LoggerFactory.getLogger(DateUtils.class);
 
     public DateUtils() {
     }
@@ -45,7 +48,7 @@ public class DateUtils {
     }
 
     private static Date getDate(int year, int month, int day, int hour, int minute, int second, int millisecond) {
-        GregorianCalendar gc = (GregorianCalendar)GregorianCalendar.getInstance();
+        GregorianCalendar gc = (GregorianCalendar) GregorianCalendar.getInstance();
         if (year != Integer.MIN_VALUE) {
             gc.set(1, year);
         }
@@ -78,7 +81,7 @@ public class DateUtils {
     }
 
     public static Date getCurrentDay() {
-        GregorianCalendar gc = (GregorianCalendar)GregorianCalendar.getInstance();
+        GregorianCalendar gc = (GregorianCalendar) GregorianCalendar.getInstance();
         gc.set(11, 0);
         gc.set(12, 0);
         gc.set(13, 0);
@@ -87,7 +90,7 @@ public class DateUtils {
     }
 
     public static Date getCurrentTime() {
-        GregorianCalendar gc = (GregorianCalendar)GregorianCalendar.getInstance();
+        GregorianCalendar gc = (GregorianCalendar) GregorianCalendar.getInstance();
         return gc.getTime();
     }
 
@@ -118,13 +121,13 @@ public class DateUtils {
     }
 
     public static Date convertLongToDate(long timestamp) {
-        GregorianCalendar gc = (GregorianCalendar)GregorianCalendar.getInstance();
+        GregorianCalendar gc = (GregorianCalendar) GregorianCalendar.getInstance();
         gc.setTimeInMillis(timestamp);
         return gc.getTime();
     }
 
     public static long convertDateToLong(Date date) {
-        GregorianCalendar gc = (GregorianCalendar)GregorianCalendar.getInstance();
+        GregorianCalendar gc = (GregorianCalendar) GregorianCalendar.getInstance();
         gc.setTime(date);
         return gc.getTimeInMillis();
     }
@@ -166,21 +169,102 @@ public class DateUtils {
         return cal.getTime();
     }
 
-    public static class PATTERN {
-        public static final String YYYY = "yyyy";
-        public static final String YYYYMM = "yyyyMM";
-        public static final String YYYY_MM = "yyyy-MM";
-        public static final String YYYYMMDD = "yyyyMMdd";
-        public static final String YYYY_MM_DD = "yyyy-MM-dd";
-        public static final String YYYYMMDDHH = "yyyyMMddHH";
-        public static final String YYYYMMDDHHMMSS = "yyyyMMddHHmmss";
-        public static final String YYYYMMDD_HH_MM_SS = "yyyyMMdd HH:mm:ss";
-        public static final String YYYY_MM_DD_HH_MM_SS = "yyyy-MM-dd HH:mm:ss";
-        public static final String HH = "HH";
-        public static final String HHMMSS = "HHmmss";
-        public static final String HH_MM_SS = "HH:mm:ss";
-
-        public PATTERN() {
+    public static Date parse(String date, String format) {
+        try {
+            LocalDateTime ldt = LocalDateTime.parse(date, DateTimeFormatter.ofPattern(format));
+            return localDateTime2Date(ldt);
+        } catch (Exception e) {
+            logger.error("error while parse date:" + date, e);
         }
+        return null;
+    }
+
+    private static Date localDateTime2Date(LocalDateTime localDateTime) {
+        Instant instant = localDateTime.atZone(ZoneId.systemDefault()).toInstant();
+        return Date.from(instant);
+    }
+
+    public static String format(Date date, String format) {
+        return format(date2LocalDateTime(date), format);
+    }
+
+    public static String format(LocalDateTime localDateTime, String format) {
+        return localDateTime.format(DateTimeFormatter.ofPattern(format));
+    }
+
+    private static LocalDateTime date2LocalDateTime(Date date) {
+        return LocalDateTime.ofInstant(date.toInstant(), ZoneId.systemDefault());
+    }
+
+    public static Date getFirstDayOfMonth(Date date) {
+        Calendar cal = Calendar.getInstance();
+
+        cal.setTime(date);
+        cal.set(Calendar.DAY_OF_MONTH, 1);
+
+        return cal.getTime();
+    }
+
+    public static Date addDays(Date date, int amount) {
+        return add(date, 5, amount);
+    }
+
+    public static Date addMinutes(Date date, int amount) {
+        return add(date, 12, amount);
+    }
+
+    /**
+     * get date
+     *
+     * @param date          date
+     * @param calendarField calendarField
+     * @param amount        amount
+     * @return date
+     */
+    public static Date add(final Date date, final int calendarField, final int amount) {
+        if (date == null) {
+            throw new IllegalArgumentException("The date must not be null");
+        }
+        final Calendar c = Calendar.getInstance();
+        c.setTime(date);
+        c.add(calendarField, amount);
+        return c.getTime();
+    }
+
+    public static Date getLastDayOfMonth(Date date) {
+        Calendar cal = Calendar.getInstance();
+
+        cal.setTime(date);
+
+        cal.add(Calendar.MONTH, 1);
+        cal.set(Calendar.DAY_OF_MONTH, 1);
+        cal.add(Calendar.DAY_OF_MONTH, -1);
+
+        return cal.getTime();
+    }
+
+    public static Date getMonday(Date date) {
+        Calendar cal = Calendar.getInstance();
+
+        cal.setTime(date);
+
+        cal.setFirstDayOfWeek(Calendar.MONDAY);
+        cal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
+
+        return cal.getTime();
+    }
+
+    public static Date getSunday(Date date) {
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(date);
+
+        cal.setFirstDayOfWeek(Calendar.MONDAY);
+        cal.set(Calendar.DAY_OF_WEEK, Calendar.SUNDAY);
+
+        return cal.getTime();
+    }
+
+    public static Date addMonths(Date date, int amount) {
+        return add(date, 2, amount);
     }
 }

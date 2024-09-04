@@ -14,7 +14,7 @@
         "script": {
           "path": "聿剑测试/通用节点测试/sql_assign_1",
           "language": "odps",
-          "content": "select 1",
+          "content": "{\"language\": \"odps\",\"content\":\"select 1\"}",
           "runtime": {
             "engine": "MaxCompute",
             "command": "CONTROLLER_ASSIGNMENT"

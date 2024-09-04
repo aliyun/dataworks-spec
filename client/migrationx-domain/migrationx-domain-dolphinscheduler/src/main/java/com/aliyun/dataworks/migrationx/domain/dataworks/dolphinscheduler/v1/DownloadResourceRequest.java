@@ -34,4 +34,5 @@ public class DownloadResourceRequest extends DolphinSchedulerRequest {
     @NotNull(message = "resource id needed")
     private Integer id;
     private String fullName;
+    private String dir;
 }

@@ -68,7 +68,15 @@ public enum SpecKind implements LabelEnum {
     /**
      * Table
      */
-    TABLE("Table");
+    TABLE("Table"),
+    /**
+     * spec kind for single Node
+     */
+    NODE("Node"),
+    /**
+     * Component
+     */
+    COMPONENT("Component");
 
     private final String label;
 

@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -38,16 +39,20 @@ import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.v1.Quer
 import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.v1.QueryResourceListRequest;
 import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.v1.QueryUdfFuncListByPaginateRequest;
 import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.v1.Response;
+import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.v2.DolphinSchedulerApiV2Service;
+import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.v2.entity.ResourceComponent;
 import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.v3.DolphinschedulerApiV3Service;
 import com.aliyun.migrationx.common.utils.GsonUtils;
+import com.aliyun.migrationx.common.utils.JSONUtils;
 import com.aliyun.migrationx.common.utils.PaginateUtils;
 import com.aliyun.migrationx.common.utils.ZipUtils;
+
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
-import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -73,23 +78,25 @@ public class DolphinSchedulerReader {
     private final String version;
     private final List<String> projects;
     private List<Project> projectInfoList = new ArrayList<>();
+    private Map<String, Long> projectNameToCodeMap = new HashMap<>();
     private final File exportFile;
-    private Boolean skipResources = false;
+    private Boolean skipResources = true;
     private final DolphinSchedulerApi dolphinSchedulerApiService;
 
     public DolphinSchedulerReader(String endpoint, String token, String version, List<String> projects,
-        File exportFile) {
+            File exportFile) {
         this.version = version;
         this.projects = projects;
         this.exportFile = exportFile;
-        if (StringUtils.startsWith(version, "1.") || StringUtils.startsWith(version, "2.")) {
+        if (isVersion1()) {
             this.dolphinSchedulerApiService = new DolphinSchedulerApiService(endpoint, token);
-        } else if (StringUtils.startsWith(version, "3.")) {
+        } else if (isVersion2()) {
+            this.dolphinSchedulerApiService = new DolphinSchedulerApiV2Service(endpoint, token);
+        } else if (isVersion3()) {
             this.dolphinSchedulerApiService = new DolphinschedulerApiV3Service(endpoint, token);
         } else {
             throw new RuntimeException("unsupported dolphinscheduler version: " + version);
         }
-
     }
 
     public File export() throws Exception {
@@ -108,49 +115,15 @@ public class DolphinSchedulerReader {
         }
 
         doExport(tmpDir);
-
-        return doPackage(tmpDir, exportFile);
+        if (exportFile.getName().endsWith("zip")) {
+            return doPackage(tmpDir, exportFile);
+        } else {
+            return tmpDir;
+        }
     }
 
     private File doPackage(File tmpDir, File exportFile) throws IOException {
         return ZipUtils.zipDir(tmpDir, exportFile);
-    }
-
-    private int queryProcessDefinitionCount(String project) throws Exception {
-        QueryProcessDefinitionByPaginateRequest request = new QueryProcessDefinitionByPaginateRequest();
-        request.setPageSize(1);
-        request.setPageNo(1);
-        request.setProjectName(project);
-        PaginateResponse<JsonObject> response = dolphinSchedulerApiService.queryProcessDefinitionByPaging(request);
-        return Optional.ofNullable(response)
-            .map(Response::getData)
-            .map(PaginateData::getTotal)
-            .orElse(0);
-    }
-
-    private List<JsonObject> queryProcessDefinitionByPage(PaginateUtils.Paginator p, String project) throws Exception {
-        QueryProcessDefinitionByPaginateRequest request = new QueryProcessDefinitionByPaginateRequest();
-        request.setPageNo(p.getPageNum());
-        request.setPageSize(p.getPageSize());
-        Project projectInfo = ListUtils.emptyIfNull(projectInfoList).stream()
-            .filter(prj -> StringUtils.equalsIgnoreCase(project, prj.getName())).findAny()
-            .orElseThrow(() -> new RuntimeException("project code not found by name: " + project));
-        request.setProjectCode(projectInfo.getCode());
-        PaginateResponse<JsonObject> response = dolphinSchedulerApiService.queryProcessDefinitionByPaging(request);
-        return Optional.ofNullable(response)
-            .map(Response::getData)
-            .map(PaginateData::getTotalList)
-            .orElse(new ArrayList<>(1));
-    }
-
-    private String batchExportProcessDefinitionByIds(List<Integer> ids, String project) throws Exception {
-        BatchExportProcessDefinitionByIdsRequest request = new BatchExportProcessDefinitionByIdsRequest();
-        request.setIds(ids);
-        Project projectInfo = ListUtils.emptyIfNull(projectInfoList).stream()
-            .filter(prj -> StringUtils.equalsIgnoreCase(project, prj.getName())).findAny()
-            .orElseThrow(() -> new RuntimeException("project code not found by name: " + project));
-        request.setProjectCode(projectInfo.getCode());
-        return dolphinSchedulerApiService.batchExportProcessDefinitionByIds(request);
     }
 
     private void doExport(File tmpDir) throws Exception {
@@ -162,7 +135,7 @@ public class DolphinSchedulerReader {
 
         exportUdfFunctions(tmpDir);
 
-        exportDatasources(tmpDir);
+        exportDataSources(tmpDir);
 
         ListUtils.emptyIfNull(projects).forEach(project -> {
             try {
@@ -177,26 +150,36 @@ public class DolphinSchedulerReader {
 
     private void exportProjects(File tmpDir) throws Exception {
         Response<List<JsonObject>> response = dolphinSchedulerApiService.queryAllProjectList(
-            new DolphinSchedulerRequest());
+                new DolphinSchedulerRequest());
 
         List<JsonObject> projectsList = response.getData();
         if (CollectionUtils.isNotEmpty(this.projects)) {
             projectsList = ListUtils.emptyIfNull(projectsList).stream()
-                .filter(proj -> this.projects.stream().anyMatch(prjName ->
-                    StringUtils.equalsIgnoreCase(prjName, proj.get("name").getAsString())))
-                .collect(Collectors.toList());
-        } else {
-            this.projectInfoList = ListUtils.emptyIfNull(projectsList).stream()
-                .map(proj -> GsonUtils.fromJsonString(GsonUtils.toJsonString(proj), new TypeToken<Project>() {}.getType()))
-                .map(proj -> (Project)proj)
-                .collect(Collectors.toList());
+                    .filter(proj -> this.projects.stream()
+                            .anyMatch(p -> {
+                                if (StringUtils.equalsIgnoreCase(p, proj.get("name").getAsString())) {
+                                    if (isVersion2() || isVersion3()) {
+                                        Long code = proj.get("code").getAsLong();
+                                        projectNameToCodeMap.put(p, code);
+                                    }
+                                    return true;
+                                }
+                                return false;
+                            })
+                    )
+                    .collect(Collectors.toList());
         }
+
+        this.projectInfoList = ListUtils.emptyIfNull(projectsList).stream()
+                .map(proj -> GsonUtils.fromJsonString(GsonUtils.toJsonString(proj), new TypeToken<Project>() {}.getType()))
+                .map(proj -> (Project) proj)
+                .collect(Collectors.toList());
 
         File projectFile = new File(tmpDir, PROJECTS_JSON);
         FileUtils.writeStringToFile(projectFile, GsonUtils.toJsonString(projectsList), StandardCharsets.UTF_8);
     }
 
-    private void exportDatasources(File tmpDir) throws InterruptedException {
+    private void exportDataSources(File tmpDir) throws InterruptedException {
         File datasourceDir = new File(tmpDir, DATASOURCE);
         if (!datasourceDir.exists() && !datasourceDir.mkdirs()) {
             LOGGER.error("error make datasource directory: {}", datasourceDir);
@@ -214,9 +197,9 @@ public class DolphinSchedulerReader {
                 PaginateResponse<JsonObject> response = dolphinSchedulerApiService.queryDataSourceListByPaging(request);
                 log.info("response: {}", response);
                 FileUtils.writeStringToFile(
-                    new File(datasourceDir, "datasource_page_" + p.getPageNum() + ".json"),
-                    GsonUtils.toJsonString(Optional.ofNullable(response).map(Response::getData).map(PaginateData::getTotalList).orElse(null)),
-                    StandardCharsets.UTF_8);
+                        new File(datasourceDir, "datasource_page_" + p.getPageNum() + ".json"),
+                        GsonUtils.toJsonString(Optional.ofNullable(response).map(Response::getData).map(PaginateData::getTotalList).orElse(null)),
+                        StandardCharsets.UTF_8);
                 PaginateUtils.PaginateResult<JsonObject> paginateResult = new PaginateUtils.PaginateResult<>();
                 paginateResult.setPageNum(p.getPageNum());
                 paginateResult.setPageSize(p.getPageSize());
@@ -246,9 +229,9 @@ public class DolphinSchedulerReader {
                 request.setPageSize(p.getPageSize());
                 PaginateResponse<JsonObject> response = dolphinSchedulerApiService.queryUdfFuncListByPaging(request);
                 FileUtils.writeStringToFile(
-                    new File(udfFunctionDir, "udf_function_page_" + p.getPageNum() + ".json"),
-                    GsonUtils.toJsonString(response.getData().getTotalList()),
-                    StandardCharsets.UTF_8);
+                        new File(udfFunctionDir, "udf_function_page_" + p.getPageNum() + ".json"),
+                        GsonUtils.toJsonString(response.getData().getTotalList()),
+                        StandardCharsets.UTF_8);
                 PaginateUtils.PaginateResult<JsonObject> paginateResult = new PaginateUtils.PaginateResult<>();
                 paginateResult.setPageNum(p.getPageNum());
                 paginateResult.setPageSize(p.getPageSize());
@@ -274,28 +257,16 @@ public class DolphinSchedulerReader {
                 QueryResourceListRequest queryResourceListRequest = new QueryResourceListRequest();
                 queryResourceListRequest.setType(type);
                 Response<List<JsonObject>> response = dolphinSchedulerApiService.queryResourceList(
-                    queryResourceListRequest);
+                        queryResourceListRequest);
+                if (response.getData() == null) {
+                    log.error("queryResourceList response {}", JSONUtils.toJsonString(response));
+                    return;
+                }
                 resources.addAll(response.getData());
                 if (!BooleanUtils.isTrue(skipResources)) {
-                    ListUtils.emptyIfNull(response.getData()).forEach(resource -> {
-                        DownloadResourceRequest downloadResourceRequest = new DownloadResourceRequest();
-                        downloadResourceRequest.setId(resource.get("id").getAsInt());
-                        try {
-                            File file = dolphinSchedulerApiService.downloadResource(downloadResourceRequest);
-                            Optional.ofNullable(file).ifPresent(file1 -> {
-                                try {
-                                    LOGGER.info("downloaded resource file: {}", file);
-                                    FileUtils.copyFile(file, new File(resourceDir, file.getName()));
-                                } catch (IOException e) {
-                                    LOGGER.error("copy file error: ", e);
-                                    throw new RuntimeException(e);
-                                }
-                            });
-                        } catch (Exception e) {
-                            LOGGER.error("download resource error: {}", e.getMessage());
-                            throw new RuntimeException(e);
-                        }
-                    });
+                    List<ResourceComponent> resourceComponents = GsonUtils.fromJsonString(GsonUtils.toJsonString(response.getData()),
+                            new com.google.common.reflect.TypeToken<List<ResourceComponent>>() {}.getType());
+                    visitAndDownloadResource(resourceComponents, resourceDir.getAbsolutePath());
                 }
             } catch (Exception e) {
                 throw new RuntimeException(e);
@@ -304,17 +275,51 @@ public class DolphinSchedulerReader {
 
         try {
             FileUtils.writeStringToFile(
-                new File(resourceDir, "resources.json"),
-                GsonUtils.toJsonString(resources),
-                StandardCharsets.UTF_8);
+                    new File(resourceDir, "resources.json"),
+                    GsonUtils.toJsonString(resources),
+                    StandardCharsets.UTF_8);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
 
+    private void visitAndDownloadResource(List<ResourceComponent> components, String parentDir) {
+        for (ResourceComponent resource : components) {
+            String currentDir = parentDir;
+            if (resource.isDirctory()) {
+                //mkdir
+                if (resource.getName() != null) {
+                    currentDir = currentDir + File.separator + resource.getName();
+                }
+                File file = new File(currentDir);
+                if (!file.exists()) {
+                    file.mkdirs();
+                }
+                //visit children
+                visitAndDownloadResource(resource.getChildren(), currentDir);
+            } else {
+                //download file
+                DownloadResourceRequest downloadResourceRequest = new DownloadResourceRequest();
+                downloadResourceRequest.setId(resource.getId());
+                downloadResourceRequest.setDir(currentDir);
+                try {
+                    dolphinSchedulerApiService.downloadResource(downloadResourceRequest);
+                } catch (Exception e) {
+                    LOGGER.error("download resource error: {}", e.getMessage());
+                    throw new RuntimeException(e);
+                }
+            }
+        }
+    }
+
     private void exportProcessDefinition(File projectDir, String project) throws Exception {
         int count = queryProcessDefinitionCount(project);
-        LOGGER.info("total process definition count: {}", count);
+        if (count == 0) {
+            LOGGER.warn("total process definition count: {}", count);
+            return;
+        } else {
+            LOGGER.info("total process definition count: {}", count);
+        }
 
         LOGGER.info("exporting process definition by page");
         File processDefinitionDir = new File(projectDir, PROCESS_DEFINITION);
@@ -324,31 +329,36 @@ public class DolphinSchedulerReader {
         }
 
         PaginateUtils.Paginator paginator = new PaginateUtils.Paginator();
-        paginator.setPageSize(20);
+        paginator.setPageSize(5);
         paginator.setPageNum(1);
         PaginateUtils.doPaginate(paginator, p -> {
             try {
                 List<JsonObject> processDefinitions = queryProcessDefinitionByPage(p, project);
-                Map<String, Integer> nameIdMap = ListUtils.emptyIfNull(processDefinitions).stream()
-                    .collect(Collectors.toMap(
-                        js -> js.get("name").getAsString(),
-                        js -> js.getAsJsonObject().get("id").getAsInt()));
+                List<String> idList = ListUtils.emptyIfNull(processDefinitions).stream()
+                        .map(js -> {
+                            if (isVersion1()) {
+                                return js.getAsJsonObject().get("id").getAsString();
+                            } else {
+                                return js.getAsJsonObject().get("code").getAsString();
+                            }
+                        })
+                        .collect(Collectors.toList());
 
-                if (MapUtils.isNotEmpty(nameIdMap)) {
-                    String response = batchExportProcessDefinitionByIds(new ArrayList<>(nameIdMap.values()), project);
-                    List<JsonObject> dsResponse = GsonUtils.fromJsonString(response,
-                        new TypeToken<List<JsonObject>>() {}.getType());
-                    ListUtils.emptyIfNull(dsResponse).forEach(jsonObject -> {
-                        String processDefinitionName = jsonObject.has("processDefinitionName") ?
-                            jsonObject.get("processDefinitionName").getAsString() : null;
-                        Optional.ofNullable(nameIdMap.get(processDefinitionName)).ifPresent(id ->
-                            jsonObject.addProperty("processDefinitionId", id));
-                    });
-
+                if (CollectionUtils.isNotEmpty(idList)) {
+                    String response = batchExportProcessDefinitionByIds(idList, project);
+                    if (StringUtils.isEmpty(response)) {
+                        throw new RuntimeException("get response by export process empty, "
+                                + "project " + project + "id " + String.join(",", idList));
+                    }
+                    JsonNode jsonNode = JSONUtils.parseObject(response);
+                    //error code
+                    if (jsonNode.has("code") && jsonNode.get("code").asInt() > 0) {
+                        throw new RuntimeException(response);
+                    }
                     FileUtils.writeStringToFile(
-                        new File(processDefinitionDir, "process_definitions_page_" + p.getPageNum() + ".json"),
-                        GsonUtils.toJsonString(dsResponse),
-                        StandardCharsets.UTF_8);
+                            new File(processDefinitionDir, "process_definitions_page_" + p.getPageNum() + ".json"),
+                            JSONUtils.toPrettyString(jsonNode),
+                            StandardCharsets.UTF_8);
                 }
 
                 PaginateUtils.PaginateResult<JsonObject> paginateResult = new PaginateUtils.PaginateResult<>();
@@ -363,6 +373,45 @@ public class DolphinSchedulerReader {
         });
     }
 
+    private int queryProcessDefinitionCount(String project) throws Exception {
+        QueryProcessDefinitionByPaginateRequest request = new QueryProcessDefinitionByPaginateRequest();
+        request.setPageSize(1);
+        request.setPageNo(1);
+        //for dolphin 1.x
+        request.setProjectName(project);
+        //for dolphin 2.x 3.x
+        Long code = getCodeByName(project);
+        request.setProjectCode(code);
+        PaginateResponse<JsonObject> response = dolphinSchedulerApiService.queryProcessDefinitionByPaging(request);
+        return Optional.ofNullable(response)
+                .map(Response::getData)
+                .map(PaginateData::getTotal)
+                .orElse(0);
+    }
+
+    private List<JsonObject> queryProcessDefinitionByPage(PaginateUtils.Paginator p, String project) throws Exception {
+        QueryProcessDefinitionByPaginateRequest request = new QueryProcessDefinitionByPaginateRequest();
+        request.setPageNo(p.getPageNum());
+        request.setPageSize(p.getPageSize());
+        Long code = getCodeByName(project);
+        request.setProjectCode(code);
+        request.setProjectName(project);
+        PaginateResponse<JsonObject> response = dolphinSchedulerApiService.queryProcessDefinitionByPaging(request);
+        return Optional.ofNullable(response)
+                .map(Response::getData)
+                .map(PaginateData::getTotalList)
+                .orElse(new ArrayList<>(1));
+    }
+
+    private String batchExportProcessDefinitionByIds(List<String> ids, String project) throws Exception {
+        BatchExportProcessDefinitionByIdsRequest request = new BatchExportProcessDefinitionByIdsRequest();
+        request.setIds(ids);
+        Long code = getCodeByName(project);
+        request.setProjectCode(code);
+        request.setProjectName(project);
+        return dolphinSchedulerApiService.batchExportProcessDefinitionByIds(request);
+    }
+
     private void writePackageInfoJson(File tmpDir) throws IOException {
         File packageInfoJson = new File(tmpDir, PACKAGE_INFO_JSON);
         LOGGER.info("writing {}", packageInfoJson);
@@ -375,5 +424,27 @@ public class DolphinSchedulerReader {
     public DolphinSchedulerReader setSkipResources(Boolean skipResources) {
         this.skipResources = skipResources;
         return this;
+    }
+
+    private boolean isVersion1() {
+        return StringUtils.startsWith(version, "1.");
+    }
+
+    private boolean isVersion2() {
+        return StringUtils.startsWith(version, "2.");
+    }
+
+    private boolean isVersion3() {
+        return StringUtils.startsWith(version, "3.");
+    }
+
+    private Long getCodeByName(String projectName) {
+        Long code = projectNameToCodeMap.get(projectName);
+        if (isVersion2() || isVersion3()) {
+            if (code == null) {
+                new RuntimeException("project code not found by name: " + projectName);
+            }
+        }
+        return code;
     }
 }

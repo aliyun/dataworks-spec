@@ -25,6 +25,7 @@ import java.util.stream.Stream;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 
+import com.aliyun.dataworks.common.spec.annotation.SpecWriter;
 import com.aliyun.dataworks.common.spec.domain.SpecContext;
 import com.aliyun.dataworks.common.spec.domain.enums.SpecVersion;
 import com.aliyun.dataworks.common.spec.domain.interfaces.NodeIO;
@@ -49,6 +50,7 @@ import org.apache.commons.lang3.StringUtils;
  * @author 聿剑
  * @date 2023/8/27
  */
+@SpecWriter
 public class SpecNodeWriter extends DefaultJsonObjectWriter<SpecNode> {
     public SpecNodeWriter(SpecWriterContext context) {
         super(context);

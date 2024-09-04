@@ -33,6 +33,7 @@ import com.aliyun.dataworks.common.spec.domain.ref.SpecNodeOutput;
 import com.aliyun.dataworks.common.spec.exception.SpecErrorCode;
 import com.aliyun.dataworks.common.spec.exception.SpecException;
 import com.aliyun.dataworks.common.spec.parser.SpecParserContext.SpecEntityContext;
+import com.aliyun.dataworks.common.spec.parser.impl.DataWorksWorkflowSpecParser;
 import com.aliyun.dataworks.common.spec.parser.impl.SpecParser;
 import com.aliyun.dataworks.common.spec.utils.MapKeyMatchUtils;
 import com.aliyun.dataworks.common.spec.utils.SpecDevUtil;
@@ -97,7 +98,9 @@ public class ToDomainRootParser {
 
     private SpecParser<?> getSpecParser(String kind) {
         Reflections reflections = new Reflections(SpecParser.class.getPackage().getName());
-        return reflections.getSubTypesOf(SpecParser.class).stream()
+        DataWorksWorkflowSpecParser defaultSpecParser = new DataWorksWorkflowSpecParser();
+        SpecParser<?> specialParser = reflections.getSubTypesOf(SpecParser.class).stream()
+            .filter(parserClz -> !parserClz.equals(defaultSpecParser.getClass()))
             .map(parser -> {
                 try {
                     return parser.newInstance();
@@ -106,7 +109,14 @@ public class ToDomainRootParser {
                 }
             })
             .filter(parser -> parser.support(kind))
-            .findFirst().orElseThrow(() -> new SpecException(SpecErrorCode.PARSE_ERROR, "Not support spec kind: " + kind));
+            .findAny().orElse(null);
+        if (specialParser != null) {
+            return specialParser;
+        } else if (defaultSpecParser.support(kind)) {
+            return defaultSpecParser;
+        }
+
+        throw new SpecException(SpecErrorCode.PARSE_ERROR, "Not support spec kind: " + kind);
     }
 
     private void preParser() {

@@ -15,17 +15,20 @@
 
 package com.aliyun.dataworks.migrationx.transformer.dataworks.apps;
 
+import java.io.File;
+
+import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.DolphinSchedulerPackage;
 import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.DataWorksPackage;
 import com.aliyun.dataworks.migrationx.domain.dataworks.standard.objects.Package;
-import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.DolphinSchedulerPackage;
-import com.aliyun.dataworks.migrationx.transformer.dataworks.transformer.DataWorksDolphinSchedulerTransformer;
 import com.aliyun.dataworks.migrationx.transformer.core.BaseTransformerApp;
 import com.aliyun.dataworks.migrationx.transformer.core.transformer.Transformer;
+import com.aliyun.dataworks.migrationx.transformer.dataworks.transformer.DataWorksDolphinSchedulerTransformer;
+import com.aliyun.migrationx.common.context.TransformerContext;
+import com.aliyun.migrationx.common.metrics.enums.CollectorType;
+
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
 
 /**
  * @author 聿剑
@@ -39,11 +42,17 @@ public class DataWorksDolphinschedulerTransformerApp extends BaseTransformerApp 
         super(DolphinSchedulerPackage.class, DataWorksPackage.class);
     }
 
+    @Override
+    public void initCollector() {
+        TransformerContext.init(CollectorType.DolphinScheduler);
+        super.initCollector();
+    }
+
     @SuppressWarnings("rawtypes")
     @Override
     protected Transformer createTransformer(File config, Package from, Package to) {
-        DolphinSchedulerPackage dolphinSchedulerPackage = (DolphinSchedulerPackage)from;
-        DataWorksPackage dataWorksPackage = (DataWorksPackage)to;
+        DolphinSchedulerPackage dolphinSchedulerPackage = (DolphinSchedulerPackage) from;
+        DataWorksPackage dataWorksPackage = (DataWorksPackage) to;
         return new DataWorksDolphinSchedulerTransformer(config, dolphinSchedulerPackage, dataWorksPackage);
     }
 }

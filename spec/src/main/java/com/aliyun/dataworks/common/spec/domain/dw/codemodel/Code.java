@@ -92,4 +92,12 @@ public interface Code {
      * @return level
      */
     int getClassHierarchyLevel();
+
+    /**
+     * set program type
+     *
+     * @param programType ProgramType name
+     * @see com.aliyun.dataworks.common.spec.domain.dw.types.CodeProgramType
+     */
+    void setProgramType(String programType);
 }

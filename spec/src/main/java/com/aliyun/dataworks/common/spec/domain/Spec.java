@@ -15,6 +15,10 @@
 
 package com.aliyun.dataworks.common.spec.domain;
 
+import java.util.List;
+
+import com.aliyun.dataworks.common.spec.domain.enums.SpecKind;
+
 /**
  * Super interface of spec
  *
@@ -22,4 +26,10 @@ package com.aliyun.dataworks.common.spec.domain;
  * @date 2023/11/16
  */
 public interface Spec {
+    /**
+     * get kinds
+     *
+     * @return List of kinds
+     */
+    List<SpecKind> getKinds();
 }

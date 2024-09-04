@@ -27,8 +27,11 @@ import com.aliyun.dataworks.common.spec.exception.SpecException;
 import com.aliyun.dataworks.common.spec.parser.Parser;
 import com.aliyun.dataworks.common.spec.parser.SpecParserContext;
 import com.aliyun.dataworks.common.spec.parser.SpecParserFactory;
+import com.aliyun.dataworks.common.spec.utils.GsonUtils;
 import com.aliyun.dataworks.common.spec.utils.SpecDevUtil;
+import com.google.gson.reflect.TypeToken;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.BooleanUtils;
 
 /**
@@ -115,7 +118,17 @@ public class DefaultSpecParser<T> implements Parser<T> {
         if (parser == null) {
             parser = SpecParserFactory.getParser(actualTypeArgument.getSimpleName());
             if (parser == null) {
-                throw new SpecException(SpecErrorCode.PARSER_NOT_FOUND, "cannot find parser for :" + jsonKey);
+                SpecException ex = new SpecException(SpecErrorCode.PARSER_NOT_FOUND, "cannot find parser for: " + jsonKey);
+                log.warn("{}", ex.getMessage());
+                if (fieldObject != null) {
+                    log.debug("try parse object: {} by json deserialization", fieldObject);
+                    if (isListField(fieldType, fieldObject)) {
+                        TypeToken<?> typeToken = TypeToken.getParameterized(List.class, actualTypeArgument);
+                        return GsonUtils.fromJsonString(GsonUtils.toJsonString(fieldObject), typeToken.getType());
+                    }
+                    return GsonUtils.fromJsonString(GsonUtils.toJsonString(fieldObject), actualTypeArgument);
+                }
+                return null;
             }
         }
 
@@ -130,10 +143,12 @@ public class DefaultSpecParser<T> implements Parser<T> {
     }
 
     protected void parseSpecObjectFields(T specObject, Map<String, Object> contextMap, SpecParserContext specParserContext) {
+        List<Field> fields = SpecDevUtil.getPropertyFields(specObject);
         for (String jsonKey : contextMap.keySet()) {
             Field declaredField;
             try {
-                declaredField = getParameterizedObjectType().getDeclaredField(jsonKey);
+                declaredField = ListUtils.emptyIfNull(fields).stream().filter(fd -> fd.getName().equals(jsonKey)).findAny()
+                    .orElseThrow(() -> new NoSuchFieldException(jsonKey));
             } catch (Exception e) {
                 if (!BooleanUtils.isTrue(specParserContext.getIgnoreMissingFields())) {
                     throw new SpecException(e, SpecErrorCode.FIELD_NOT_FOUND,

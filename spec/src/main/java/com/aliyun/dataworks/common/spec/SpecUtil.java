@@ -23,6 +23,8 @@ import com.alibaba.fastjson2.JSONWriter.Feature;
 import com.aliyun.dataworks.common.spec.domain.Spec;
 import com.aliyun.dataworks.common.spec.domain.SpecEntity;
 import com.aliyun.dataworks.common.spec.domain.Specification;
+import com.aliyun.dataworks.common.spec.exception.SpecErrorCode;
+import com.aliyun.dataworks.common.spec.exception.SpecException;
 import com.aliyun.dataworks.common.spec.parser.Parser;
 import com.aliyun.dataworks.common.spec.parser.SpecParserContext;
 import com.aliyun.dataworks.common.spec.parser.SpecParserFactory;
@@ -64,7 +66,10 @@ public class SpecUtil {
 
         SpecWriterContext context = new SpecWriterContext();
         context.setVersion(specification.getVersion());
-        SpecificationWriter writer = (SpecificationWriter)WriterFactory.getWriter(Specification.class, context);
+        SpecificationWriter writer = (SpecificationWriter)WriterFactory.getWriter(specification.getClass(), context);
+        if (writer == null) {
+            throw new SpecException(SpecErrorCode.PARSER_LOAD_ERROR, "no available registered writer found for type: " + specification.getClass());
+        }
         return JSON.toJSONString(writer.write(specification, context), Feature.PrettyFormat);
     }
 

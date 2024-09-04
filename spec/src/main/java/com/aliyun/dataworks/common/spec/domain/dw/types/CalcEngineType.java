@@ -18,6 +18,7 @@ package com.aliyun.dataworks.common.spec.domain.dw.types;
 import java.util.Locale;
 
 import com.aliyun.dataworks.common.spec.domain.interfaces.LabelEnum;
+
 import lombok.Getter;
 
 /**
@@ -41,7 +42,11 @@ public enum CalcEngineType implements IntEnum<CalcEngineType>, LocaleAware, Labe
     DI(101, "Data Integration", "数据集成"),
     ALGORITHM(102, "Algorithm", "算法"),
     STAR_ROCKS(10001, "StarRocks", "StarRocks"),
-    HIVE(10002, "Hive", "Hive");
+    HIVE(10002, "Hive", "Hive"),
+
+    //only for temp
+    CUSTOM(99999, "CUSTOM", "CUSTOM"),
+    ;
 
     private final int value;
     private final String name;

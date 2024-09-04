@@ -31,7 +31,11 @@ public enum TriggerType implements LabelEnum {
     /**
      * Manual trigger
      */
-    MANUAL("Manual");
+    MANUAL("Manual"),
+    /**
+     * Streaming Trigger
+     */
+    STREAMING("Streaming");
 
     private final String label;
 

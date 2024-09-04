@@ -68,11 +68,16 @@ public enum AssetType {
     /**
      * dolphinscheduler
      */
-    DOLPHINSCHEDULER("dolphinscheduler");
+    DOLPHINSCHEDULER("dolphinscheduler"),
 
-    private String type;
+    /**
+     * spec
+     */
+    SPEC("SPEC");
 
-    AssetType(String type){
+    private final String type;
+
+    AssetType(String type) {
         this.type = type;
     }
 

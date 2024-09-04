@@ -20,11 +20,13 @@ import java.util.List;
 import com.aliyun.dataworks.common.spec.domain.SpecNoRefEntity;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecNode;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * @author yiwei.qyw
  * @date 2023/7/4
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 public class SpecFlowDepend extends SpecNoRefEntity {
     private SpecNode nodeId;

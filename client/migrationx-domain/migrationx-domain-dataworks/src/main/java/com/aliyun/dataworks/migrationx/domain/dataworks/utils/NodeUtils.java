@@ -15,7 +15,14 @@
 
 package com.aliyun.dataworks.migrationx.domain.dataworks.utils;
 
-import com.aliyun.dataworks.migrationx.domain.dataworks.constants.DataWorksConstants;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import com.aliyun.dataworks.common.spec.domain.dw.types.CodeProgramType;
 import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.DwNode;
 import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.DwWorkflow;
 import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.Node;
@@ -24,10 +31,10 @@ import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.Project;
 import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.Workflow;
 import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.client.FileNodeCfg;
 import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.client.FileNodeInputOutput;
-import com.aliyun.dataworks.common.spec.domain.dw.types.CodeProgramType;
 import com.aliyun.dataworks.migrationx.domain.dataworks.objects.types.IoParseType;
 import com.aliyun.dataworks.migrationx.domain.dataworks.objects.types.RerunMode;
 import com.aliyun.migrationx.common.utils.GsonUtils;
+
 import com.google.common.base.Joiner;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
@@ -39,13 +46,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeanUtils;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 /**
  * @author sam.liux
  * @date 2019/05/14
@@ -53,15 +53,15 @@ import java.util.regex.Pattern;
 public class NodeUtils {
     private static final Logger LOGGER = LoggerFactory.getLogger(NodeUtils.class);
     private static Pattern NODE_IO_PREFIX_PATTERN = Pattern.compile(
-        "^[\\s\\t]*(?<projectIdentifier>[a-zA-Z][0-9A-Za-z\\-_]{2,})(\\..*|_root$)", Pattern.CASE_INSENSITIVE);
+            "^[\\s\\t]*(?<projectIdentifier>[a-zA-Z][0-9A-Za-z\\-_]{2,})(\\..*|_root$)", Pattern.CASE_INSENSITIVE);
 
     public static Pattern PROJECT_ROOT_OUTPUT_PATTERN = Pattern.compile(
-        "^[\\s\\t]*(?<projectIdentifier>[a-zA-Z][0-9A-Za-z\\-_]{2,})(_root$)", Pattern.CASE_INSENSITIVE);
+            "^[\\s\\t]*(?<projectIdentifier>[a-zA-Z][0-9A-Za-z\\-_]{2,})(_root$)", Pattern.CASE_INSENSITIVE);
 
     public static final Pattern IDE_SYSTEM_IO_PATTERN = Pattern.compile("^\\w+\\.\\d+_out$", Pattern.CASE_INSENSITIVE);
     public static final String IDE_SYSTEM_IO_REWRITE_SUFFIX = "_original";
     public static Pattern IDE_CROSS_PROJECT_CLONE_SYSTEM_OUTPUT_PATTERN = Pattern.compile(
-        "^(\\d+\\.)+(?<projectIdentifier>[a-zA-Z][0-9A-Za-z\\-_]{2,})\\..*", Pattern.CASE_INSENSITIVE);
+            "^(\\d+\\.)+(?<projectIdentifier>[a-zA-Z][0-9A-Za-z\\-_]{2,})\\..*", Pattern.CASE_INSENSITIVE);
 
     public static String getDefaultNodeOutput(Workflow workflow, Node node) {
         return String.format("%s_%s.out", workflow.getName(), node.getName());
@@ -77,9 +77,9 @@ public class NodeUtils {
         }
 
         Pattern normalIoPattern = Pattern.compile(
-            "^[\\s\\t]*" + projectIdentifier + "(?<suffix>\\.|_root$)", Pattern.CASE_INSENSITIVE);
+                "^[\\s\\t]*" + projectIdentifier + "(?<suffix>\\.|_root$)", Pattern.CASE_INSENSITIVE);
         Pattern crossProjectCloneIoPattern = Pattern.compile(
-            "^(\\d+\\.)+" + projectIdentifier + "\\..*", Pattern.CASE_INSENSITIVE);
+                "^(\\d+\\.)+" + projectIdentifier + "\\..*", Pattern.CASE_INSENSITIVE);
         Matcher m1 = normalIoPattern.matcher(ioStr);
         Matcher m2 = crossProjectCloneIoPattern.matcher(ioStr);
         return m1.find() || m2.matches();
@@ -121,7 +121,7 @@ public class NodeUtils {
         fileNodeCfgTo.setNodeName(nodeFrom.getName());
         fileNodeCfgTo.setCronExpress(nodeFrom.getCronExpress());
         fileNodeCfgTo.setReRunAble(
-            nodeFrom.getRerunMode() == null ? RerunMode.ALL_ALLOWED.getValue() : nodeFrom.getRerunMode().getValue());
+                nodeFrom.getRerunMode() == null ? RerunMode.ALL_ALLOWED.getValue() : nodeFrom.getRerunMode().getValue());
         fileNodeCfgTo.setIsStop(nodeFrom.getPauseSchedule() != null && nodeFrom.getPauseSchedule() ? 1 : 0);
         fileNodeCfgTo.setStartRightNow(nodeFrom.getStartRightNow());
         fileNodeCfgTo.setOwner(nodeFrom.getOwner());
@@ -173,31 +173,10 @@ public class NodeUtils {
             ListUtils.emptyIfNull(node.getInputs()).forEach(in -> in.setParseType(1));
         }
     }
-
-    public static boolean supportMatchNodeCodeDependency(String nodeTypeName, String code) {
-        try {
-            CodeProgramType nodeType = CodeProgramType.valueOf(nodeTypeName);
-            switch (nodeType) {
-                case ODPS_SQL:
-                case ODPS_SPARK_SQL:
-                    return CollectionUtils.isNotEmpty(DruidSqlUtils.parseOdpsSchemas(code));
-                case DATAX:
-                case DATAX2:
-                case RI:
-                case DI:
-                    Matcher m = DataWorksConstants.PROJECT_PREFIX_CODE_MATCH_PATTERN.matcher(code);
-                    return m.find() && !StringUtils.equalsIgnoreCase("odps", m.group("projectIdentifier"));
-                default:
-                    return false;
-            }
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
+    
     public static DwNode toDwNode(Node node) {
         if (node instanceof DwNode) {
-            return (DwNode)node;
+            return (DwNode) node;
         }
 
         DwNode dwNode = new DwNode();
@@ -262,25 +241,25 @@ public class NodeUtils {
         }
 
         return name
-            .replaceAll(":", "_")
-            .replaceAll("-", "_")
-            .replaceAll("\\*", "_")
-            .replaceAll("\\\\", "_")
-            .replaceAll("\\+", "_")
-            .replaceAll("%", "_")
-            .replaceAll("/", "_")
-            .replaceAll("=", "_")
-            .replaceAll("&", "_")
-            .replaceAll("#", "_")
-            .replaceAll("@", "_")
-            .replaceAll("!", "_")
-            .replaceAll("~", "_")
-            .replaceAll("`", "_")
-            .replaceAll("\\$", "_")
-            .replaceAll("\\^", "_")
-            .replaceAll("\\[", "__").replaceAll("]", "__")
-            .replaceAll("\\{", "__").replaceAll("}", "__")
-            .replaceAll("\\(", "__").replaceAll("\\)", "__");
+                .replaceAll(":", "_")
+                .replaceAll("-", "_")
+                .replaceAll("\\*", "_")
+                .replaceAll("\\\\", "_")
+                .replaceAll("\\+", "_")
+                .replaceAll("%", "_")
+                .replaceAll("/", "_")
+                .replaceAll("=", "_")
+                .replaceAll("&", "_")
+                .replaceAll("#", "_")
+                .replaceAll("@", "_")
+                .replaceAll("!", "_")
+                .replaceAll("~", "_")
+                .replaceAll("`", "_")
+                .replaceAll("\\$", "_")
+                .replaceAll("\\^", "_")
+                .replaceAll("\\[", "__").replaceAll("]", "__")
+                .replaceAll("\\{", "__").replaceAll("}", "__")
+                .replaceAll("\\(", "__").replaceAll("\\)", "__");
     }
 
     public static boolean isEmrNode(String type) {
@@ -328,7 +307,7 @@ public class NodeUtils {
     }
 
     public static String replaceBranchNodeCodeIoPrefix(CodeProgramType type, String code,
-        Map<String, String> prefixMapping) {
+            Map<String, String> prefixMapping) {
         if (!CodeProgramType.CONTROLLER_BRANCH.equals(type)) {
             return code;
         }
@@ -353,7 +332,7 @@ public class NodeUtils {
                     String targetPrefix = MapUtils.emptyIfNull(prefixMapping).get(oldPrefix);
                     if (StringUtils.isNotBlank(targetPrefix)) {
                         condition.addProperty("nodeoutput",
-                            normalize(replaceOutputProjectIdentifier(out, targetPrefix)));
+                                normalize(replaceOutputProjectIdentifier(out, targetPrefix)));
                         replaced = true;
                         json.set(i, condition);
                     }
@@ -372,7 +351,7 @@ public class NodeUtils {
     }
 
     public static String replaceJoinNodeCodeIoPrefix(CodeProgramType type, String code,
-        Map<String, String> prefixMapping) {
+            Map<String, String> prefixMapping) {
         if (!CodeProgramType.CONTROLLER_JOIN.equals(type)) {
             return code;
         }
@@ -389,7 +368,7 @@ public class NodeUtils {
             }
 
             JsonArray branchList = json.has("branchList") ?
-                GsonUtils.fromJsonString(json.get("branchList").getAsString(), JsonArray.class) : new JsonArray();
+                    GsonUtils.fromJsonString(json.get("branchList").getAsString(), JsonArray.class) : new JsonArray();
             boolean replaced = false;
             for (int i = 0; i < branchList.size(); i++) {
                 JsonObject condition = branchList.get(i).getAsJsonObject();

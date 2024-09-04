@@ -17,6 +17,9 @@ package com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler;
 
 import java.util.Objects;
 
+import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.v1.v139.enums.DataType;
+import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.v1.v139.enums.Direct;
+
 /**
  * @author 聿剑
  * @date 2022/10/12
@@ -118,9 +121,9 @@ public class Property {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        Property property = (Property)o;
+        Property property = (Property) o;
         return Objects.equals(prop, property.prop)
-            && Objects.equals(value, property.value);
+                && Objects.equals(value, property.value);
     }
 
     @Override
@@ -131,11 +134,10 @@ public class Property {
     @Override
     public String toString() {
         return "Property{"
-            + "prop='" + prop + '\''
-            + ", direct=" + direct
-            + ", type=" + type
-            + ", value='" + value + '\''
-            + '}';
+                + "prop='" + prop + '\''
+                + ", direct=" + direct
+                + ", type=" + type
+                + ", value='" + value + '\''
+                + '}';
     }
-
 }

@@ -15,14 +15,14 @@
 
 package com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.v1;
 
+import java.util.List;
+
+import javax.validation.constraints.NotEmpty;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.experimental.Accessors;
-
-import javax.validation.constraints.NotEmpty;
-
-import java.util.List;
 
 /**
  * @author 聿剑
@@ -34,5 +34,5 @@ import java.util.List;
 @EqualsAndHashCode(callSuper = true)
 public class BatchExportProcessDefinitionByIdsRequest extends DolphinSchedulerProjectRequest {
     @NotEmpty.List(@NotEmpty)
-    private List<Integer> ids;
+    private List<String> ids;
 }

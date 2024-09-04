@@ -15,19 +15,29 @@
 
 package com.aliyun.dataworks.migrationx.transformer.core.sqoop;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.serializer.SerializerFeature;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import com.aliyun.migrationx.common.utils.JSONUtils;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.CharUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang.builder.ToStringBuilder;
 import org.slf4j.LoggerFactory;
-
-import java.io.*;
-import java.util.*;
-import java.util.Map.Entry;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * DIJsonProcessor 提供多级JSON配置信息无损存储 warn: getConfiguration getListConfiguration 和父DIJsonProcessor是统一的子元素引用；
@@ -243,7 +253,6 @@ public class DIJsonProcessor {
         } else {
             throw DataSyncException.asDataSyncException("error:" + path + result);
         }
-
     }
 
     /**
@@ -381,9 +390,9 @@ public class DIJsonProcessor {
 
         List<T> result = new ArrayList<T>();
 
-        List<Object> origin = (List<Object>)object;
+        List<Object> origin = (List<Object>) object;
         for (final Object each : origin) {
-            result.add((T)each);
+            result.add((T) each);
         }
 
         return result;
@@ -398,7 +407,7 @@ public class DIJsonProcessor {
         if (null == object) {
             return defaultList;
         }
-        return (List<Object>)object;
+        return (List<Object>) object;
     }
 
     /**
@@ -467,7 +476,7 @@ public class DIJsonProcessor {
         if (null == object) {
             return defaultMap;
         }
-        return (Map<String, Object>)object;
+        return (Map<String, Object>) object;
     }
 
     /**
@@ -519,14 +528,14 @@ public class DIJsonProcessor {
     @SuppressWarnings("unchecked")
     public <T> T get(final String path, Class<T> clazz) {
         this.checkPath(path);
-        return (T)this.get(path);
+        return (T) this.get(path);
     }
 
     /**
      * 格式化JsonProcessor输出
      */
     public String beautify() {
-        return JSON.toJSONString(this.getInternal(), SerializerFeature.PrettyFormat);
+        return JSONUtils.toPrettyString(this.getInternal());
     }
 
     /**
@@ -580,7 +589,7 @@ public class DIJsonProcessor {
         Set<String> collect = new HashSet<String>();
         if (current instanceof Map) {
             @SuppressWarnings("unchecked")
-            Map<String, Object> mapping = (Map<String, Object>)current;
+            Map<String, Object> mapping = (Map<String, Object>) current;
             for (Entry<String, Object> entry : mapping.entrySet()) {
                 collect.add(entry.getKey());
             }
@@ -680,7 +689,7 @@ public class DIJsonProcessor {
 
         boolean isMap = current instanceof Map;
         if (isMap) {
-            Map<String, Object> mapping = (Map<String, Object>)current;
+            Map<String, Object> mapping = (Map<String, Object>) current;
             for (Entry<String, Object> entry : mapping.entrySet()) {
                 if (StringUtils.isBlank(path)) {
                     getKeysRecursive(entry.getValue(), entry.getKey().trim(), collect);
@@ -693,7 +702,7 @@ public class DIJsonProcessor {
 
         boolean isList = current instanceof List;
         if (isList) {
-            List<Object> lists = (List<Object>)current;
+            List<Object> lists = (List<Object>) current;
             for (int i = 0; i < lists.size(); i++) {
                 getKeysRecursive(lists.get(i), path + String.format("[%d]", i), collect);
             }
@@ -737,7 +746,7 @@ public class DIJsonProcessor {
 
         if (object instanceof List) {
             List<Object> result = new ArrayList<Object>();
-            for (final Object each : (List<Object>)object) {
+            for (final Object each : (List<Object>) object) {
                 result.add(extractFromConfiguration(each));
             }
             return result;
@@ -745,8 +754,8 @@ public class DIJsonProcessor {
 
         if (object instanceof Map) {
             Map<String, Object> result = new HashMap<String, Object>();
-            for (final String key : ((Map<String, Object>)object).keySet()) {
-                result.put(key, extractFromConfiguration(((Map<String, Object>)object).get(key)));
+            for (final String key : ((Map<String, Object>) object).keySet()) {
+                result.put(key, extractFromConfiguration(((Map<String, Object>) object).get(key)));
             }
             return result;
         }
@@ -756,7 +765,7 @@ public class DIJsonProcessor {
 
     private Object extractFromConfiguration(final Object object) {
         if (object instanceof DIJsonProcessor) {
-            return ((DIJsonProcessor)object).getInternal();
+            return ((DIJsonProcessor) object).getInternal();
         }
 
         return object;
@@ -818,7 +827,7 @@ public class DIJsonProcessor {
             }
 
             // 当前是map，但是没有对应的key，也就是我们需要新建对象插入该map，并返回该map
-            mapping = (Map<String, Object>)current;
+            mapping = (Map<String, Object>) current;
             boolean hasSameKey = mapping.containsKey(path);
             if (!hasSameKey) {
                 mapping.put(path, buildObject(paths.subList(index + 1, paths.size()), value));
@@ -845,7 +854,7 @@ public class DIJsonProcessor {
             }
 
             // 当前是list，但是对应的indexer是没有具体的值，也就是我们新建对象然后插入到该list，并返回该List
-            lists = (List<Object>)current;
+            lists = (List<Object>) current;
             lists = expand(lists, listIndexer + 1);
 
             boolean hasSameIndex = lists.get(listIndexer) != null;
@@ -891,7 +900,7 @@ public class DIJsonProcessor {
         if (!isMap) {
             throw new IllegalArgumentException("not map");
         }
-        Object result = ((Map<String, Object>)target).get(index);
+        Object result = ((Map<String, Object>) target).get(index);
         return result;
     }
 
@@ -907,7 +916,7 @@ public class DIJsonProcessor {
             throw new IllegalArgumentException("not number " + index);
         }
 
-        return ((List<Object>)target).get(Integer.parseInt(index));
+        return ((List<Object>) target).get(Integer.parseInt(index));
     }
 
     private List<Object> expand(List<Object> list, int size) {
@@ -978,7 +987,7 @@ public class DIJsonProcessor {
 
     private DIJsonProcessor(final String json) {
         try {
-            this.root = JSON.parse(json);
+            this.root = JSONUtils.parseObject(json, Map.class);
         } catch (Exception e) {
             LOGGER.warn(ExceptionTracker.trace(e));
             throw DataSyncException.asDataSyncException(e.getMessage(), e);
@@ -989,7 +998,7 @@ public class DIJsonProcessor {
         Set<String> keys = dIJsonProcessor.getKeys();
         for (final String key : keys) {
             boolean isSensitive = StringUtils.endsWithIgnoreCase(key, "password")
-                || StringUtils.endsWithIgnoreCase(key, "accessKey");
+                    || StringUtils.endsWithIgnoreCase(key, "accessKey");
             if (isSensitive && dIJsonProcessor.get(key) instanceof String) {
                 dIJsonProcessor.set(key, dIJsonProcessor.getString(key).replaceAll(".", "*"));
             }
@@ -998,6 +1007,6 @@ public class DIJsonProcessor {
     }
 
     private static String toJSONString(final Object object) {
-        return JSON.toJSONString(object, SerializerFeature.PrettyFormat);
+        return JSONUtils.toPrettyString(object);
     }
 }
