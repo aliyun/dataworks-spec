@@ -21,16 +21,11 @@
     <parent>
         <groupId>com.aliyun.dataworks</groupId>
         <artifactId>migrationx-domain</artifactId>
-        <version>1.1.5</version>
+        <version>1.1.7-1</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>migrationx-domain-core</artifactId>
-
-    <properties>
-        <maven.compiler.source>8</maven.compiler.source>
-        <maven.compiler.target>8</maven.compiler.target>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    </properties>
 
 
     <build>

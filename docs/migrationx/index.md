@@ -4,7 +4,7 @@
 * 实现支持开源工作流引擎到之间的模型转换
 
 # 概要设计 
-![image](../images/architecture-cn.jpg)
+![image](../images/architecture.jpg)
 
 ## Domain（领域模型）
 不同开源调度引擎有自己不同的工作流领域模型。

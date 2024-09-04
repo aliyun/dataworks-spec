@@ -15,16 +15,17 @@
 
 package com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity;
 
-import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.v1.DeployType;
-import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.v2.IdeNodeDef;
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.google.common.base.Joiner;
-import lombok.ToString;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.v1.DeployType;
+import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.v2.IdeNodeDef;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.google.common.base.Joiner;
+import lombok.ToString;
 
 /**
  * 内部需要处理存储，但是不想通过model包透出的字段
@@ -32,6 +33,7 @@ import java.util.UUID;
  * @author sam.liux
  * @date 2019/07/08
  */
+
 @ToString(callSuper = true, exclude = {"workflowRef"})
 public class DwNode extends Node {
 
@@ -67,6 +69,9 @@ public class DwNode extends Node {
 
     @JsonIgnore
     private transient String sourcePath;
+
+    @JsonIgnore
+    private transient String origin;
 
     @Override
     public String getUniqueKey() {
@@ -165,5 +170,13 @@ public class DwNode extends Node {
 
     public void setSourcePath(String sourcePath) {
         this.sourcePath = sourcePath;
+    }
+
+    public String getOrigin() {
+        return origin;
+    }
+
+    public void setOrigin(String origin) {
+        this.origin = origin;
     }
 }

@@ -20,17 +20,15 @@
     <parent>
         <artifactId>migrationx-domain</artifactId>
         <groupId>com.aliyun.dataworks</groupId>
-        <version>1.1.5</version>
+        <version>1.1.7-1</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>migrationx-domain-oozie</artifactId>
 
     <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.7</maven.compiler.source>
-        <maven.compiler.target>1.7</maven.compiler.target>
-        <oozie.version>5.1.0</oozie.version>
+        <oozie.version>5.2.1</oozie.version>
     </properties>
 
     <dependencies>
@@ -67,12 +65,22 @@
                     <artifactId>hive-exec</artifactId>
                     <groupId>org.apache.hive</groupId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.oozie</groupId>
             <artifactId>oozie-client</artifactId>
             <version>${oozie.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.oozie</groupId>
@@ -93,12 +101,22 @@
                     <artifactId>hive-exec</artifactId>
                     <groupId>org.apache.hive</groupId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.oozie</groupId>
             <artifactId>oozie-sharelib-pig</artifactId>
             <version>${oozie.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.oozie</groupId>
@@ -114,6 +132,12 @@
             <groupId>org.apache.oozie</groupId>
             <artifactId>oozie-sharelib-hcatalog</artifactId>
             <version>${oozie.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.slf4j</groupId>
+                    <artifactId>slf4j-log4j12</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.oozie</groupId>

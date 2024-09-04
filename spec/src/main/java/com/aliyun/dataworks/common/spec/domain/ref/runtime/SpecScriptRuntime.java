@@ -17,7 +17,10 @@ package com.aliyun.dataworks.common.spec.domain.ref.runtime;
 
 import java.util.Map;
 
+import com.aliyun.dataworks.common.spec.domain.dw.types.CodeProgramType;
+import com.aliyun.dataworks.common.spec.domain.ref.runtime.container.SpecContainer;
 import com.aliyun.dataworks.common.spec.domain.SpecNoRefEntity;
+import com.aliyun.dataworks.common.spec.domain.dw.types.CodeProgramType;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -35,6 +38,13 @@ public class SpecScriptRuntime extends SpecNoRefEntity {
      * @see com.aliyun.dataworks.common.spec.domain.dw.types.CodeProgramType
      */
     private String command;
+    /**
+     * command type id
+     *
+     * @see CodeProgramType#getCode()
+     */
+    private Integer commandTypeId;
+
     private Map<String, Object> template;
     /**
      * dataworks official emr job config
@@ -50,4 +60,13 @@ public class SpecScriptRuntime extends SpecNoRefEntity {
      * <a href="https://spark.apache.org/docs/latest/configuration.html#application-properties">Spark Configuration</a>
      */
     private Map<String, Object> sparkConf;
+    /**
+     * flink configurations
+     */
+    private Map<String, Object> flinkConf;
+
+    /**
+     * runtime container info
+     */
+    private SpecContainer container;
 }

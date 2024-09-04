@@ -15,12 +15,19 @@
 
 package com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.utils;
 
-import com.aliyun.migrationx.common.utils.GsonUtils;
-import com.google.gson.*;
-import com.google.gson.reflect.TypeToken;
-
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+
+import com.aliyun.migrationx.common.utils.GsonUtils;
+import com.aliyun.migrationx.common.utils.JSONUtils;
+
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
+import com.google.gson.reflect.TypeToken;
 
 /**
  * @author 聿剑
@@ -32,18 +39,18 @@ public class StringTypeObjectAdapter<T> implements JsonSerializer<T>, JsonDeseri
     @SuppressWarnings("unchecked")
     @Override
     public T deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext)
-        throws JsonParseException {
+            throws JsonParseException {
         if (!jsonElement.isJsonPrimitive()) {
             return jsonDeserializationContext.deserialize(jsonElement, type);
         }
 
         String str = jsonElement.getAsString();
         if (type instanceof ParameterizedType) {
-            return GsonUtils.fromJsonString(str, TypeToken.getParameterized(((ParameterizedType)type).getRawType(),
-                ((ParameterizedType)type).getActualTypeArguments()).getType());
+            return GsonUtils.fromJsonString(str, TypeToken.getParameterized(((ParameterizedType) type).getRawType(),
+                    ((ParameterizedType) type).getActualTypeArguments()).getType());
         }
 
-        return JSONUtils.parseObject(str, (Class<T>)type);
+        return JSONUtils.parseObject(str, (Class<T>) type);
     }
 
     @Override

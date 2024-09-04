@@ -33,5 +33,5 @@ import lombok.experimental.Accessors;
 public class DolphinSchedulerProjectRequest extends DolphinSchedulerRequest {
     @NotBlank(message = "dolphinscheduler project name needed")
     private String projectName;
-    private String projectCode;
+    private Long projectCode;
 }

@@ -16,7 +16,10 @@
 package com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity;
 
 import com.aliyun.dataworks.migrationx.domain.dataworks.objects.types.DmObjectType;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import lombok.ToString;
 
@@ -24,9 +27,12 @@ import lombok.ToString;
  * @author sam.liux
  * @date 2019/04/17
  */
+@JsonTypeInfo(
+        use = Id.MINIMAL_CLASS,
+        property = "@class")
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @ToString(callSuper = true)
-public class Resource extends DmObject{
+public class Resource extends DmObject {
     @JacksonXmlProperty(isAttribute = true, localName = "name")
     private String name;
 

@@ -18,18 +18,25 @@ package com.aliyun.dataworks.common.spec.domain.dw.nodemodel;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.aliyun.dataworks.common.spec.SpecUtil;
 import com.aliyun.dataworks.common.spec.domain.DataWorksWorkflowSpec;
 import com.aliyun.dataworks.common.spec.domain.Specification;
+import com.aliyun.dataworks.common.spec.domain.dw.nodemodel.DataWorksNodeAdapter.Context;
+import com.aliyun.dataworks.common.spec.domain.dw.types.CodeProgramType;
 import com.aliyun.dataworks.common.spec.domain.enums.DependencyType;
 import com.aliyun.dataworks.common.spec.domain.enums.NodeRecurrenceType;
 import com.aliyun.dataworks.common.spec.domain.noref.SpecDepend;
 import com.aliyun.dataworks.common.spec.domain.noref.SpecFlowDepend;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecNode;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecNodeOutput;
+import com.aliyun.dataworks.common.spec.domain.ref.SpecScript;
+import com.aliyun.dataworks.common.spec.domain.ref.component.SpecComponent;
+import com.aliyun.dataworks.common.spec.domain.ref.component.SpecComponentParameter;
+import com.aliyun.dataworks.common.spec.domain.ref.runtime.SpecScriptRuntime;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
@@ -75,8 +82,6 @@ public class DataWorksNodeAdapterTest {
         System.out.println("context outputs: " + adapter.getOutputContexts());
         Assert.assertTrue(CollectionUtils.isNotEmpty(adapter.getInputContexts()));
         Assert.assertTrue(CollectionUtils.isNotEmpty(adapter.getOutputContexts()));
-
-        System.out.println(SpecUtil.writeToSpec(specObj));
     }
 
     @Test
@@ -137,10 +142,15 @@ public class DataWorksNodeAdapterTest {
         Assert.assertNotNull(dowhile.getDoWhile());
         Assert.assertNotNull(dowhile.getDoWhile().getSpecWhile());
         Assert.assertNotNull(dowhile.getDoWhile().getNodes());
-
+        Assert.assertEquals(4, (int)dowhile.getDoWhile().getMaxIterations());
         DataWorksNodeAdapter dataWorksNodeAdapter = new DataWorksNodeAdapter(specObj, dowhile.getDoWhile().getSpecWhile());
         System.out.println(dataWorksNodeAdapter.getCode());
         System.out.println(dataWorksNodeAdapter.getInputs());
+
+        DataWorksNodeAdapter dowhileAdapter = new DataWorksNodeAdapter(specObj, dowhile);
+        Map<String, Object> extConfig = dowhileAdapter.getExtConfig();
+        Assert.assertNotNull(extConfig);
+        Assert.assertEquals(4, (int)extConfig.get(DataWorksNodeAdapter.LOOP_COUNT));
     }
 
     @Test
@@ -225,8 +235,8 @@ public class DataWorksNodeAdapterTest {
 
         log.info("extConfig: {}", adapter.getExtConfig());
         Assert.assertNotNull(adapter.getExtConfig());
-        Assert.assertTrue(adapter.getExtConfig().contains(DataWorksNodeAdapter.IGNORE_BRANCH_CONDITION_SKIP));
-        Assert.assertFalse(adapter.getExtConfig().contains(DataWorksNodeAdapter.TIMEOUT));
+        Assert.assertTrue(adapter.getExtConfig().containsKey(DataWorksNodeAdapter.IGNORE_BRANCH_CONDITION_SKIP));
+        Assert.assertFalse(adapter.getExtConfig().containsKey(DataWorksNodeAdapter.TIMEOUT));
 
         Assert.assertEquals(0, (int)adapter.getNodeType());
     }
@@ -718,5 +728,56 @@ public class DataWorksNodeAdapterTest {
         Assert.assertNotNull(adapter.getParaValue());
         Assert.assertEquals("2=222222 1=111111", adapter.getParaValue());
         Assert.assertEquals(1, (int)adapter.getNodeType());
+    }
+
+    @Test
+    public void testGetPrgType() {
+        Specification<DataWorksWorkflowSpec> spec = new Specification<>();
+        SpecNode node = new SpecNode();
+        SpecScript script = new SpecScript();
+        SpecScriptRuntime runtime1 = new SpecScriptRuntime();
+        runtime1.setCommand("ODPS_SQL");
+        script.setRuntime(runtime1);
+        node.setScript(script);
+
+        DataWorksNodeAdapter adapter = new DataWorksNodeAdapter(spec, node);
+        Assert.assertEquals(10, (int)adapter.getPrgType(s -> CodeProgramType.getNodeTypeByName(s).getCode()));
+
+        SpecScriptRuntime runtime2 = new SpecScriptRuntime();
+        runtime2.setCommand("MySQL");
+        runtime2.setCommandTypeId(1000039);
+        script.setRuntime(runtime2);
+        adapter = new DataWorksNodeAdapter(spec, node);
+        Assert.assertEquals(1000039, (int)adapter.getPrgType(s -> CodeProgramType.getNodeTypeByName(s).getCode()));
+    }
+
+    @Test
+    public void testComponentSqlCode() {
+        String content = "select '@@{p1}', '@@{p2}', '@@{p3}';";
+
+        Specification<DataWorksWorkflowSpec> specification = new Specification<>();
+        DataWorksWorkflowSpec spec = new DataWorksWorkflowSpec();
+        SpecNode specNode = new SpecNode();
+        SpecScript script = new SpecScript();
+        SpecScriptRuntime runtime = new SpecScriptRuntime();
+        runtime.setCommand(CodeProgramType.COMPONENT_SQL.getName());
+        script.setContent(content);
+        script.setRuntime(runtime);
+        specNode.setScript(script);
+        SpecComponent component = new SpecComponent();
+        SpecComponentParameter in1 = new SpecComponentParameter();
+        in1.setName("p1");
+        in1.setValue("var1");
+        component.setInputs(Collections.singletonList(in1));
+        specNode.setComponent(component);
+        spec.setNodes(Collections.singletonList(specNode));
+        specification.setSpec(spec);
+
+        DataWorksNodeAdapter adapter = new DataWorksNodeAdapter(specification, specNode, Context.builder()
+            .deployToScheduler(true)
+            .build());
+        String code = adapter.getCode();
+        log.info("code: {}", code);
+        Assert.assertEquals("select 'var1', '@@{p2}', '@@{p3}';", code);
     }
 }

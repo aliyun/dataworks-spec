@@ -32,7 +32,7 @@ import org.apache.commons.lang3.StringUtils;
  * @date 2024/3/26
  */
 public class VariableUtils {
-    private static final Pattern NO_KV_PAIR_PARA_VALUE = Pattern.compile("[\\s^]?-p\\s*\"");
+    public static final Pattern NO_KV_PAIR_PARA_VALUE = Pattern.compile("[\\s^]?-p\\s*\"");
 
     public static boolean isNoKvPairParaValue(String paraValue) {
         if (StringUtils.isBlank(paraValue)) {

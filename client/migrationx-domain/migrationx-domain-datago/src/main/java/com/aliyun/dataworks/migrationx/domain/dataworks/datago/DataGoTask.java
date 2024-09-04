@@ -15,21 +15,32 @@
 
 package com.aliyun.dataworks.migrationx.domain.dataworks.datago;
 
+import java.io.File;
+import java.io.InputStreamReader;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+import java.util.stream.Collectors;
+
+import com.aliyun.dataworks.common.spec.domain.dw.types.CodeProgramType;
 import com.aliyun.dataworks.migrationx.domain.dataworks.caiyunjian.DITask;
 import com.aliyun.dataworks.migrationx.domain.dataworks.caiyunjian.DateParser;
 import com.aliyun.dataworks.migrationx.domain.dataworks.caiyunjian.DgDatasource;
+import com.aliyun.dataworks.migrationx.domain.dataworks.caiyunjian.constant.DataXConstants;
 import com.aliyun.dataworks.migrationx.domain.dataworks.caiyunjian.enums.CDPTypeEnum;
 import com.aliyun.dataworks.migrationx.domain.dataworks.caiyunjian.enums.DependentTypeEnum;
 import com.aliyun.dataworks.migrationx.domain.dataworks.datago.enums.FrequencyTypeEnum;
 import com.aliyun.dataworks.migrationx.domain.dataworks.datago.enums.TaskCodeEnum;
 import com.aliyun.dataworks.migrationx.domain.dataworks.datago.model.NewDataX2DI;
 import com.aliyun.dataworks.migrationx.domain.dataworks.datago.model.OldDataX2DI;
-import com.aliyun.dataworks.migrationx.domain.dataworks.caiyunjian.constant.DataXConstants;
 import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.DwNode;
 import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.DwNodeIo;
 import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.NodeIo;
 import com.aliyun.dataworks.migrationx.domain.dataworks.objects.types.CodeModeType;
-import com.aliyun.dataworks.common.spec.domain.dw.types.CodeProgramType;
 import com.aliyun.migrationx.common.utils.GsonUtils;
 import com.google.common.base.Joiner;
 import com.google.gson.JsonArray;
@@ -45,14 +56,9 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang3.StringUtils;
 
-import java.io.File;
-import java.io.InputStreamReader;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.*;
-import java.util.stream.Collectors;
-
-import static com.aliyun.dataworks.migrationx.domain.dataworks.datago.DataGoConstants.*;
+import static com.aliyun.dataworks.migrationx.domain.dataworks.datago.DataGoConstants.NODE_IO_SUFFIX_LOWERCASE;
+import static com.aliyun.dataworks.migrationx.domain.dataworks.datago.DataGoConstants.NODE_IO_SUFFIX_MIXED;
+import static com.aliyun.dataworks.migrationx.domain.dataworks.datago.DataGoConstants.NODE_IO_SUFFIX_UPPERCASE;
 import static com.aliyun.dataworks.migrationx.domain.dataworks.utils.StringUtils.isAllAlphabetLowerCase;
 import static com.aliyun.dataworks.migrationx.domain.dataworks.utils.StringUtils.isAllAlphabetUpperCase;
 
@@ -350,7 +356,7 @@ public class DataGoTask {
                     diTask.setSetting(setting);
                 }
                 dwNode.setCode(diTask.toString());
-                dwNode.setCodeMode(CodeModeType.WIZARD);
+                dwNode.setCodeMode(CodeModeType.WIZARD.getValue());
             } else if (!CodeProgramType.VIRTUAL.name().equals(nodeType.name())) {
                 dwNode.setCode(task.content);
             }

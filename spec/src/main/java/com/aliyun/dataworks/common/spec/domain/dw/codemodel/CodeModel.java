@@ -51,17 +51,25 @@ public class CodeModel<T extends Code> implements Code {
 
     @Override
     public void setSourceCode(String sourceCode) {
-        codeModel.setSourceCode(sourceCode);
+        Optional.ofNullable(codeModel).ifPresent(cm -> cm.setSourceCode(sourceCode));
     }
 
     @Override
     public String getSourceCode() {
-        return codeModel.getSourceCode();
+        return Optional.ofNullable(codeModel).map(Code::getSourceCode).orElse(null);
+    }
+    
+    @Override
+    public void setProgramType(String programType) {
+        this.programType = programType;
     }
 
     @Override
     public Code parse(String code) {
-        return Optional.ofNullable(codeModel).map(m -> m.parse(code)).orElse(codeModel);
+        return Optional.ofNullable(codeModel).map(m -> {
+            m.setProgramType(programType);
+            return m.parse(code);
+        }).orElse(codeModel);
     }
 
     @Override
@@ -71,11 +79,15 @@ public class CodeModel<T extends Code> implements Code {
 
     @Override
     public Map<String, Object> getTemplate() {
-        return codeModel.getTemplate();
+        return Optional.ofNullable(codeModel).map(Code::getTemplate).orElse(null);
     }
 
     @Override
     public List<String> getProgramTypes() {
+        if (programType == null) {
+            return Collections.emptyList();
+        }
+
         return Collections.singletonList(programType);
     }
 

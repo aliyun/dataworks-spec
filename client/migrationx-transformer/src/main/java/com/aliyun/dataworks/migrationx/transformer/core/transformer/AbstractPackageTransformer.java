@@ -39,6 +39,10 @@ public abstract class AbstractPackageTransformer<SP extends Package, TP extends 
         this.targetPackage = targetPackage;
     }
 
+    public TP getTargetPackage(){
+        return this.targetPackage;
+    }
+
     @Override
     public abstract void init() throws Exception;
 

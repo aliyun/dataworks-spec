@@ -20,14 +20,20 @@ import java.util.List;
 import com.aliyun.dataworks.common.spec.domain.SpecNoRefEntity;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecNode;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * @author yiwei.qyw
  * @date 2023/7/17
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 public class SpecDoWhile extends SpecNoRefEntity {
     private List<SpecNode> nodes;
     private SpecNode specWhile;
     private List<SpecFlowDepend> flow;
+    /**
+     * 最大迭代次数
+     */
+    private Integer maxIterations;
 }

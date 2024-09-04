@@ -34,6 +34,7 @@ import com.aliyun.dataworks.common.spec.domain.noref.SpecForEach;
 import com.aliyun.dataworks.common.spec.domain.noref.SpecJoin;
 import com.aliyun.dataworks.common.spec.domain.noref.SpecNodeRef;
 import com.aliyun.dataworks.common.spec.domain.noref.SpecParamHub;
+import com.aliyun.dataworks.common.spec.domain.ref.component.SpecComponent;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.apache.commons.collections4.ListUtils;
@@ -99,6 +100,8 @@ public class SpecNode extends SpecRefEntity implements ContainerNode {
     private String owner;
 
     private String description;
+
+    private SpecComponent component;
 
     @Override
     public List<SpecNode> getInnerNodes() {

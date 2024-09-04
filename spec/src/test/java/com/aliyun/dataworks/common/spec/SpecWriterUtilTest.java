@@ -54,11 +54,14 @@ import com.aliyun.dataworks.common.spec.domain.ref.SpecScript;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecVariable;
 import com.aliyun.dataworks.common.spec.domain.ref.file.SpecObjectStorageFile;
 import com.aliyun.dataworks.common.spec.domain.ref.runtime.SpecScriptRuntime;
+import com.aliyun.dataworks.common.spec.domain.ref.runtime.container.SpecContainer;
+import com.aliyun.dataworks.common.spec.domain.ref.runtime.container.SpecContainerEnvVar;
 import com.aliyun.dataworks.common.spec.domain.ref.storage.SpecStorage;
 import com.aliyun.dataworks.common.spec.utils.GsonUtils;
 import com.aliyun.dataworks.common.spec.writer.SpecWriterContext;
 import com.aliyun.dataworks.common.spec.writer.WriterFactory;
 import com.aliyun.dataworks.common.spec.writer.impl.SpecificationWriter;
+import com.google.common.collect.Lists;
 import com.google.gson.reflect.TypeToken;
 import org.junit.Assert;
 import org.junit.Test;
@@ -98,6 +101,23 @@ public class SpecWriterUtilTest {
         SpecScriptRuntime runtime = new SpecScriptRuntime();
         runtime.setEngine("MaxCompute");
         runtime.setCommand("ODPS_SQL");
+
+        SpecContainer container = new SpecContainer();
+        container.setArgs(Lists.newArrayList("3600"));
+        container.setImage("registry.cn-hangzhou.aliyuncs.com/aliyun-dataworks/dataworks-base:1.0.0-20231227110000-aliyun-inc-stable");
+        container.setImageId("imageId-1");
+        container.setCommand(Lists.newArrayList("sleep"));
+
+        SpecContainerEnvVar envVar1 = new SpecContainerEnvVar();
+        envVar1.setName("key1");
+        envVar1.setValue("value1");
+
+        SpecContainerEnvVar envVar2 = new SpecContainerEnvVar();
+        envVar2.setName("key2");
+        envVar2.setValue("value2");
+
+        container.setEnv(Lists.newArrayList(envVar1, envVar2));
+        runtime.setContainer(container);
 
         CodeModel<Code> hive = CodeModelFactory.getCodeModel("EMR_HIVE", "{}");
         EmrCode emrCode = (EmrCode)hive.getCodeModel();

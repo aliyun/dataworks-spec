@@ -16,8 +16,10 @@
 package com.aliyun.dataworks.common.spec.domain.dw.nodemodel;
 
 import java.util.List;
+import java.util.Map;
 import java.util.function.Function;
 
+import com.aliyun.dataworks.common.spec.domain.dw.types.CodeProgramType;
 import com.aliyun.dataworks.common.spec.domain.interfaces.Input;
 import com.aliyun.dataworks.common.spec.domain.interfaces.Output;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecNodeOutput;
@@ -88,7 +90,7 @@ public interface DataWorksNode {
      *
      * @return the node ext config
      */
-    String getExtConfig();
+    Map<String, Object> getExtConfig();
 
     /**
      * get schedule node type
@@ -96,4 +98,13 @@ public interface DataWorksNode {
      * @return node type code
      */
     Integer getNodeType();
+
+    /**
+     * get program type
+     *
+     * @param getCodeByTypeName function to convert program type name to code
+     * @return program type integer
+     * @see CodeProgramType#getCode()
+     */
+    Integer getPrgType(Function<String, Integer> getCodeByTypeName);
 }

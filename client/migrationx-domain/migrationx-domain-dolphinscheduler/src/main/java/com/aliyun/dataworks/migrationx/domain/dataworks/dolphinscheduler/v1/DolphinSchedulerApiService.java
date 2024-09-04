@@ -29,6 +29,7 @@ import java.util.stream.Stream;
 
 import com.aliyun.migrationx.common.http.HttpClientUtil;
 import com.aliyun.migrationx.common.utils.GsonUtils;
+
 import com.google.common.base.Joiner;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
@@ -59,12 +60,12 @@ public class DolphinSchedulerApiService implements DolphinSchedulerApi {
 
     @Override
     public PaginateResponse<JsonObject> queryProcessDefinitionByPaging(QueryProcessDefinitionByPaginateRequest request)
-        throws Exception {
+            throws Exception {
         HttpClientUtil client = new HttpClientUtil();
         HttpGet httpGet = new HttpGet();
         httpGet.setHeader("token", token);
         String url = MessageFormat.format("{0}/dolphinscheduler/projects/{1}/process/list-paging?pageNo={2}&pageSize={3}",
-            endpoint, request.getProjectName(), request.getPageNo(), request.getPageSize());
+                endpoint, request.getProjectName(), String.valueOf(request.getPageNo()), String.valueOf(request.getPageSize()));
         httpGet.setURI(new URI(url));
         String responseStr = client.executeAndGet(httpGet);
         return GsonUtils.fromJsonString(responseStr, new TypeToken<PaginateResponse<JsonObject>>() {}.getType());
@@ -75,9 +76,9 @@ public class DolphinSchedulerApiService implements DolphinSchedulerApi {
         HttpClientUtil client = new HttpClientUtil();
         HttpGet httpGet = new HttpGet();
         httpGet.setHeader("token", token);
-        String url = MessageFormat.format("{0}/dolphinscheduler/projects/{1}/process/export?processDefinitionIds={2}",
-            endpoint, request.getProjectName(),
-            Joiner.on(",").join(ListUtils.emptyIfNull(request.getIds()).stream().distinct().collect(Collectors.toList())));
+        String url = String.format("%s/dolphinscheduler/projects/%s/process/export?processDefinitionIds=%s",
+                endpoint, request.getProjectName(),
+                Joiner.on(",").join(ListUtils.emptyIfNull(request.getIds()).stream().distinct().collect(Collectors.toList())));
         httpGet.setURI(new URI(url));
         return client.executeAndGet(httpGet);
     }
@@ -87,8 +88,8 @@ public class DolphinSchedulerApiService implements DolphinSchedulerApi {
         HttpClientUtil client = new HttpClientUtil();
         HttpGet httpGet = new HttpGet();
         httpGet.setHeader("token", token);
-        String url = MessageFormat.format("{0}/dolphinscheduler/resources/list?type={1}",
-            endpoint, request.getType());
+        String url = String.format("%s/dolphinscheduler/resources/list?type=%s",
+                endpoint, request.getType());
         httpGet.setURI(new URI(url));
         String responseStr = client.executeAndGet(httpGet);
         return GsonUtils.fromJsonString(responseStr, new TypeToken<Response<List<JsonObject>>>() {}.getType());
@@ -99,22 +100,22 @@ public class DolphinSchedulerApiService implements DolphinSchedulerApi {
         HttpClientUtil client = new HttpClientUtil();
         HttpGet httpGet = new HttpGet();
         httpGet.setHeader("token", token);
-        String url = MessageFormat.format("{0}/dolphinscheduler/resources/download?id={1}",
-            endpoint, request.getId());
+        String url = String.format("%s/dolphinscheduler/resources/download?id=%s",
+                endpoint, request.getId());
         httpGet.setURI(new URI(url));
         HttpResponse resp = client.executeAndGetHttpResponse(httpGet);
         InputStream inputStream = resp.getEntity().getContent();
         String fileName = Stream.of(resp.getAllHeaders())
-            .filter(header -> StringUtils.equalsIgnoreCase(header.getName(), "Content-Disposition"))
-            .findFirst()
-            .map(this::getSuggestedFileName)
-            .orElse(null);
+                .filter(header -> StringUtils.equalsIgnoreCase(header.getName(), "Content-Disposition"))
+                .findFirst()
+                .map(this::getSuggestedFileName)
+                .orElse(null);
 
         if (StringUtils.isBlank(fileName)) {
             String content = EntityUtils.toString(resp.getEntity(), StandardCharsets.UTF_8);
             Response<Object> response = GsonUtils.fromJsonString(content, new TypeToken<Response<Object>>() {}.getType());
             log.warn("download resource id: {} failed: {}",
-                request.getId(), Optional.ofNullable(response).map(Response::getMsg).orElse(content));
+                    request.getId(), Optional.ofNullable(response).map(Response::getMsg).orElse(content));
             return null;
         }
 
@@ -126,12 +127,12 @@ public class DolphinSchedulerApiService implements DolphinSchedulerApi {
 
     @Override
     public PaginateResponse<JsonObject> queryUdfFuncListByPaging(QueryUdfFuncListByPaginateRequest request)
-        throws Exception {
+            throws Exception {
         HttpClientUtil client = new HttpClientUtil();
         HttpGet httpGet = new HttpGet();
         httpGet.setHeader("token", token);
-        String url = MessageFormat.format("{0}/dolphinscheduler/resources/udf-func/list-paging?pageNo={1}&pageSize={2}",
-            endpoint, request.getPageNo(), request.getPageSize());
+        String url = String.format("%s/dolphinscheduler/resources/udf-func/list-paging?pageNo=%s&pageSize=%s",
+                endpoint, request.getPageNo(), request.getPageSize());
         httpGet.setURI(new URI(url));
         String responseStr = client.executeAndGet(httpGet);
         return GsonUtils.fromJsonString(responseStr, new TypeToken<PaginateResponse<JsonObject>>() {}.getType());
@@ -139,12 +140,12 @@ public class DolphinSchedulerApiService implements DolphinSchedulerApi {
 
     @Override
     public PaginateResponse<JsonObject> queryDataSourceListByPaging(QueryDataSourceListByPaginateRequest request)
-        throws Exception {
+            throws Exception {
         HttpClientUtil client = new HttpClientUtil();
         HttpGet httpGet = new HttpGet();
         httpGet.setHeader("token", token);
-        String url = MessageFormat.format("{0}/dolphinscheduler/datasources/list-paging?pageNo={1}&pageSize={2}",
-            endpoint, request.getPageNo(), request.getPageSize());
+        String url = String.format("%s/dolphinscheduler/datasources/list-paging?pageNo=%s&pageSize=%s",
+                endpoint, request.getPageNo(), request.getPageSize());
         httpGet.setURI(new URI(url));
         String responseStr = client.executeAndGet(httpGet);
         return GsonUtils.fromJsonString(responseStr, new TypeToken<PaginateResponse<JsonObject>>() {}.getType());
@@ -155,7 +156,7 @@ public class DolphinSchedulerApiService implements DolphinSchedulerApi {
         HttpClientUtil client = new HttpClientUtil();
         HttpGet httpGet = new HttpGet();
         httpGet.setHeader("token", token);
-        String url = MessageFormat.format("{0}/dolphinscheduler/projects/query-project-list", endpoint);
+        String url = String.format("%s/dolphinscheduler/projects/query-project-list", endpoint);
         httpGet.setURI(new URI(url));
         String responseStr = client.executeAndGet(httpGet);
         return GsonUtils.fromJsonString(responseStr, new TypeToken<Response<List<JsonObject>>>() {}.getType());
@@ -164,12 +165,12 @@ public class DolphinSchedulerApiService implements DolphinSchedulerApi {
     private String getSuggestedFileName(Header contentDispositionHeader) {
         String value = contentDispositionHeader.getValue();
         return Arrays.stream(StringUtils.split(value, ";"))
-            .map(StringUtils::trim)
-            .filter(token -> StringUtils.startsWithIgnoreCase(token, "filename="))
-            .findFirst()
-            .map(fileNamePart -> StringUtils.replace(fileNamePart, "filename=", ""))
-            .map(fileName -> RegExUtils.replaceAll(fileName, "^\"", ""))
-            .map(fileName -> RegExUtils.replaceAll(fileName, "\"$", ""))
-            .orElse(null);
+                .map(StringUtils::trim)
+                .filter(token -> StringUtils.startsWithIgnoreCase(token, "filename="))
+                .findFirst()
+                .map(fileNamePart -> StringUtils.replace(fileNamePart, "filename=", ""))
+                .map(fileName -> RegExUtils.replaceAll(fileName, "^\"", ""))
+                .map(fileName -> RegExUtils.replaceAll(fileName, "\"$", ""))
+                .orElse(null);
     }
 }

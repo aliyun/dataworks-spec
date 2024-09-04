@@ -20,7 +20,8 @@
     <parent>
         <artifactId>migrationx</artifactId>
         <groupId>com.aliyun.dataworks</groupId>
-        <version>1.1.5</version>
+        <version>1.1.7-1</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -28,60 +29,43 @@
 
     <name>migrationx-transformer</name>
 
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.7</maven.compiler.source>
-        <maven.compiler.target>1.7</maven.compiler.target>
-    </properties>
-
     <dependencies>
         <dependency>
             <groupId>com.aliyun.dataworks</groupId>
             <artifactId>migrationx-domain-datago</artifactId>
-            <version>1.1.5</version>
         </dependency>
         <dependency>
             <groupId>com.aliyun.dataworks</groupId>
             <artifactId>migrationx-domain-dataworks</artifactId>
-            <version>1.1.5</version>
         </dependency>
         <dependency>
             <groupId>com.aliyun.dataworks</groupId>
             <artifactId>migrationx-domain-caiyunjian</artifactId>
-            <version>1.1.5</version>
         </dependency>
         <dependency>
             <groupId>com.aliyun.dataworks</groupId>
             <artifactId>migrationx-domain-azkaban</artifactId>
-            <version>1.1.5</version>
         </dependency>
         <dependency>
             <groupId>com.aliyun.dataworks</groupId>
             <artifactId>migrationx-domain-aliyunemr</artifactId>
-            <version>1.1.5</version>
         </dependency>
         <dependency>
             <groupId>com.aliyun.dataworks</groupId>
             <artifactId>migrationx-domain-airflow</artifactId>
-            <version>1.1.5</version>
         </dependency>
         <dependency>
             <groupId>com.aliyun.dataworks</groupId>
             <artifactId>migrationx-domain-oozie</artifactId>
-            <version>1.1.5</version>
         </dependency>
         <dependency>
             <groupId>com.aliyun.dataworks</groupId>
             <artifactId>migrationx-domain-dolphinscheduler</artifactId>
-            <version>1.1.5</version>
         </dependency>
         <dependency>
             <groupId>com.aliyun.dataworks</groupId>
-            <artifactId>migrationx-domain</artifactId>
-            <type>pom</type>
-            <version>1.1.5</version>
+            <artifactId>migrationx-common</artifactId>
         </dependency>
-
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-context</artifactId>
@@ -89,11 +73,6 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-        </dependency>
-        <dependency>
-            <groupId>com.aliyun.dataworks</groupId>
-            <artifactId>migrationx-common</artifactId>
-            <version>1.1.5</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>

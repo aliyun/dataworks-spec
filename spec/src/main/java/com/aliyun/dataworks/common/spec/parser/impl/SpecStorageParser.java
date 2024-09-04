@@ -51,7 +51,7 @@ public class SpecStorageParser implements Parser<SpecStorage> {
         SpecStorageType storageType = LabelEnum.getByLabel(SpecStorageType.class, storageTypeStr);
         if (storageType == null) {
             SpecException ex = new SpecException(SpecErrorCode.PARSE_ERROR, "storage type " + storageTypeStr + " is not supported");
-            log.warn("ignore parse storage error", ex);
+            log.warn("ignore parse storage error: {}", ex.getMessage());
             return null;
         }
 

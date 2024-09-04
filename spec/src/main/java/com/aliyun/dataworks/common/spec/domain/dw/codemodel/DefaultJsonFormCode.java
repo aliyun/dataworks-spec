@@ -21,8 +21,11 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
 
 import com.aliyun.dataworks.common.spec.domain.dw.types.CodeProgramType;
+import com.aliyun.dataworks.common.spec.utils.GsonUtils;
+import com.google.gson.JsonSyntaxException;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -46,8 +49,50 @@ public class DefaultJsonFormCode extends JsonObjectCode implements JsonFormCode 
     public static final String FIELD_CONTENT = "content";
 
     @Override
+    public DefaultJsonFormCode parse(String code) {
+        try {
+            DefaultJsonFormCode obj = (DefaultJsonFormCode)super.parse(code);
+            boolean valid = Optional.ofNullable(obj).map(o -> o.getContent() != null || o.getExtraContent() != null).orElse(false);
+            if (valid) {
+                try {
+                    DefaultJsonFormCode jsonFormCode = GsonUtils.fromJsonString(obj.getContent(), getClass());
+                    return Optional.ofNullable(jsonFormCode)
+                        .map(pf -> {
+                            pf.setRawContent(obj.getRawContent());
+                            return pf.setContent(obj.getContent()).setExtraContent(obj.getExtraContent());
+                        }).orElse(getDefaultCode(code));
+                } catch (JsonSyntaxException jsonSyntaxException) {
+                    return getDefaultCode(code);
+                }
+            }
+
+            DefaultJsonFormCode jsonFormCode = GsonUtils.fromJsonString(code, getClass());
+            JSONObject validContent = new JSONObject();
+            validContent.fluentPut(FIELD_CONTENT, code).fluentPut(FIELD_EXTRA_CONTENT, new JSONObject().toString());
+            return Optional.ofNullable(jsonFormCode).map(pf -> parse(validContent.toString())).orElse(getDefaultCode(validContent.toString()));
+        } catch (Exception jsonSyntaxException) {
+            // compatibility for old version code content, convert to uniform json form code format
+            JSONObject validContent = new JSONObject();
+            validContent.fluentPut(FIELD_CONTENT, code).fluentPut(FIELD_EXTRA_CONTENT, new JSONObject().toString());
+            return getDefaultCode(validContent.toString());
+        }
+    }
+
+    private DefaultJsonFormCode getDefaultCode(String code) {
+        DefaultJsonFormCode defaultCode;
+        try {
+            defaultCode = getClass().newInstance();
+        } catch (InstantiationException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+        }
+        defaultCode.setRawContent(code);
+        return defaultCode;
+    }
+
+    @Override
     public List<String> getProgramTypes() {
-        return Stream.of(CodeProgramType.HOLOGRES_SYNC_DATA, CodeProgramType.HOLOGRES_SYNC_DDL)
+        return Stream
+            .of(CodeProgramType.HOLOGRES_SYNC_DATA, CodeProgramType.HOLOGRES_SYNC_DDL)
             .map(CodeProgramType::name).distinct().collect(Collectors.toList());
     }
 
@@ -91,5 +136,11 @@ public class DefaultJsonFormCode extends JsonObjectCode implements JsonFormCode 
     @Override
     public String getRawContent() {
         return rawContent;
+    }
+
+    @Override
+    public void setSourceCode(String sourceCode) {
+        JsonObjectCode jsonFormCode = parse(sourceCode);
+        Optional.ofNullable(jsonFormCode).ifPresent(pc -> super.setSourceCode(pc.getRawContent()));
     }
 }

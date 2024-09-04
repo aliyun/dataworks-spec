@@ -15,14 +15,23 @@
 
 package com.aliyun.dataworks.migrationx.transformer.core;
 
+import java.io.File;
+import java.io.IOException;
+
 import com.aliyun.dataworks.migrationx.domain.dataworks.standard.objects.Package;
+import com.aliyun.dataworks.migrationx.transformer.core.checkpoint.file.LocalFileCheckPoint;
 import com.aliyun.dataworks.migrationx.transformer.core.transformer.Transformer;
 import com.aliyun.migrationx.common.command.appbase.CommandApp;
-import org.apache.commons.cli.*;
+import com.aliyun.migrationx.common.context.TransformerContext;
+
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
 
 /**
  * @author 聿剑
@@ -31,9 +40,9 @@ import java.io.File;
 public abstract class BaseTransformerApp extends CommandApp {
     private static final Logger LOGGER = LoggerFactory.getLogger(BaseTransformerApp.class);
     private static final String EXAMPLE = "python ./migrationx-transformer/bin/transformer.py"
-        + " -a dataworks_transformer"
-        + " -c dataworks-config.json"
-        + " -s project_a.zip -t dw.zip";
+            + " -a dataworks_transformer"
+            + " -c dataworks-config.json"
+            + " -s project_a.zip -t dw.zip";
     private static final String HEADER = "Transformer Command App";
 
     protected final Class<? extends Package> from;
@@ -41,6 +50,10 @@ public abstract class BaseTransformerApp extends CommandApp {
     protected String optConfig;
     protected String optSourcePackage;
     protected String optTargetPackage;
+
+    protected String checkpoint;
+
+    protected String load;
 
     public BaseTransformerApp(Class<? extends Package> from, Class<? extends Package> to) {
         this.from = from;
@@ -53,6 +66,8 @@ public abstract class BaseTransformerApp extends CommandApp {
         options.addRequiredOption("c", "config", true, "transform configuration file path");
         options.addRequiredOption("s", "sourcePackage", true, "source package file path");
         options.addRequiredOption("t", "targetPackage", true, "target package file path");
+        options.addOption("ckpt", "checkpoint", true, "checkpoint dir");
+        options.addOption("ld", "load", true, "resume dir");
 
         HelpFormatter helpFormatter = new HelpFormatter();
         try {
@@ -61,6 +76,8 @@ public abstract class BaseTransformerApp extends CommandApp {
             optConfig = commandLine.getOptionValue("c");
             optSourcePackage = commandLine.getOptionValue("s");
             optTargetPackage = commandLine.getOptionValue("t");
+            checkpoint = commandLine.getOptionValue("ckpt");
+            load = commandLine.getOptionValue("ld");
 
             doTransform();
         } catch (ParseException e) {
@@ -79,10 +96,47 @@ public abstract class BaseTransformerApp extends CommandApp {
         Package toPackage = to.newInstance().setPackageFile(new File(new File(optTargetPackage).getAbsolutePath()));
         LOGGER.info("start transform from: {}, to: {}", from, to);
         Transformer transformer = createTransformer(new File(optConfig), fromPackage, toPackage);
+        initCollector();
+        checkAndSetCheckpoint();
         transformer.init();
         transformer.load();
         transformer.transform();
         transformer.write();
+        finishCollector();
         LOGGER.info("transform success");
+    }
+
+    /**
+     * custom collector and metrics consumer, default consumer with logging
+     */
+    protected void initCollector() {
+    }
+
+    protected void checkAndSetCheckpoint() throws IOException {
+        TransformerContext.getContext().setCheckpoint(checkpoint);
+        TransformerContext.getContext().setLoad(load);
+        if (TransformerContext.getContext().getCheckpoint() != null
+                && TransformerContext.getContext().getLoad() != null) {
+            if (TransformerContext.getContext().getCheckpoint().getCanonicalPath()
+                    .equals(TransformerContext.getContext().getLoad().getCanonicalPath())) {
+                throw new RuntimeException("checkpoint path can not equals to load path");
+            }
+        }
+        File file = TransformerContext.getContext().getCheckpoint();
+        if (file != null && file.exists()) {
+            for (File child : file.listFiles()) {
+                if (child.getName().endsWith(LocalFileCheckPoint.SUFFIX)) {
+                    child.delete();
+                }
+            }
+        }
+    }
+
+    /**
+     * custom metrics consumer with finishCollector(Consumer<Summary> c)
+     */
+    protected void finishCollector() {
+        TransformerContext.getCollector().finishCollector();
+        TransformerContext.clear();
     }
 }

@@ -15,22 +15,23 @@
 
 package com.aliyun.migrationx.common.utils;
 
+import java.lang.reflect.Type;
+import java.util.Arrays;
+import java.util.Locale;
+import java.util.Optional;
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.lang.reflect.Type;
-import java.util.Arrays;
-import java.util.Locale;
-import java.util.Optional;
 
 /**
  * @author sam.liux
@@ -70,7 +71,20 @@ public class GsonUtils {
             return gson.fromJson(jsonString, type);
         } catch (Throwable e) {
             LOGGER.error("parse json string: {}, exception: ", jsonString, e);
-            throw  e;
+            throw e;
+        }
+    }
+
+    public static <T> T fromJson(JsonObject json, Type type) {
+        if (json == null) {
+            return null;
+        }
+
+        try {
+            return gson.fromJson(json, type);
+        } catch (Throwable e) {
+            LOGGER.error("parse json string: {}, exception: ", json, e);
+            throw e;
         }
     }
 
@@ -85,12 +99,12 @@ public class GsonUtils {
     public static class LocaleAdapter implements JsonSerializer<Locale>, JsonDeserializer<Locale> {
         @Override
         public Locale deserialize(JsonElement jsonElement, Type type, JsonDeserializationContext jsonDeserializationContext)
-            throws JsonParseException {
+                throws JsonParseException {
             if (jsonElement.isJsonPrimitive()) {
                 String locale = jsonElement.getAsString();
                 return Arrays.stream(Locale.getAvailableLocales())
-                    .filter(lc -> StringUtils.equalsIgnoreCase(locale, lc.toString()))
-                    .findAny().orElse(null);
+                        .filter(lc -> StringUtils.equalsIgnoreCase(locale, lc.toString()))
+                        .findAny().orElse(null);
             }
 
             throw new RuntimeException("invalid locale type: " + type + ", json: {}" + jsonElement);
@@ -99,9 +113,9 @@ public class GsonUtils {
         @Override
         public JsonElement serialize(Locale locale, Type type, JsonSerializationContext jsonSerializationContext) {
             return Optional.ofNullable(locale)
-                .map(Locale::toString)
-                .map(l -> jsonSerializationContext.serialize(l, String.class))
-                .orElse(jsonSerializationContext.serialize(null));
+                    .map(Locale::toString)
+                    .map(l -> jsonSerializationContext.serialize(l, String.class))
+                    .orElse(jsonSerializationContext.serialize(null));
         }
     }
 }

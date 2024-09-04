@@ -36,6 +36,7 @@ import lombok.experimental.Accessors;
 @EqualsAndHashCode
 public abstract class AbstractBaseCode implements Code {
     protected List<String> resourceReferences;
+    protected transient String programType;
 
     @Override
     public String getRawContent() {
@@ -68,6 +69,11 @@ public abstract class AbstractBaseCode implements Code {
         c.setSourceCode("");
         String content = c.getContent();
         return GsonUtils.fromJsonString(content, new TypeToken<Map<String, Object>>() {}.getType());
+    }
+
+    @Override
+    public void setProgramType(String programType) {
+        this.programType = programType;
     }
 
     @Override

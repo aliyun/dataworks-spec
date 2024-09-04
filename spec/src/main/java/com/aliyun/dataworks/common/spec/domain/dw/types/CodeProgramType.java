@@ -53,6 +53,9 @@ public enum CodeProgramType {
     CHECK(19, "CHECK", CalcEngineType.GENERAL, null, ".json"),
     OSS_INSPECT(239, "OSS_INSPECT", CalcEngineType.GENERAL, null, ".json"),
     CROSS_TENANTS(1089, "CROSS_TENANTS", CalcEngineType.GENERAL, null, ".json"),
+    PYTHON(1322, "PYTHON", CalcEngineType.GENERAL, null, ".py"),
+    DATA_PUSH(1332, "DATA_PUSH", CalcEngineType.GENERAL, null, ".json"),
+    DATA_QUALITY_MONITOR(1333, "DATA_QUALITY_MONITOR", CalcEngineType.GENERAL, null, ".json"),
 
     HIVE(3, "HIVE", CalcEngineType.ODPS, LabelType.DATA_PROCESS, ".sql"),
     // Data Masking
@@ -70,16 +73,18 @@ public enum CodeProgramType {
     ODPS_SPARK(225, "ODPS_SPARK", CalcEngineType.ODPS, LabelType.DATA_PROCESS, ".mc.spark.json"),
     COMPONENT_SQL(1010, "COMPONENT_SQL", CalcEngineType.ODPS, LabelType.DATA_PROCESS, ".sql"),
     SQL_COMPONENT(3010, "SQL_COMPONENT", CalcEngineType.ODPS, LabelType.DATA_PROCESS, ".sql"),
-    ODPS_PYTHON(12, "ODPS_PYTHON", CalcEngineType.ODPS, LabelType.RESOURCE, ".py"),
-    ODPS_JAR(13, "ODPS_JAR", CalcEngineType.ODPS, LabelType.RESOURCE, null),
-    ODPS_ARCHIVE(14, "ODPS_ARCHIVE", CalcEngineType.ODPS, LabelType.RESOURCE, null),
-    ODPS_FILE(15, "ODPS_FILE", CalcEngineType.ODPS, LabelType.RESOURCE, null),
-    ODPS_DDL(18, "ODPS_DDL", CalcEngineType.ODPS, LabelType.RESOURCE, ".sql"),
-    ODPS_TABLE(16, "ODPS_TABLE", CalcEngineType.ODPS, LabelType.TABLE, null),
-    ODPS_FUNCTION(17, "ODPS_FUNCTION", CalcEngineType.ODPS, LabelType.FUNCTION, null),
+    ODPS_PYTHON(12, "ODPS_PYTHON", CalcEngineType.ODPS, LabelType.RESOURCE, ".json"),
+    ODPS_JAR(13, "ODPS_JAR", CalcEngineType.ODPS, LabelType.RESOURCE, ".json"),
+    ODPS_ARCHIVE(14, "ODPS_ARCHIVE", CalcEngineType.ODPS, LabelType.RESOURCE, ".json"),
+    ODPS_FILE(15, "ODPS_FILE", CalcEngineType.ODPS, LabelType.RESOURCE, ".json"),
+    ODPS_DDL(18, "ODPS_DDL", CalcEngineType.ODPS, LabelType.RESOURCE, ".json"),
+    ODPS_TABLE(16, "ODPS_TABLE", CalcEngineType.ODPS, LabelType.TABLE, ".json"),
+    ODPS_FUNCTION(17, "ODPS_FUNCTION", CalcEngineType.ODPS, LabelType.FUNCTION, ".json"),
+    DATASERVICE_STUDIO(238, "DataService_studio", CalcEngineType.ODPS, LabelType.DATA_PROCESS, ".json"),
 
     DATAX(4, "DATAX", CalcEngineType.DI, null, ".json"),
     DATAX2(20, "DATAX2", CalcEngineType.DI, null, ".json"),
+    DT(21, "DT", CalcEngineType.DI, null, ".json"),
     CDP(22, "CDP", CalcEngineType.DI, null, ".json"),
     DI(23, "DI", CalcEngineType.DI, null, ".json"),
     RI(900, "RI", CalcEngineType.DI, null, ".json"),
@@ -99,6 +104,7 @@ public enum CodeProgramType {
     EMR_HIVE_CLI(265, "EMR_HIVE_CLI", CalcEngineType.EMR, LabelType.DATA_PROCESS, null),
     EMR_STREAMING_SQL(266, "EMR_STREAMING_SQL", CalcEngineType.EMR, LabelType.DATA_PROCESS, ".sql"),
     EMR_TRINO(267, "EMR_TRINO", CalcEngineType.EMR, LabelType.DATA_PROCESS, ".sql"),
+    EMR_KYUUBI(268, "EMR_KYUUBI", CalcEngineType.EMR, LabelType.DATA_PROCESS, ".sql"),
     EMR_JAR(231, "EMR_JAR", CalcEngineType.EMR, LabelType.RESOURCE, null),
     EMR_FILE(232, "EMR_FILE", CalcEngineType.EMR, LabelType.RESOURCE, null),
     EMR_TABLE(261, "EMR_TABLE", CalcEngineType.EMR, LabelType.TABLE, null),
@@ -131,10 +137,34 @@ public enum CodeProgramType {
     HOLOGRES_SYNC_DDL(1094, "HOLOGRES_SYNC_DDL", CalcEngineType.HOLO, LabelType.DATA_PROCESS, ".hologres.ddl.sync.json"),
     HOLOGRES_SYNC_DATA(1095, "HOLOGRES_SYNC_DATA", CalcEngineType.HOLO, LabelType.DATA_PROCESS, ".hologres.data.sync.json"),
 
-    BLINK_BATCH_SQL(2020, "BLINK_BATCH_SQL", CalcEngineType.FLINK, LabelType.DATA_PROCESS, null),
-    BLINK_DATASTREAM(2019, "BLINK_DATASTREAM", CalcEngineType.FLINK, LabelType.DATA_PROCESS, null),
+    BLINK_SQL(2010, "BLINK_STREAM_SQL", CalcEngineType.FLINK, LabelType.DATA_PROCESS, ".json"),
+    FLINK_SQL_BATCH(2011, "FLINK_SQL_BATCH", CalcEngineType.FLINK, LabelType.DATA_PROCESS, ".json"),
+    FLINK_SQL_STREAM(2012, "FLINK_SQL_STREAM", CalcEngineType.FLINK, LabelType.DATA_PROCESS, ".json"),
+    BLINK_BATCH_SQL(2020, "BLINK_BATCH_SQL", CalcEngineType.FLINK, LabelType.DATA_PROCESS, ".json"),
+    BLINK_DATASTREAM(2019, "BLINK_DATASTREAM", CalcEngineType.FLINK, LabelType.DATA_PROCESS, ".json"),
 
     CLICK_SQL(1301, "CLICK_SQL", CalcEngineType.CLICKHOUSE, LabelType.DATA_PROCESS, ".sql"),
+
+    POSTGRESQL(1302, "POSTGRESQL", CalcEngineType.DATABASE, LabelType.DATA_PROCESS, ".sql"),
+    MYSQL(1303, "MYSQL", CalcEngineType.DATABASE, LabelType.DATA_PROCESS, ".sql"),
+    SQLSERVER(1304, "Sql Server", CalcEngineType.DATABASE, LabelType.DATA_PROCESS, ".sql"),
+    Oracle(1305, "Oracle", CalcEngineType.DATABASE, LabelType.DATA_PROCESS, ".sql"),
+    StarRocks(1306, "StarRocks", CalcEngineType.DATABASE, LabelType.DATA_PROCESS, ".sql"),
+    DRDS(1307, "DRDS", CalcEngineType.DATABASE, LabelType.DATA_PROCESS, ".sql"),
+    Doris(1308, "Doris", CalcEngineType.DATABASE, LabelType.DATA_PROCESS, ".sql"),
+    Mariadb(1309, "Mariadb", CalcEngineType.DATABASE, LabelType.DATA_PROCESS, ".sql"),
+    Selectdb(1310, "Selectdb", CalcEngineType.DATABASE, LabelType.DATA_PROCESS, ".sql"),
+    Redshift(1311, "Redshift", CalcEngineType.DATABASE, LabelType.DATA_PROCESS, ".sql"),
+    Saphana(1312, "Saphana", CalcEngineType.DATABASE, LabelType.DATA_PROCESS, ".sql"),
+    Vertica(1313, "Vertica", CalcEngineType.DATABASE, LabelType.DATA_PROCESS, ".sql"),
+    OceanBase(1314, "OceanBase", CalcEngineType.DATABASE, LabelType.DATA_PROCESS, ".sql"),
+    DB2(1315, "DB2", CalcEngineType.DATABASE, LabelType.DATA_PROCESS, ".sql"),
+    ADB_for_PostgreSQL(1316, "ADB for PostgreSQL", CalcEngineType.DATABASE, LabelType.DATA_PROCESS, ".sql"),
+    ADB_for_MySQL(1317, "ADB for MySQL", CalcEngineType.DATABASE, LabelType.DATA_PROCESS, ".sql"),
+    
+    //only for temp
+    CUSTOM(9999, "CUSTOM", CalcEngineType.CUSTOM, LabelType.DATA_PROCESS, ".json"),
+
     ;
 
     private final int code;
@@ -171,9 +201,17 @@ public enum CodeProgramType {
         return Arrays.stream(values()).filter(t -> StringUtils.equalsIgnoreCase(t.name(), name)).findAny().orElse(null);
     }
 
+    public static CodeProgramType of(String name) {
+        CodeProgramType type = getNodeTypeByName(name);
+        if (type == null) {
+            throw new RuntimeException("unknown type " + name);
+        }
+        return type;
+    }
+
     public static boolean matchEngine(String codeProgramType, CalcEngineType calcEngineType) {
         return Arrays.stream(CodeProgramType.values())
-            .filter(t -> StringUtils.equalsIgnoreCase(t.name(), codeProgramType))
-            .anyMatch(t -> Objects.equals(calcEngineType, t.getCalcEngineType()));
+                .filter(t -> StringUtils.equalsIgnoreCase(t.name(), codeProgramType))
+                .anyMatch(t -> Objects.equals(calcEngineType, t.getCalcEngineType()));
     }
 }

@@ -15,13 +15,14 @@
 
 package com.aliyun.dataworks.migrationx.transformer.dataworks.transformer;
 
+import java.util.Locale;
+import java.util.Map;
+
 import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.DwProject;
-import com.google.gson.JsonObject;
+
 import lombok.Data;
 import lombok.ToString;
 import lombok.experimental.Accessors;
-
-import java.util.Locale;
 
 /**
  * @author 聿剑
@@ -31,8 +32,18 @@ import java.util.Locale;
 @ToString
 @Accessors(chain = true)
 public class DataWorksTransformerConfig {
+    private static final ThreadLocal<DataWorksTransformerConfig> threadLocal = new ThreadLocal<>();
+
     private DwProject project;
-    private JsonObject settings;
+    private Map<String, Object> settings;
     private DataWorksPackageFormat format;
     private Locale locale;
+
+    public static void setConfig(DataWorksTransformerConfig config) {
+        threadLocal.set(config);
+    }
+
+    public static DataWorksTransformerConfig getConfig() {
+        return threadLocal.get();
+    }
 }

@@ -1,9 +1,14 @@
 package com.aliyun.dataworks.migrationx.domain.dataworks.service.converter;
 
+import com.alibaba.fastjson2.JSON;
+
 import com.aliyun.dataworks.common.spec.SpecUtil;
 import com.aliyun.dataworks.common.spec.domain.DataWorksWorkflowSpec;
 import com.aliyun.dataworks.common.spec.domain.Specification;
 import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.client.FileDetail;
+import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.v5.DataSnapshot;
+import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.v5.DataSnapshot.DataSnapshotContent;
+import com.aliyun.dataworks.migrationx.domain.dataworks.objects.types.NodeUseType;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -100,6 +105,187 @@ public class DataWorksSpecNodeConverterTest {
         Assert.assertNotNull(result);
         Assert.assertNotNull(result.getFile());
         Assert.assertNotNull(result.getNodeCfg());
+        Assert.assertEquals(NodeUseType.SCHEDULED.getValue(), (int)result.getFile().getUseType());
+    }
+
+    @Test
+    public void testHandleNodeSpecManualNode() throws Exception {
+        String specStr = "{\n"
+            + "\t\"version\":\"1.1.0\",\n"
+            + "\t\"kind\":\"ManualNode\",\n"
+            + "\t\"spec\":{\n"
+            + "\t\t\"nodes\":[\n"
+            + "\t\t\t{\n"
+            + "\t\t\t\t\"recurrence\":\"Normal\",\n"
+            + "\t\t\t\t\"id\":\"26248077\",\n"
+            + "\t\t\t\t\"timeout\":0,\n"
+            + "\t\t\t\t\"instanceMode\":\"T+1\",\n"
+            + "\t\t\t\t\"rerunMode\":\"Allowed\",\n"
+            + "\t\t\t\t\"rerunTimes\":0,\n"
+            + "\t\t\t\t\"rerunInterval\":120000,\n"
+            + "\t\t\t\t\"datasource\":{\n"
+            + "\t\t\t\t\t\"name\":\"odps_first\",\n"
+            + "\t\t\t\t\t\"type\":\"odps\"\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"script\":{\n"
+            + "\t\t\t\t\t\"path\":\"业务流程/建模引擎/MaxCompute/数据开发/config_driver数据同步/model_table\",\n"
+            + "\t\t\t\t\t\"runtime\":{\n"
+            + "\t\t\t\t\t\t\"command\":\"ODPS_SQL\"\n"
+            + "\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\"parameters\":[\n"
+            + "\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\"name\":\"bizdate\",\n"
+            + "\t\t\t\t\t\t\t\"artifactType\":\"Variable\",\n"
+            + "\t\t\t\t\t\t\t\"scope\":\"NodeParameter\",\n"
+            + "\t\t\t\t\t\t\t\"type\":\"System\",\n"
+            + "\t\t\t\t\t\t\t\"value\":\"$[yyyymmdd-1]\"\n"
+            + "\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t]\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"trigger\":{\n"
+            + "\t\t\t\t\t\"type\":\"Scheduler\",\n"
+            + "\t\t\t\t\t\"cron\":\"00 29 00 * * ?\",\n"
+            + "\t\t\t\t\t\"startTime\":\"1970-01-01 00:00:00\",\n"
+            + "\t\t\t\t\t\"endTime\":\"9999-01-01 15:12:51\",\n"
+            + "\t\t\t\t\t\"timezone\":\"Asia/Shanghai\"\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"runtimeResource\":{\n"
+            + "\t\t\t\t\t\"resourceGroup\":\"group_20051853\",\n"
+            + "\t\t\t\t\t\"resourceGroupId\":\"20051853\"\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"name\":\"model_table\",\n"
+            + "\t\t\t\t\"owner\":\"370260\",\n"
+            + "\t\t\t\t\"inputs\":{\n"
+            + "\t\t\t\t\t\"nodeOutputs\":[\n"
+            + "\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\"data\":\"dataworks_meta.dwd_base_config_driver_data_jsondata_df\",\n"
+            + "\t\t\t\t\t\t\t\"artifactType\":\"NodeOutput\"\n"
+            + "\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t]\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"outputs\":{\n"
+            + "\t\t\t\t\t\"nodeOutputs\":[\n"
+            + "\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\"data\":\"dataworks_analyze.26248077_out\",\n"
+            + "\t\t\t\t\t\t\t\"artifactType\":\"NodeOutput\"\n"
+            + "\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\"data\":\"dataworks_analyze.model_table_config_driver\",\n"
+            + "\t\t\t\t\t\t\t\"artifactType\":\"NodeOutput\"\n"
+            + "\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t]\n"
+            + "\t\t\t\t}\n"
+            + "\t\t\t}\n"
+            + "\t\t],\n"
+            + "\t\t\"flow\":[\n"
+            + "\t\t\t{\n"
+            + "\t\t\t\t\"nodeId\":\"26248077\",\n"
+            + "\t\t\t\t\"depends\":[\n"
+            + "\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\"type\":\"Normal\",\n"
+            + "\t\t\t\t\t\t\"output\":\"dataworks_meta.dwd_base_config_driver_data_jsondata_df\"\n"
+            + "\t\t\t\t\t}\n"
+            + "\t\t\t\t]\n"
+            + "\t\t\t}\n"
+            + "\t\t]\n"
+            + "\t}\n"
+            + "}";
+        Specification<DataWorksWorkflowSpec> spec = SpecUtil.parseToDomain(specStr);
+        FileDetail result = DataWorksSpecNodeConverter.nodeSpecToFileDetail(spec);
+        Assert.assertNotNull(result);
+        Assert.assertNotNull(result.getFile());
+        Assert.assertNotNull(result.getNodeCfg());
+        Assert.assertEquals(NodeUseType.MANUAL.getValue(), (int)result.getFile().getUseType());
+    }
+
+    @Test
+    public void testHandleNodeSpecManualWorkflow() throws Exception {
+        String specStr = "{\n"
+            + "\t\"version\":\"1.1.0\",\n"
+            + "\t\"kind\":\"ManualWorkflow\",\n"
+            + "\t\"spec\":{\n"
+            + "\t\t\"nodes\":[\n"
+            + "\t\t\t{\n"
+            + "\t\t\t\t\"recurrence\":\"Normal\",\n"
+            + "\t\t\t\t\"id\":\"26248077\",\n"
+            + "\t\t\t\t\"timeout\":0,\n"
+            + "\t\t\t\t\"instanceMode\":\"T+1\",\n"
+            + "\t\t\t\t\"rerunMode\":\"Allowed\",\n"
+            + "\t\t\t\t\"rerunTimes\":0,\n"
+            + "\t\t\t\t\"rerunInterval\":120000,\n"
+            + "\t\t\t\t\"datasource\":{\n"
+            + "\t\t\t\t\t\"name\":\"odps_first\",\n"
+            + "\t\t\t\t\t\"type\":\"odps\"\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"script\":{\n"
+            + "\t\t\t\t\t\"path\":\"业务流程/建模引擎/MaxCompute/数据开发/config_driver数据同步/model_table\",\n"
+            + "\t\t\t\t\t\"runtime\":{\n"
+            + "\t\t\t\t\t\t\"command\":\"ODPS_SQL\"\n"
+            + "\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\"parameters\":[\n"
+            + "\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\"name\":\"bizdate\",\n"
+            + "\t\t\t\t\t\t\t\"artifactType\":\"Variable\",\n"
+            + "\t\t\t\t\t\t\t\"scope\":\"NodeParameter\",\n"
+            + "\t\t\t\t\t\t\t\"type\":\"System\",\n"
+            + "\t\t\t\t\t\t\t\"value\":\"$[yyyymmdd-1]\"\n"
+            + "\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t]\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"trigger\":{\n"
+            + "\t\t\t\t\t\"type\":\"Scheduler\",\n"
+            + "\t\t\t\t\t\"cron\":\"00 29 00 * * ?\",\n"
+            + "\t\t\t\t\t\"startTime\":\"1970-01-01 00:00:00\",\n"
+            + "\t\t\t\t\t\"endTime\":\"9999-01-01 15:12:51\",\n"
+            + "\t\t\t\t\t\"timezone\":\"Asia/Shanghai\"\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"runtimeResource\":{\n"
+            + "\t\t\t\t\t\"resourceGroup\":\"group_20051853\",\n"
+            + "\t\t\t\t\t\"resourceGroupId\":\"20051853\"\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"name\":\"model_table\",\n"
+            + "\t\t\t\t\"owner\":\"370260\",\n"
+            + "\t\t\t\t\"inputs\":{\n"
+            + "\t\t\t\t\t\"nodeOutputs\":[\n"
+            + "\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\"data\":\"dataworks_meta.dwd_base_config_driver_data_jsondata_df\",\n"
+            + "\t\t\t\t\t\t\t\"artifactType\":\"NodeOutput\"\n"
+            + "\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t]\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"outputs\":{\n"
+            + "\t\t\t\t\t\"nodeOutputs\":[\n"
+            + "\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\"data\":\"dataworks_analyze.26248077_out\",\n"
+            + "\t\t\t\t\t\t\t\"artifactType\":\"NodeOutput\"\n"
+            + "\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\"data\":\"dataworks_analyze.model_table_config_driver\",\n"
+            + "\t\t\t\t\t\t\t\"artifactType\":\"NodeOutput\"\n"
+            + "\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t]\n"
+            + "\t\t\t\t}\n"
+            + "\t\t\t}\n"
+            + "\t\t],\n"
+            + "\t\t\"flow\":[\n"
+            + "\t\t\t{\n"
+            + "\t\t\t\t\"nodeId\":\"26248077\",\n"
+            + "\t\t\t\t\"depends\":[\n"
+            + "\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\"type\":\"Normal\",\n"
+            + "\t\t\t\t\t\t\"output\":\"dataworks_meta.dwd_base_config_driver_data_jsondata_df\"\n"
+            + "\t\t\t\t\t}\n"
+            + "\t\t\t\t]\n"
+            + "\t\t\t}\n"
+            + "\t\t]\n"
+            + "\t}\n"
+            + "}";
+        Specification<DataWorksWorkflowSpec> spec = SpecUtil.parseToDomain(specStr);
+        FileDetail result = DataWorksSpecNodeConverter.nodeSpecToFileDetail(spec);
+        Assert.assertNotNull(result);
+        Assert.assertNotNull(result.getFile());
+        Assert.assertNotNull(result.getNodeCfg());
+        Assert.assertEquals(NodeUseType.MANUAL_WORKFLOW.getValue(), (int)result.getFile().getUseType());
     }
 
     @Test
@@ -192,6 +378,103 @@ public class DataWorksSpecNodeConverterTest {
         Assert.assertNotNull(result);
         Assert.assertNotNull(result.getFile());
         Assert.assertNotNull(result.getNodeCfg());
+    }
+
+    @Test
+    public void testDataSnapshotToFileDetail() {
+        String specStr = "{\n"
+            + "\t\"version\":\"1.1.0\",\n"
+            + "\t\"kind\":\"ManualWorkflow\",\n"
+            + "\t\"spec\":{\n"
+            + "\t\t\"nodes\":[\n"
+            + "\t\t\t{\n"
+            + "\t\t\t\t\"recurrence\":\"Normal\",\n"
+            + "\t\t\t\t\"id\":\"26248077\",\n"
+            + "\t\t\t\t\"timeout\":0,\n"
+            + "\t\t\t\t\"instanceMode\":\"T+1\",\n"
+            + "\t\t\t\t\"rerunMode\":\"Allowed\",\n"
+            + "\t\t\t\t\"rerunTimes\":0,\n"
+            + "\t\t\t\t\"rerunInterval\":120000,\n"
+            + "\t\t\t\t\"datasource\":{\n"
+            + "\t\t\t\t\t\"name\":\"odps_first\",\n"
+            + "\t\t\t\t\t\"type\":\"odps\"\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"script\":{\n"
+            + "\t\t\t\t\t\"path\":\"业务流程/建模引擎/MaxCompute/数据开发/config_driver数据同步/model_table\",\n"
+            + "\t\t\t\t\t\"runtime\":{\n"
+            + "\t\t\t\t\t\t\"command\":\"ODPS_SQL\"\n"
+            + "\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\"parameters\":[\n"
+            + "\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\"name\":\"bizdate\",\n"
+            + "\t\t\t\t\t\t\t\"artifactType\":\"Variable\",\n"
+            + "\t\t\t\t\t\t\t\"scope\":\"NodeParameter\",\n"
+            + "\t\t\t\t\t\t\t\"type\":\"System\",\n"
+            + "\t\t\t\t\t\t\t\"value\":\"$[yyyymmdd-1]\"\n"
+            + "\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t]\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"trigger\":{\n"
+            + "\t\t\t\t\t\"type\":\"Scheduler\",\n"
+            + "\t\t\t\t\t\"cron\":\"00 29 00 * * ?\",\n"
+            + "\t\t\t\t\t\"startTime\":\"1970-01-01 00:00:00\",\n"
+            + "\t\t\t\t\t\"endTime\":\"9999-01-01 15:12:51\",\n"
+            + "\t\t\t\t\t\"timezone\":\"Asia/Shanghai\"\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"runtimeResource\":{\n"
+            + "\t\t\t\t\t\"resourceGroup\":\"group_20051853\",\n"
+            + "\t\t\t\t\t\"resourceGroupId\":\"20051853\"\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"name\":\"model_table\",\n"
+            + "\t\t\t\t\"owner\":\"370260\",\n"
+            + "\t\t\t\t\"inputs\":{\n"
+            + "\t\t\t\t\t\"nodeOutputs\":[\n"
+            + "\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\"data\":\"dataworks_meta.dwd_base_config_driver_data_jsondata_df\",\n"
+            + "\t\t\t\t\t\t\t\"artifactType\":\"NodeOutput\"\n"
+            + "\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t]\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"outputs\":{\n"
+            + "\t\t\t\t\t\"nodeOutputs\":[\n"
+            + "\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\"data\":\"dataworks_analyze.26248077_out\",\n"
+            + "\t\t\t\t\t\t\t\"artifactType\":\"NodeOutput\"\n"
+            + "\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\"data\":\"dataworks_analyze.model_table_config_driver\",\n"
+            + "\t\t\t\t\t\t\t\"artifactType\":\"NodeOutput\"\n"
+            + "\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t]\n"
+            + "\t\t\t\t}\n"
+            + "\t\t\t}\n"
+            + "\t\t],\n"
+            + "\t\t\"flow\":[\n"
+            + "\t\t\t{\n"
+            + "\t\t\t\t\"nodeId\":\"26248077\",\n"
+            + "\t\t\t\t\"depends\":[\n"
+            + "\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\"type\":\"Normal\",\n"
+            + "\t\t\t\t\t\t\"output\":\"dataworks_meta.dwd_base_config_driver_data_jsondata_df\"\n"
+            + "\t\t\t\t\t}\n"
+            + "\t\t\t\t]\n"
+            + "\t\t\t}\n"
+            + "\t\t]\n"
+            + "\t}\n"
+            + "}";
+        DataSnapshotContent content = DataSnapshotContent.builder()
+            .content("select 1")
+            .spec(specStr)
+            .build();
+        DataSnapshot snapshot = DataSnapshot.builder()
+            .content(JSON.toJSONString(content))
+            .build();
+        FileDetail fileDetail = DataWorksSpecNodeConverter.snapshotContentToFileDetail(snapshot);
+        Assert.assertNotNull(fileDetail);
+        Assert.assertNotNull(fileDetail.getFile());
+        Assert.assertEquals(10, (int)fileDetail.getFile().getFileType());
+        Assert.assertEquals(content.getContent(), fileDetail.getFile().getContent());
+        Assert.assertNotNull(fileDetail.getNodeCfg());
     }
 }
 

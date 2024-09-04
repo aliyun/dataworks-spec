@@ -15,18 +15,19 @@
 
 package com.aliyun.dataworks.migrationx.domain.dataworks.utils;
 
-import com.aliyun.dataworks.common.spec.domain.dw.codemodel.CodeConstants;
-import com.aliyun.dataworks.common.spec.domain.dw.types.CodeProgramType;
-import com.google.common.base.Joiner;
-import org.apache.commons.collections4.ListUtils;
-import org.apache.commons.lang3.StringUtils;
-import org.springframework.util.CollectionUtils;
-
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.stream.Collectors;
+
+import com.aliyun.dataworks.common.spec.domain.dw.codemodel.CodeConstants;
+import com.aliyun.dataworks.common.spec.domain.dw.types.CodeProgramType;
+
+import com.google.common.base.Joiner;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author 聿剑
@@ -61,8 +62,8 @@ public class DataStudioCodeUtils {
         }
 
         String references = Joiner.on("\n").join(resources.stream()
-            .map(str -> "--@resource_reference{\"" + str + "\"}")
-            .collect(Collectors.toList()));
+                .map(str -> "--@resource_reference{\"" + str + "\"}")
+                .collect(Collectors.toList()));
 
         return Joiner.on('\n').join(references, code);
     }
@@ -73,9 +74,9 @@ public class DataStudioCodeUtils {
         }
 
         String references = Joiner.on("\n").join(resources.stream()
-            .filter(Objects::nonNull)
-            .map(str -> "##@resource_reference{\"" + str + "\"}")
-            .collect(Collectors.toList()));
+                .filter(Objects::nonNull)
+                .map(str -> "##@resource_reference{\"" + str + "\"}")
+                .collect(Collectors.toList()));
 
         return Joiner.on('\n').join(references, code);
     }

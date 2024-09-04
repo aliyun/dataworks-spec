@@ -15,20 +15,26 @@
 
 package com.aliyun.migrationx.common.command.appbase;
 
-import com.aliyun.migrationx.common.exception.BizException;
-import com.aliyun.migrationx.common.exception.ErrorCode;
-import com.aliyun.migrationx.common.utils.GsonUtils;
-import com.google.common.base.Joiner;
-import com.google.gson.reflect.TypeToken;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.cli.*;
-import org.apache.commons.collections4.MapUtils;
-import org.apache.commons.io.FileUtils;
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
+
+import com.aliyun.migrationx.common.exception.BizException;
+import com.aliyun.migrationx.common.exception.ErrorCode;
+import com.aliyun.migrationx.common.utils.GsonUtils;
+
+import com.google.common.base.Joiner;
+import com.google.gson.reflect.TypeToken;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.DefaultParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.apache.commons.collections4.MapUtils;
+import org.apache.commons.io.FileUtils;
 
 /**
  * @author 聿剑
@@ -85,10 +91,10 @@ public class CommandAppEntrance {
                 appMeta.setName(appName);
                 appMeta.setType(appType);
                 log.info("register command app type: {}, name: {}, class: {}", appType, appName, appMeta.getAppClass());
-                CommandAppFactory.register(appType, appName, (Class<? extends CommandApp>)Class.forName(appMeta.getAppClass()));
+                CommandAppFactory.register(appType, appName, (Class<? extends CommandApp>) Class.forName(appMeta.getAppClass()));
             } catch (ClassNotFoundException e) {
                 log.info("register command app failed, appType: {}, appName: {}, class: {}, error: {}",
-                    appType, appName, appMeta.getAppClass(), e.getMessage());
+                        appType, appName, appMeta.getAppClass(), e);
             }
         }));
 

@@ -24,7 +24,6 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONObject;
 
 import com.aliyun.dataworks.common.spec.domain.DataWorksWorkflowSpec;
 import com.aliyun.dataworks.common.spec.domain.Specification;
@@ -36,13 +35,19 @@ import com.aliyun.dataworks.common.spec.domain.enums.VariableType;
 import com.aliyun.dataworks.common.spec.domain.interfaces.Input;
 import com.aliyun.dataworks.common.spec.domain.interfaces.Output;
 import com.aliyun.dataworks.common.spec.domain.noref.SpecDepend;
+import com.aliyun.dataworks.common.spec.domain.noref.SpecDoWhile;
 import com.aliyun.dataworks.common.spec.domain.noref.SpecFlowDepend;
+import com.aliyun.dataworks.common.spec.domain.noref.SpecForEach;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecNode;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecNodeOutput;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecScript;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecTrigger;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecVariable;
 import com.aliyun.dataworks.common.spec.domain.ref.runtime.SpecScriptRuntime;
+import com.aliyun.dataworks.common.spec.exception.SpecException;
+import lombok.Builder;
+import lombok.Data;
+import lombok.ToString;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.BooleanUtils;
@@ -54,9 +59,10 @@ import org.slf4j.LoggerFactory;
  * @author 聿剑
  * @date 2023/11/9
  */
-public class DataWorksNodeAdapter implements SpecNodeAdapter, DataWorksNode {
+public class DataWorksNodeAdapter implements SpecNodeAdapter, DataWorksNode, DataWorksNodeAdapterContextAware {
     public static final String TIMEOUT = "alisaTaskKillTimeout";
     public static final String IGNORE_BRANCH_CONDITION_SKIP = "ignoreBranchConditionSkip";
+    public static final String LOOP_COUNT = "loopCount";
     public static final Integer NODE_TYPE_NORMAL = 0;
     public static final Integer NODE_TYPE_MANUAL = 1;
     public static final Integer NODE_TYPE_PAUSE = 2;
@@ -64,14 +70,34 @@ public class DataWorksNodeAdapter implements SpecNodeAdapter, DataWorksNode {
 
     private static final Logger logger = LoggerFactory.getLogger(DataWorksNodeAdapter.class);
 
+    /**
+     * @author 聿剑
+     * @date 2024/6/19
+     */
+    @Data
+    @ToString
+    @Builder
+    public static class Context {
+        private boolean deployToScheduler;
+    }
+
     protected final DataWorksWorkflowSpec specification;
     protected final Specification<DataWorksWorkflowSpec> spec;
     protected final SpecNode specNode;
+    protected Context context;
 
     public DataWorksNodeAdapter(Specification<DataWorksWorkflowSpec> specification, SpecNode specNode) {
         this.spec = specification;
         this.specification = this.spec.getSpec();
         this.specNode = specNode;
+        this.context = Context.builder().build();
+    }
+
+    public DataWorksNodeAdapter(Specification<DataWorksWorkflowSpec> specification, SpecNode specNode, Context context) {
+        this.spec = specification;
+        this.specification = this.spec.getSpec();
+        this.specNode = specNode;
+        this.context = context;
     }
 
     @Override
@@ -148,6 +174,7 @@ public class DataWorksNodeAdapter implements SpecNodeAdapter, DataWorksNode {
     @Override
     public String getCode() {
         DataWorksNodeCodeAdapter codeAdapter = new DataWorksNodeCodeAdapter(specNode);
+        codeAdapter.setContext(context);
         return codeAdapter.getCode();
     }
 
@@ -176,7 +203,8 @@ public class DataWorksNodeAdapter implements SpecNodeAdapter, DataWorksNode {
         return Optional.ofNullable(specNode).map(SpecNode::getScript).map(SpecScript::getRuntime)
             .map(SpecScriptRuntime::getCommand)
             .map(cmd -> {
-                if (StringUtils.equalsIgnoreCase(CodeProgramType.DIDE_SHELL.name(), cmd)) {
+                if (StringUtils.equalsIgnoreCase(CodeProgramType.DIDE_SHELL.name(), cmd)
+                    || StringUtils.equalsIgnoreCase(CodeProgramType.PYTHON.name(), cmd)) {
                     return getShellParaValue();
                 }
 
@@ -208,7 +236,7 @@ public class DataWorksNodeAdapter implements SpecNodeAdapter, DataWorksNode {
     }
 
     @Override
-    public String getExtConfig() {
+    public Map<String, Object> getExtConfig() {
         final Map<String, Object> extConfig = new HashMap<>();
         Optional.ofNullable(specNode.getTimeout()).filter(timeout -> timeout > 0).ifPresent(timeout ->
             extConfig.put(TIMEOUT, specNode.getTimeout()));
@@ -216,7 +244,13 @@ public class DataWorksNodeAdapter implements SpecNodeAdapter, DataWorksNode {
         Optional.ofNullable(specNode.getIgnoreBranchConditionSkip()).ifPresent(ignoreBranchConditionSkip ->
             extConfig.put(IGNORE_BRANCH_CONDITION_SKIP, BooleanUtils.isTrue(ignoreBranchConditionSkip)));
 
-        return extConfig.isEmpty() ? null : JSONObject.toJSONString(extConfig);
+        Optional.ofNullable(specNode.getDoWhile()).map(SpecDoWhile::getMaxIterations).ifPresent(maxIterations ->
+            extConfig.put(LOOP_COUNT, maxIterations));
+
+        Optional.ofNullable(specNode.getForeach()).map(SpecForEach::getMaxIterations).ifPresent(maxIterations ->
+            extConfig.put(LOOP_COUNT, maxIterations));
+
+        return extConfig;
     }
 
     @Override
@@ -236,5 +270,26 @@ public class DataWorksNodeAdapter implements SpecNodeAdapter, DataWorksNode {
             }
             return null;
         }).orElseThrow(() -> new RuntimeException("not support node type: " + specNode));
+    }
+
+    @Override
+    public Integer getPrgType(Function<String, Integer> getNodeTypeByName) {
+        SpecScriptRuntime runtime = Optional.ofNullable(specNode).map(SpecNode::getScript).map(SpecScript::getRuntime).orElseThrow(
+            () -> new SpecException("node runtime info not found: " + Optional.ofNullable(specNode).map(SpecNode::getScript).orElse(null)));
+
+        return Optional.ofNullable(runtime.getCommandTypeId())
+            .orElseGet(() -> Optional.ofNullable(runtime.getCommand())
+                .map(getNodeTypeByName)
+                .orElseThrow(() -> new SpecException("unknown node command runtime: " + runtime)));
+    }
+
+    @Override
+    public void setContext(Context context) {
+        this.context = context;
+    }
+
+    @Override
+    public Context getContext() {
+        return this.context;
     }
 }

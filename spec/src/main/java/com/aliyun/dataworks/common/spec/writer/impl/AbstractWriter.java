@@ -35,6 +35,7 @@ import com.aliyun.dataworks.common.spec.utils.SpecDevUtil;
 import com.aliyun.dataworks.common.spec.writer.SpecWriterContext;
 import com.aliyun.dataworks.common.spec.writer.Writer;
 import com.aliyun.dataworks.common.spec.writer.WriterFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 
@@ -44,6 +45,7 @@ import org.apache.commons.collections4.ListUtils;
  * @author 聿剑
  * @date 2023/8/27
  */
+@Slf4j
 public abstract class AbstractWriter<T, V> implements Writer<T, V> {
     protected SpecWriterContext context;
 

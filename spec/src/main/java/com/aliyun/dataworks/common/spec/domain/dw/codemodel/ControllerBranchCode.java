@@ -22,6 +22,7 @@ import java.util.Map;
 
 import com.aliyun.dataworks.common.spec.domain.dw.types.CodeProgramType;
 import com.aliyun.dataworks.common.spec.utils.GsonUtils;
+
 import com.google.gson.reflect.TypeToken;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -52,6 +53,11 @@ public class ControllerBranchCode extends AbstractBaseCode implements JsonFormCo
     @Override
     public String getContent() {
         return GsonUtils.toJsonString(branchList);
+    }
+
+    @Override
+    public void setSourceCode(String sourceCode) {
+        parse(sourceCode);
     }
 
     @Override
