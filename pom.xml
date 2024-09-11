@@ -19,7 +19,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.aliyun.dataworks</groupId>
     <artifactId>dataworks-tool</artifactId>
-    <version>1.1.7-1</version>
+    <version>1.1.7-workflow-preview3</version>
     <packaging>pom</packaging>
     <name>dataworks-tool</name>
     <modules>
@@ -33,7 +33,7 @@
          required maven 3.5.0+
          refer to https://maven.apache.org/maven-ci-friendly.html
          -->
-        <revision>1.1.7-1</revision>
+        <revision>1.1.7-SNAPSHOT</revision>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.source>1.8</maven.compiler.source>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -292,19 +292,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <version>3.6.1</version>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-source-plugin</artifactId>
-                <version>3.2.1</version>
-                <executions>
-                    <execution>
-                        <id>attach-sources</id>
-                        <goals>
-                            <goal>jar</goal>
-                        </goals>
-                    </execution>
-                </executions>
             </plugin>
         </plugins>
         <pluginManagement>

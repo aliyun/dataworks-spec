@@ -15,22 +15,14 @@
 
 package com.aliyun.dataworks.common.spec.writer.impl;
 
-import java.lang.reflect.Field;
-import java.lang.reflect.Modifier;
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
-import java.util.Optional;
 
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
-import com.alibaba.fastjson2.annotation.JSONField;
 
-import com.aliyun.dataworks.common.spec.domain.interfaces.LabelEnum;
 import com.aliyun.dataworks.common.spec.utils.SpecDevUtil;
 import com.aliyun.dataworks.common.spec.writer.SpecWriterContext;
 import com.aliyun.dataworks.common.spec.writer.Writer;
@@ -69,41 +61,7 @@ public abstract class AbstractWriter<T, V> implements Writer<T, V> {
     }
 
     protected JSONObject writeJsonObject(Object specObj, boolean withoutCollectionFields) {
-        if (specObj == null) {
-            return null;
-        }
-
-        JSONObject json = new JSONObject();
-
-        List<Field> fields = SpecDevUtil.getPropertyFields(specObj);
-        Optional.ofNullable(specObj.getClass().getSuperclass()).map(Class::getDeclaredFields).map(Arrays::asList).ifPresent(
-            list -> fields.addAll(1, list));
-
-        fields.stream()
-            .filter(f -> !f.getName().contains("$") && !Modifier.isStatic(f.getModifiers()))
-            .filter(f -> Optional.ofNullable(f.getAnnotation(JSONField.class)).map(JSONField::serialize).orElse(true))
-            .forEach(field -> {
-                field.setAccessible(true);
-                try {
-                    Object value = field.get(specObj);
-                    if (value == null) {
-                        return;
-                    }
-
-                    if (LabelEnum.class.isAssignableFrom(value.getClass())) {
-                        value = ((LabelEnum)value).getLabel();
-                    }
-
-                    if (withoutCollectionFields && (value instanceof Collection || value instanceof Map)) {
-                        return;
-                    }
-
-                    json.put(field.getName(), value);
-                } catch (IllegalAccessException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-        return json;
+        return SpecDevUtil.writeJsonObject(specObj, withoutCollectionFields);
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})

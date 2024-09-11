@@ -19,19 +19,29 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Scanner;
+import java.util.stream.Collectors;
+
+import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONArray;
+import com.alibaba.fastjson2.JSONObject;
+import com.alibaba.fastjson2.JSONWriter.Feature;
 
 import com.aliyun.dataworks.common.spec.domain.DataWorksWorkflowSpec;
 import com.aliyun.dataworks.common.spec.domain.Spec;
+import com.aliyun.dataworks.common.spec.domain.SpecRefEntity;
 import com.aliyun.dataworks.common.spec.domain.Specification;
 import com.aliyun.dataworks.common.spec.domain.dw.codemodel.Code;
 import com.aliyun.dataworks.common.spec.domain.dw.codemodel.CodeModel;
 import com.aliyun.dataworks.common.spec.domain.dw.codemodel.CodeModelFactory;
 import com.aliyun.dataworks.common.spec.domain.dw.codemodel.EmrCode;
+import com.aliyun.dataworks.common.spec.domain.dw.nodemodel.DataWorksNodeAdapter;
 import com.aliyun.dataworks.common.spec.domain.dw.nodemodel.DataWorksNodeCodeAdapter;
+import com.aliyun.dataworks.common.spec.domain.enums.FailureStrategy;
 import com.aliyun.dataworks.common.spec.domain.enums.FunctionType;
 import com.aliyun.dataworks.common.spec.domain.enums.SpecKind;
 import com.aliyun.dataworks.common.spec.domain.enums.SpecVersion;
@@ -45,6 +55,7 @@ import com.aliyun.dataworks.common.spec.domain.noref.SpecForEach;
 import com.aliyun.dataworks.common.spec.domain.noref.SpecJoinBranch;
 import com.aliyun.dataworks.common.spec.domain.noref.SpecLogic;
 import com.aliyun.dataworks.common.spec.domain.noref.SpecParamHub;
+import com.aliyun.dataworks.common.spec.domain.noref.SpecSubFlow;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecArtifact;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecDatasource;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecDqcRule;
@@ -52,12 +63,13 @@ import com.aliyun.dataworks.common.spec.domain.ref.SpecFunction;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecNode;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecNodeOutput;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecRuntimeResource;
+import com.aliyun.dataworks.common.spec.domain.ref.SpecScheduleStrategy;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecScript;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecTable;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecTrigger;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecVariable;
+import com.aliyun.dataworks.common.spec.domain.ref.SpecWorkflow;
 import com.aliyun.dataworks.common.spec.domain.ref.component.SpecComponent;
-import com.aliyun.dataworks.common.spec.domain.specification.DataWorksNodeSpec;
 import com.aliyun.dataworks.common.spec.parser.SpecParserContext;
 import com.aliyun.dataworks.common.spec.utils.GsonUtils;
 import com.aliyun.dataworks.common.spec.utils.SpecDevUtil;
@@ -65,11 +77,9 @@ import com.aliyun.dataworks.common.spec.writer.SpecWriterContext;
 import com.aliyun.dataworks.common.spec.writer.Writer;
 import com.aliyun.dataworks.common.spec.writer.WriterFactory;
 import com.aliyun.dataworks.common.spec.writer.impl.SpecificationWriter;
-
-import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONWriter.Feature;
-
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -103,14 +113,14 @@ public class SpecUtilTest {
 
         // variable的node是否一致
         SpecVariable variable_ctx_output_1 = specification.getVariables().stream().filter(
-                v -> v.getId().equals("ctx_output_1")).findFirst().get();
+            v -> v.getId().equals("ctx_output_1")).findFirst().get();
         SpecNode specNode_node_existed_xx = specification.getNodes().stream().filter(
-                n -> n.getId().equals("node_existed_xx")).findFirst().get();
+            n -> n.getId().equals("node_existed_xx")).findFirst().get();
         // Assert.assertSame(variable_ctx_output_1.getNode(), specNode_node_existed_xx);
 
         // node的Script是否一致
         SpecNode specNode_node_1 = specification.getNodes().stream().filter(n -> n.getId().equals("node_1")).findFirst()
-                .get();
+            .get();
 
         List<Input> inputs = specNode_node_1.getInputs();
         for (Input input : inputs) {
@@ -118,7 +128,7 @@ public class SpecUtilTest {
         }
 
         SpecScript scriptFile1 = specification.getScripts().stream().filter(s -> s.getId().equals("script_file1"))
-                .findFirst().get();
+            .findFirst().get();
         Assert.assertSame(scriptFile1, specNode_node_1.getScript());
 
         // 变量的类型是否正确
@@ -128,65 +138,65 @@ public class SpecUtilTest {
 
         // Script的parameters和variable是否一致
         SpecVariable variable_biz = specification.getVariables().stream().filter(v -> v.getId().equals("bizdate"))
-                .findFirst().get();
+            .findFirst().get();
         SpecVariable specVariable1 = scriptFile1.getParameters().stream().filter(s -> s.getId().equals("bizdate"))
-                .findFirst().get();
+            .findFirst().get();
         Assert.assertSame(variable_biz, specVariable1);
 
         // Node的input中的artifacts是否一致
         SpecArtifact node_specArtifact_table1 = specNode_node_1.getInputs().stream().filter(
-                input -> input instanceof SpecArtifact).map(input -> (SpecArtifact) input).filter(
-                specArtifact -> specArtifact.getId().equals("table1")).findFirst().get();
+            input -> input instanceof SpecArtifact).map(input -> (SpecArtifact)input).filter(
+            specArtifact -> specArtifact.getId().equals("table1")).findFirst().get();
 
         SpecArtifact specArtifact_table1 = specification.getArtifacts().stream().filter(
-                specArtifact -> specArtifact.getId().equals("table1")).findFirst().get();
+            specArtifact -> specArtifact.getId().equals("table1")).findFirst().get();
 
         Assert.assertSame(node_specArtifact_table1, specArtifact_table1);
 
         // Node的input中的variables是否一致
         SpecVariable node_specArtifact_var = specNode_node_1.getInputs().stream().filter(
-                input -> input instanceof SpecVariable).map(input -> (SpecVariable) input).filter(
-                v -> v.getId().equals("ctx_output_1")).findFirst().get();
+            input -> input instanceof SpecVariable).map(input -> (SpecVariable)input).filter(
+            v -> v.getId().equals("ctx_output_1")).findFirst().get();
         Assert.assertSame(variable_ctx_output_1, node_specArtifact_var);
 
         // Node的output中的artifacts是否一致
         SpecArtifact node_specArtifact_artifact2 = specNode_node_1.getOutputs().stream().filter(
-                output -> output instanceof SpecArtifact).map(output -> (SpecArtifact) output).filter(
-                a -> a.getId().equals("table3")).findFirst().get();
+            output -> output instanceof SpecArtifact).map(output -> (SpecArtifact)output).filter(
+            a -> a.getId().equals("table3")).findFirst().get();
 
         SpecArtifact specArtifact_table3 = specification.getArtifacts().stream().filter(
-                specArtifact -> specArtifact.getId().equals("table3")).findFirst().get();
+            specArtifact -> specArtifact.getId().equals("table3")).findFirst().get();
         Assert.assertSame(node_specArtifact_artifact2, specArtifact_table3);
 
         // Node的output中的variables是否一致
         SpecVariable node_specVariable_var1 = specNode_node_1.getOutputs().stream().filter(
-                output -> output instanceof SpecVariable).map(output -> (SpecVariable) output).filter(
-                v -> v.getId().equals("region")).findFirst().get();
+            output -> output instanceof SpecVariable).map(output -> (SpecVariable)output).filter(
+            v -> v.getId().equals("region")).findFirst().get();
 
         SpecVariable specVariable_var1 = specification.getVariables().stream().filter(
-                variable -> variable.getId().equals("region")).findFirst().get();
+            variable -> variable.getId().equals("region")).findFirst().get();
 
         Assert.assertSame(node_specVariable_var1, specVariable_var1);
 
         // Node的trigger是否一致
         SpecTrigger trigger = specNode_node_1.getTrigger();
         SpecTrigger specTrigger = specification.getTriggers().stream().filter(t -> t.getId().equals("daily"))
-                .findFirst().get();
+            .findFirst().get();
         Assert.assertSame(trigger, specTrigger);
 
         // Node的runtimeResource是否一致
         SpecRuntimeResource runtimeResource = specNode_node_1.getRuntimeResource();
         SpecRuntimeResource resgroup1 = specification.getRuntimeResources().stream().filter(
-                r -> r.getId().equals("resgroup_1")).findFirst().get();
+            r -> r.getId().equals("resgroup_1")).findFirst().get();
         Assert.assertSame(resgroup1, runtimeResource);
 
         // Flow的nodeId是否一致
         SpecFlowDepend specFlow_Depend_node = specification.getFlow().stream().filter(
-                f -> f.getNodeId().getId().equals("node_1")).findFirst().get();
+            f -> f.getNodeId().getId().equals("node_1")).findFirst().get();
         Assert.assertSame(specFlow_Depend_node.getNodeId(), specNode_node_1);
         // Flow中的Depends中的nodeID是否一致
         SpecDepend nodeExistedXx = specFlow_Depend_node.getDepends().stream().filter(
-                d -> d.getNodeId().getId().equals("node_existed_xx")).findFirst().get();
+            d -> d.getNodeId().getId().equals("node_existed_xx")).findFirst().get();
         Assert.assertSame(specNode_node_existed_xx, nodeExistedXx.getNodeId());
 
         Assert.assertNotNull(specNode_node_1.getDatasource());
@@ -211,19 +221,19 @@ public class SpecUtilTest {
         Assert.assertNotNull(specification.getFlow());
 
         SpecNode specNode_branch = specification.getNodes().stream().filter(n -> n.getId().equals("branch")).findFirst()
-                .get();
+            .get();
 
         // node branch的output是否一致
         SpecBranches specBranches = specNode_branch.getBranch().getBranches().stream().filter(b -> b.getWhen().equals("a == 1"))
-                .findFirst().get();
+            .findFirst().get();
 
         SpecArtifact artifact = specification.getArtifacts().stream().filter(a -> a.getId().equals("branch_1"))
-                .findFirst().get();
+            .findFirst().get();
         Assert.assertSame(artifact, specBranches.getOutput());
 
         // flow的output是否一致
         SpecFlowDepend specFlowDepend = specification.getFlow().stream().filter(
-                f -> f.getNodeId().getId().equals("branch_1")).findFirst().get();
+            f -> f.getNodeId().getId().equals("branch_1")).findFirst().get();
         SpecDepend specDepend = specFlowDepend.getDepends().stream().findFirst().get();
         Assert.assertSame(specDepend.getOutput(), artifact);
 
@@ -287,16 +297,16 @@ public class SpecUtilTest {
         Assert.assertNotNull(doWhile.getNodes());
         // script
         SpecScript script_sql1 = specification.getScripts().stream().filter(s -> s.getId().equals("sql1")).findFirst()
-                .get();
+            .get();
         SpecNode specNode1 = doWhile.getNodes().stream().filter(specNode -> specNode.getId().equals("sql1")).findFirst()
-                .get();
+            .get();
 
         Assert.assertSame(specNode1.getScript(), script_sql1);
 
         // while
         Assert.assertNotNull(doWhile.getSpecWhile());
         SpecScript script_end = specification.getScripts().stream().filter(s -> s.getId().equals("end")).findFirst()
-                .get();
+            .get();
         Assert.assertSame(doWhile.getSpecWhile().getScript(), script_end);
 
         // flow
@@ -315,7 +325,7 @@ public class SpecUtilTest {
 
         // variable 是否是同一对象
         SpecVariable specVariable = specification.getVariables().stream().filter(v -> v.getId().equals("var_arr"))
-                .findFirst().get();
+            .findFirst().get();
         Assert.assertSame(foreach.getArray(), specVariable);
 
         // nodes中的script是否统一对象
@@ -378,7 +388,7 @@ public class SpecUtilTest {
 
         Assert.assertNotNull(specification);
         SpecVariable ctx_var_2 = specification.getVariables().stream().filter(n -> n.getId().equals("ctx_var_2"))
-                .findFirst().get();
+            .findFirst().get();
 
         Assert.assertSame(ctx_var_2.getScope(), VariableScopeType.NODE_PARAMETER);
     }
@@ -431,71 +441,71 @@ public class SpecUtilTest {
     @Test
     public void testParse() {
         String spec = "{\n"
-                + "    \"version\": \"1.0.0\",\n"
-                + "    \"kind\": \"CycleWorkflow\",\n"
-                + "    \"nodes\": [\n"
-                + "      {\n"
-                + "        \"id\": \"c05cc423ac8046a7b18ccc9dd88ef27e\",\n"
-                + "        \"recurrence\": \"Normal\",\n"
-                + "        \"timeout\": 3,\n"
-                + "        \"instanceMode\": \"T+1\",\n"
-                + "        \"rerunMode\": \"Allowed\",\n"
-                + "        \"rerunTimes\": 3,\n"
-                + "        \"rerunInterval\": 180000,\n"
-                + "        \"script\": {\n"
-                + "          \"language\": \"odps\",\n"
-                + "          \"runtime\": {\n"
-                + "            \"engine\": \"MaxCompute\",\n"
-                + "            \"command\": \"ODPS_SQL\"\n"
-                + "          },\n"
-                + "          \"parameters\": [\n"
-                + "            {\n"
-                + "              \"name\": \"bizdate\",\n"
-                + "              \"scope\": \"NodeParameter\",\n"
-                + "              \"type\": \"System\",\n"
-                + "              \"value\": \"$[yyyymmdd]\"\n"
-                + "            }\n"
-                + "          ]\n"
-                + "        },\n"
-                + "        \"trigger\": {\n"
-                + "          \"id\": \"ddb2d936a16a4a45bc34b68c30d05f84\",\n"
-                + "          \"type\": \"Scheduler\",\n"
-                + "          \"cron\": \"00 00 00 * * ?\",\n"
-                + "          \"startTime\": \"1970-01-01 00:00:00\",\n"
-                + "          \"endTime\": \"9999-01-01 00:00:00\",\n"
-                + "          \"timezone\": \"Asia/Shanghai\"\n"
-                + "        },\n"
-                + "        \"runtimeResource\": {\n"
-                + "          \"resourceGroup\": \"dataphin_scheduler_pre\"\n"
-                + "        },\n"
-                + "        \"name\": \"p_param_2\",\n"
-                + "        \"owner\": \"064152\",\n"
-                + "        \"inputs\": {},\n"
-                + "        \"outputs\": {\n"
-                + "          \"outputs\": [\n"
-                + "            {\n"
-                + "              \"type\": \"Output\",\n"
-                + "              \"data\": \"c05cc423ac8046a7b18ccc9dd88ef27e\",\n"
-                + "              \"refTableName\": \"p_param_2\"\n"
-                + "            }\n"
-                + "          ]\n"
-                + "        },\n"
-                + "        \"functions\": [],\n"
-                + "        \"fileResources\": []\n"
-                + "      }\n"
-                + "    ],\n"
-                + "    \"flow\": [\n"
-                + "      {\n"
-                + "        \"nodeId\": \"c05cc423ac8046a7b18ccc9dd88ef27e\",\n"
-                + "        \"depends\": [\n"
-                + "          {\n"
-                + "            \"type\": \"Normal\",\n"
-                + "            \"output\": \"dw_scheduler_pre.test_sql002\"\n"
-                + "          }\n"
-                + "        ]\n"
-                + "      }\n"
-                + "    ]\n"
-                + "  }";
+            + "    \"version\": \"1.0.0\",\n"
+            + "    \"kind\": \"CycleWorkflow\",\n"
+            + "    \"nodes\": [\n"
+            + "      {\n"
+            + "        \"id\": \"c05cc423ac8046a7b18ccc9dd88ef27e\",\n"
+            + "        \"recurrence\": \"Normal\",\n"
+            + "        \"timeout\": 3,\n"
+            + "        \"instanceMode\": \"T+1\",\n"
+            + "        \"rerunMode\": \"Allowed\",\n"
+            + "        \"rerunTimes\": 3,\n"
+            + "        \"rerunInterval\": 180000,\n"
+            + "        \"script\": {\n"
+            + "          \"language\": \"odps\",\n"
+            + "          \"runtime\": {\n"
+            + "            \"engine\": \"MaxCompute\",\n"
+            + "            \"command\": \"ODPS_SQL\"\n"
+            + "          },\n"
+            + "          \"parameters\": [\n"
+            + "            {\n"
+            + "              \"name\": \"bizdate\",\n"
+            + "              \"scope\": \"NodeParameter\",\n"
+            + "              \"type\": \"System\",\n"
+            + "              \"value\": \"$[yyyymmdd]\"\n"
+            + "            }\n"
+            + "          ]\n"
+            + "        },\n"
+            + "        \"trigger\": {\n"
+            + "          \"id\": \"ddb2d936a16a4a45bc34b68c30d05f84\",\n"
+            + "          \"type\": \"Scheduler\",\n"
+            + "          \"cron\": \"00 00 00 * * ?\",\n"
+            + "          \"startTime\": \"1970-01-01 00:00:00\",\n"
+            + "          \"endTime\": \"9999-01-01 00:00:00\",\n"
+            + "          \"timezone\": \"Asia/Shanghai\"\n"
+            + "        },\n"
+            + "        \"runtimeResource\": {\n"
+            + "          \"resourceGroup\": \"dataphin_scheduler_pre\"\n"
+            + "        },\n"
+            + "        \"name\": \"p_param_2\",\n"
+            + "        \"owner\": \"064152\",\n"
+            + "        \"inputs\": {},\n"
+            + "        \"outputs\": {\n"
+            + "          \"outputs\": [\n"
+            + "            {\n"
+            + "              \"type\": \"Output\",\n"
+            + "              \"data\": \"c05cc423ac8046a7b18ccc9dd88ef27e\",\n"
+            + "              \"refTableName\": \"p_param_2\"\n"
+            + "            }\n"
+            + "          ]\n"
+            + "        },\n"
+            + "        \"functions\": [],\n"
+            + "        \"fileResources\": []\n"
+            + "      }\n"
+            + "    ],\n"
+            + "    \"flow\": [\n"
+            + "      {\n"
+            + "        \"nodeId\": \"c05cc423ac8046a7b18ccc9dd88ef27e\",\n"
+            + "        \"depends\": [\n"
+            + "          {\n"
+            + "            \"type\": \"Normal\",\n"
+            + "            \"output\": \"dw_scheduler_pre.test_sql002\"\n"
+            + "          }\n"
+            + "        ]\n"
+            + "      }\n"
+            + "    ]\n"
+            + "  }";
 
         Specification<DataWorksWorkflowSpec> specObj = SpecUtil.parseToDomain(spec);
         Assert.assertNotNull(specObj);
@@ -522,9 +532,9 @@ public class SpecUtilTest {
         Assert.assertNotNull(script.getRuntime().getTemplate());
 
         CodeModel<Code> codeModel
-                = CodeModelFactory.getCodeModel(script.getRuntime().getCommand(), JSON.toJSONString(script.getRuntime().getTemplate()));
+            = CodeModelFactory.getCodeModel(script.getRuntime().getCommand(), JSON.toJSONString(script.getRuntime().getTemplate()));
 
-        EmrCode emrCode = (EmrCode) codeModel.getCodeModel();
+        EmrCode emrCode = (EmrCode)codeModel.getCodeModel();
 
         emrCode.setName("test emr name");
         emrCode.getProperties().getEnvs().put("test_v1", "v1");
@@ -573,71 +583,71 @@ public class SpecUtilTest {
     @Test
     public void testParamHubParser() {
         String spec = "{\n"
-                + "        \"variables\": [\n"
-                + "          {\n"
-                + "            \"name\": \"my_const\",\n"
-                + "            \"type\": \"Constant\",\n"
-                + "            \"scope\": \"NodeContext\",\n"
-                + "            \"value\": \"cn-shanghai\"\n"
-                + "            \"description\": \"cn-shanghai\"\n"
-                + "          },\n"
-                + "          {\n"
-                + "            \"name\": \"my_var\",\n"
-                + "            \"type\": \"System\",\n"
-                + "            \"scope\": \"NodeContext\",\n"
-                + "            \"value\": \"${yyyymmdd}\"\n"
-                + "          },\n"
-                + "          {\n"
-                + "            \"name\": \"outputs\",\n"
-                + "            \"type\": \"PassThrough\",\n"
-                + "            \"scope\": \"NodeContext\",\n"
-                + "            \"referenceVariable\": {\n"
-                + "              \"name\": \"outputs\",\n"
-                + "              \"type\": \"NodeOutput\",\n"
-                + "              \"scope\": \"NodeContext\",\n"
-                + "              \"value\": \"${outputs}\",\n"
-                + "              \"node\": {\n"
-                + "                \"output\": \"autotest.28517448_out\"\n"
-                + "              }\n"
-                + "            }\n"
-                + "          },\n"
-                + "          {\n"
-                + "            \"name\": \"shell_const_1\",\n"
-                + "            \"type\": \"PassThrough\",\n"
-                + "            \"scope\": \"NodeContext\",\n"
-                + "            \"referenceVariable\": {\n"
-                + "              \"name\": \"shell_const_1\",\n"
-                + "              \"type\": \"NodeOutput\",\n"
-                + "              \"scope\": \"NodeContext\",\n"
-                + "              \"node\": {\n"
-                + "                \"output\": \"autotest.28517347_out\"\n"
-                + "              }\n"
-                + "            }\n"
-                + "          },\n"
-                + "          {\n"
-                + "            \"name\": \"shell_var_1\",\n"
-                + "            \"type\": \"PassThrough\",\n"
-                + "            \"scope\": \"NodeContext\",\n"
-                + "            \"referenceVariable\": {\n"
-                + "              \"name\": \"shell_var_1\",\n"
-                + "              \"type\": \"NodeOutput\",\n"
-                + "              \"scope\": \"NodeContext\",\n"
-                + "              \"node\": {\n"
-                + "                \"output\": \"autotest.28517347_out\"\n"
-                + "              }\n"
-                + "            }\n"
-                + "          }\n"
-                + "        ]\n"
-                + "      }";
+            + "        \"variables\": [\n"
+            + "          {\n"
+            + "            \"name\": \"my_const\",\n"
+            + "            \"type\": \"Constant\",\n"
+            + "            \"scope\": \"NodeContext\",\n"
+            + "            \"value\": \"cn-shanghai\"\n"
+            + "            \"description\": \"cn-shanghai\"\n"
+            + "          },\n"
+            + "          {\n"
+            + "            \"name\": \"my_var\",\n"
+            + "            \"type\": \"System\",\n"
+            + "            \"scope\": \"NodeContext\",\n"
+            + "            \"value\": \"${yyyymmdd}\"\n"
+            + "          },\n"
+            + "          {\n"
+            + "            \"name\": \"outputs\",\n"
+            + "            \"type\": \"PassThrough\",\n"
+            + "            \"scope\": \"NodeContext\",\n"
+            + "            \"referenceVariable\": {\n"
+            + "              \"name\": \"outputs\",\n"
+            + "              \"type\": \"NodeOutput\",\n"
+            + "              \"scope\": \"NodeContext\",\n"
+            + "              \"value\": \"${outputs}\",\n"
+            + "              \"node\": {\n"
+            + "                \"output\": \"autotest.28517448_out\"\n"
+            + "              }\n"
+            + "            }\n"
+            + "          },\n"
+            + "          {\n"
+            + "            \"name\": \"shell_const_1\",\n"
+            + "            \"type\": \"PassThrough\",\n"
+            + "            \"scope\": \"NodeContext\",\n"
+            + "            \"referenceVariable\": {\n"
+            + "              \"name\": \"shell_const_1\",\n"
+            + "              \"type\": \"NodeOutput\",\n"
+            + "              \"scope\": \"NodeContext\",\n"
+            + "              \"node\": {\n"
+            + "                \"output\": \"autotest.28517347_out\"\n"
+            + "              }\n"
+            + "            }\n"
+            + "          },\n"
+            + "          {\n"
+            + "            \"name\": \"shell_var_1\",\n"
+            + "            \"type\": \"PassThrough\",\n"
+            + "            \"scope\": \"NodeContext\",\n"
+            + "            \"referenceVariable\": {\n"
+            + "              \"name\": \"shell_var_1\",\n"
+            + "              \"type\": \"NodeOutput\",\n"
+            + "              \"scope\": \"NodeContext\",\n"
+            + "              \"node\": {\n"
+            + "                \"output\": \"autotest.28517347_out\"\n"
+            + "              }\n"
+            + "            }\n"
+            + "          }\n"
+            + "        ]\n"
+            + "      }";
         SpecParserContext ctx = new SpecParserContext();
         ctx.setVersion(SpecVersion.V_1_1_0.getLabel());
-        SpecParamHub paramHub = (SpecParamHub) SpecDevUtil.getObjectByParser(SpecParamHub.class, JSON.parseObject(spec), ctx);
+        SpecParamHub paramHub = (SpecParamHub)SpecDevUtil.getObjectByParser(SpecParamHub.class, JSON.parseObject(spec), ctx);
         log.info("para hub: {}", GsonUtils.toJsonString(paramHub));
         Assert.assertNotNull(paramHub);
         Assert.assertNotNull(paramHub.getVariables());
         Assert.assertNotNull(paramHub.getVariables().stream().filter(v -> v.getName().equals("outputs")).findFirst()
-                .map(SpecVariable::getReferenceVariable).map(SpecVariable::getNode).map(SpecDepend::getOutput).map(SpecNodeOutput::getData)
-                .orElse(null));
+            .map(SpecVariable::getReferenceVariable).map(SpecVariable::getNode).map(SpecDepend::getOutput).map(SpecNodeOutput::getData)
+            .orElse(null));
     }
 
     @Test
@@ -666,7 +676,7 @@ public class SpecUtilTest {
         Assert.assertEquals(5, node.getParamHub().getVariables().size());
 
         SpecVariable shellVar1 = node.getParamHub().getVariables().stream()
-                .filter(v -> v.getName().equalsIgnoreCase("shell_var_1")).findFirst().orElse(null);
+            .filter(v -> v.getName().equalsIgnoreCase("shell_var_1")).findFirst().orElse(null);
         Assert.assertNotNull(shellVar1);
         Assert.assertNotNull(shellVar1.getReferenceVariable());
         Assert.assertNotNull(shellVar1.getReferenceVariable().getNode());
@@ -778,9 +788,9 @@ public class SpecUtilTest {
 
         Assert.assertTrue(table instanceof SpecTable);
 
-        Assert.assertNotNull(((SpecTable) table).getDdl());
-        Assert.assertNotNull(((SpecTable) table).getCalcEngine());
-        Assert.assertNotNull(((SpecTable) table).getName());
+        Assert.assertNotNull(((SpecTable)table).getDdl());
+        Assert.assertNotNull(((SpecTable)table).getCalcEngine());
+        Assert.assertNotNull(((SpecTable)table).getName());
 
         log.info("spec: {}", SpecUtil.writeToSpec(specObj));
     }
@@ -883,231 +893,231 @@ public class SpecUtilTest {
     @Test
     public void testNodeIdMissing() {
         String s = "{\n"
-                + "\t\"version\":\"1.1.0\",\n"
-                + "\t\"kind\":\"CycleWorkflow\",\n"
-                + "\t\"spec\":{\n"
-                + "\t\t\"nodes\":[\n"
-                + "\t\t\t{\n"
-                + "\t\t\t\t\"recurrence\":\"Normal\",\n"
-                + "\t\t\t\t\"id\":\"11195215\",\n"
-                + "\t\t\t\t\"instanceMode\":\"T+1\",\n"
-                + "\t\t\t\t\"rerunMode\":\"Allowed\",\n"
-                + "\t\t\t\t\"rerunTimes\":0,\n"
-                + "\t\t\t\t\"rerunInterval\":0,\n"
-                + "\t\t\t\t\"script\":{\n"
-                + "\t\t\t\t\t\"path\":\"业务流程/预发回归case_请不要加东西/控制\",\n"
-                + "\t\t\t\t\t\"runtime\":{\n"
-                + "\t\t\t\t\t\t\"command\":\"CONTROLLER_TRAVERSE\"\n"
-                + "\t\t\t\t\t}\n"
-                + "\t\t\t\t},\n"
-                + "\t\t\t\t\"trigger\":{\n"
-                + "\t\t\t\t\t\"type\":\"Scheduler\",\n"
-                + "\t\t\t\t\t\"cron\":\"00 25 00 * * ?\",\n"
-                + "\t\t\t\t\t\"startTime\":\"1970-01-01 00:00:00\",\n"
-                + "\t\t\t\t\t\"endTime\":\"9999-01-01 00:00:00\"\n"
-                + "\t\t\t\t},\n"
-                + "\t\t\t\t\"runtimeResource\":{\n"
-                + "\t\t\t\t\t\"resourceGroup\":\"group_2\"\n"
-                + "\t\t\t\t},\n"
-                + "\t\t\t\t\"name\":\"foreach_regr\",\n"
-                + "\t\t\t\t\"owner\":\"068198\",\n"
-                + "\t\t\t\t\"inputs\":{\n"
-                + "\t\t\t\t\t\"nodeOutputs\":[\n"
-                + "\t\t\t\t\t\t{\n"
-                + "\t\t\t\t\t\t\t\"data\":\"dw_scheduler_pre.11195181_out\",\n"
-                + "\t\t\t\t\t\t\t\"artifactType\":\"NodeOutput\",\n"
-                + "\t\t\t\t\t\t\t\"refTableName\":\"dw_scheduler_pre.11195181_out\"\n"
-                + "\t\t\t\t\t\t}\n"
-                + "\t\t\t\t\t]\n"
-                + "\t\t\t\t},\n"
-                + "\t\t\t\t\"outputs\":{\n"
-                + "\t\t\t\t\t\"nodeOutputs\":[\n"
-                + "\t\t\t\t\t\t{\n"
-                + "\t\t\t\t\t\t\t\"data\":\"dw_scheduler_pre.11195215_out\",\n"
-                + "\t\t\t\t\t\t\t\"artifactType\":\"NodeOutput\"\n"
-                + "\t\t\t\t\t\t},\n"
-                + "\t\t\t\t\t\t{\n"
-                + "\t\t\t\t\t\t\t\"data\":\"dw_scheduler_pre.foreach_regr\",\n"
-                + "\t\t\t\t\t\t\t\"artifactType\":\"NodeOutput\"\n"
-                + "\t\t\t\t\t\t}\n"
-                + "\t\t\t\t\t]\n"
-                + "\t\t\t\t},\n"
-                + "\t\t\t\t\"for-each\":{\n"
-                + "\t\t\t\t\t\"nodes\":[\n"
-                + "\t\t\t\t\t\t{\n"
-                + "\t\t\t\t\t\t\t\"recurrence\":\"Normal\",\n"
-                + "\t\t\t\t\t\t\t\"id\":\"11195231\",\n"
-                + "\t\t\t\t\t\t\t\"instanceMode\":\"T+1\",\n"
-                + "\t\t\t\t\t\t\t\"rerunMode\":\"Allowed\",\n"
-                + "\t\t\t\t\t\t\t\"rerunTimes\":0,\n"
-                + "\t\t\t\t\t\t\t\"rerunInterval\":0,\n"
-                + "\t\t\t\t\t\t\t\"script\":{\n"
-                + "\t\t\t\t\t\t\t\t\"runtime\":{\n"
-                + "\t\t\t\t\t\t\t\t\t\"command\":\"DIDE_SHELL\"\n"
-                + "\t\t\t\t\t\t\t\t}\n"
-                + "\t\t\t\t\t\t\t},\n"
-                + "\t\t\t\t\t\t\t\"trigger\":{\n"
-                + "\t\t\t\t\t\t\t\t\"type\":\"Scheduler\",\n"
-                + "\t\t\t\t\t\t\t\t\"cron\":\"00,00\",\n"
-                + "\t\t\t\t\t\t\t\t\"startTime\":\"1970-01-01 00:00:00\",\n"
-                + "\t\t\t\t\t\t\t\t\"endTime\":\"9999-01-01 16:03:47\"\n"
-                + "\t\t\t\t\t\t\t},\n"
-                + "\t\t\t\t\t\t\t\"runtimeResource\":{\n"
-                + "\t\t\t\t\t\t\t\t\"resourceGroup\":\"group_2\"\n"
-                + "\t\t\t\t\t\t\t},\n"
-                + "\t\t\t\t\t\t\t\"name\":\"echo_data\",\n"
-                + "\t\t\t\t\t\t\t\"owner\":\"068198\",\n"
-                + "\t\t\t\t\t\t\t\"inputs\":{\n"
-                + "\t\t\t\t\t\t\t\t\"nodeOutputs\":[\n"
-                + "\t\t\t\t\t\t\t\t\t{\n"
-                + "\t\t\t\t\t\t\t\t\t\t\"data\":\"dw_scheduler_pre.11195216_out\",\n"
-                + "\t\t\t\t\t\t\t\t\t\t\"artifactType\":\"NodeOutput\",\n"
-                + "\t\t\t\t\t\t\t\t\t\t\"refTableName\":\"dw_scheduler_pre.11195216_out\"\n"
-                + "\t\t\t\t\t\t\t\t\t}\n"
-                + "\t\t\t\t\t\t\t\t]\n"
-                + "\t\t\t\t\t\t\t},\n"
-                + "\t\t\t\t\t\t\t\"outputs\":{\n"
-                + "\t\t\t\t\t\t\t\t\"nodeOutputs\":[\n"
-                + "\t\t\t\t\t\t\t\t\t{\n"
-                + "\t\t\t\t\t\t\t\t\t\t\"data\":\"dw_scheduler_pre.11195231_out\",\n"
-                + "\t\t\t\t\t\t\t\t\t\t\"artifactType\":\"NodeOutput\"\n"
-                + "\t\t\t\t\t\t\t\t\t}\n"
-                + "\t\t\t\t\t\t\t\t]\n"
-                + "\t\t\t\t\t\t\t}\n"
-                + "\t\t\t\t\t\t},\n"
-                + "\t\t\t\t\t\t{\n"
-                + "\t\t\t\t\t\t\t\"recurrence\":\"Normal\",\n"
-                + "\t\t\t\t\t\t\t\"id\":\"11195217\",\n"
-                + "\t\t\t\t\t\t\t\"instanceMode\":\"T+1\",\n"
-                + "\t\t\t\t\t\t\t\"rerunMode\":\"Allowed\",\n"
-                + "\t\t\t\t\t\t\t\"rerunTimes\":0,\n"
-                + "\t\t\t\t\t\t\t\"rerunInterval\":0,\n"
-                + "\t\t\t\t\t\t\t\"script\":{\n"
-                + "\t\t\t\t\t\t\t\t\"runtime\":{\n"
-                + "\t\t\t\t\t\t\t\t\t\"command\":\"CONTROLLER_TRAVERSE_END\"\n"
-                + "\t\t\t\t\t\t\t\t}\n"
-                + "\t\t\t\t\t\t\t},\n"
-                + "\t\t\t\t\t\t\t\"trigger\":{\n"
-                + "\t\t\t\t\t\t\t\t\"type\":\"Manual\",\n"
-                + "\t\t\t\t\t\t\t\t\"startTime\":\"1970-01-01 00:00:00\",\n"
-                + "\t\t\t\t\t\t\t\t\"endTime\":\"9999-01-01 16:02:31\"\n"
-                + "\t\t\t\t\t\t\t},\n"
-                + "\t\t\t\t\t\t\t\"name\":\"end\",\n"
-                + "\t\t\t\t\t\t\t\"owner\":\"068198\",\n"
-                + "\t\t\t\t\t\t\t\"inputs\":{\n"
-                + "\t\t\t\t\t\t\t\t\"nodeOutputs\":[\n"
-                + "\t\t\t\t\t\t\t\t\t{\n"
-                + "\t\t\t\t\t\t\t\t\t\t\"data\":\"dw_scheduler_pre.11195231_out\",\n"
-                + "\t\t\t\t\t\t\t\t\t\t\"artifactType\":\"NodeOutput\",\n"
-                + "\t\t\t\t\t\t\t\t\t\t\"refTableName\":\"dw_scheduler_pre.11195231_out\"\n"
-                + "\t\t\t\t\t\t\t\t\t}\n"
-                + "\t\t\t\t\t\t\t\t]\n"
-                + "\t\t\t\t\t\t\t},\n"
-                + "\t\t\t\t\t\t\t\"outputs\":{\n"
-                + "\t\t\t\t\t\t\t\t\"nodeOutputs\":[\n"
-                + "\t\t\t\t\t\t\t\t\t{\n"
-                + "\t\t\t\t\t\t\t\t\t\t\"data\":\"dw_scheduler_pre.11195217_out\",\n"
-                + "\t\t\t\t\t\t\t\t\t\t\"artifactType\":\"NodeOutput\"\n"
-                + "\t\t\t\t\t\t\t\t\t}\n"
-                + "\t\t\t\t\t\t\t\t]\n"
-                + "\t\t\t\t\t\t\t}\n"
-                + "\t\t\t\t\t\t},\n"
-                + "\t\t\t\t\t\t{\n"
-                + "\t\t\t\t\t\t\t\"recurrence\":\"Normal\",\n"
-                + "\t\t\t\t\t\t\t\"id\":\"11195216\",\n"
-                + "\t\t\t\t\t\t\t\"instanceMode\":\"T+1\",\n"
-                + "\t\t\t\t\t\t\t\"rerunMode\":\"Allowed\",\n"
-                + "\t\t\t\t\t\t\t\"rerunTimes\":0,\n"
-                + "\t\t\t\t\t\t\t\"rerunInterval\":0,\n"
-                + "\t\t\t\t\t\t\t\"script\":{\n"
-                + "\t\t\t\t\t\t\t\t\"runtime\":{\n"
-                + "\t\t\t\t\t\t\t\t\t\"command\":\"CONTROLLER_TRAVERSE_START\"\n"
-                + "\t\t\t\t\t\t\t\t}\n"
-                + "\t\t\t\t\t\t\t},\n"
-                + "\t\t\t\t\t\t\t\"trigger\":{\n"
-                + "\t\t\t\t\t\t\t\t\"type\":\"Manual\",\n"
-                + "\t\t\t\t\t\t\t\t\"startTime\":\"1970-01-01 00:00:00\",\n"
-                + "\t\t\t\t\t\t\t\t\"endTime\":\"9999-01-01 16:02:31\"\n"
-                + "\t\t\t\t\t\t\t},\n"
-                + "\t\t\t\t\t\t\t\"name\":\"start\",\n"
-                + "\t\t\t\t\t\t\t\"owner\":\"068198\",\n"
-                + "\t\t\t\t\t\t\t\"inputs\":{\n"
-                + "\t\t\t\t\t\t\t\t\n"
-                + "\t\t\t\t\t\t\t},\n"
-                + "\t\t\t\t\t\t\t\"outputs\":{\n"
-                + "\t\t\t\t\t\t\t\t\"nodeOutputs\":[\n"
-                + "\t\t\t\t\t\t\t\t\t{\n"
-                + "\t\t\t\t\t\t\t\t\t\t\"data\":\"dw_scheduler_pre.11195216_out\",\n"
-                + "\t\t\t\t\t\t\t\t\t\t\"artifactType\":\"NodeOutput\"\n"
-                + "\t\t\t\t\t\t\t\t\t}\n"
-                + "\t\t\t\t\t\t\t\t]\n"
-                + "\t\t\t\t\t\t\t}\n"
-                + "\t\t\t\t\t\t}\n"
-                + "\t\t\t\t\t],\n"
-                + "\t\t\t\t\t\"flow\":[\n"
-                + "\t\t\t\t\t\t{\n"
-                + "\t\t\t\t\t\t\t\"nodeId\":\"11195231\",\n"
-                + "\t\t\t\t\t\t\t\"depends\":[\n"
-                + "\t\t\t\t\t\t\t\t{\n"
-                + "\t\t\t\t\t\t\t\t\t\"type\":\"Normal\",\n"
-                + "\t\t\t\t\t\t\t\t\t\"output\":\"dw_scheduler_pre.11195216_out\"\n"
-                + "\t\t\t\t\t\t\t\t}\n"
-                + "\t\t\t\t\t\t\t]\n"
-                + "\t\t\t\t\t\t},\n"
-                + "\t\t\t\t\t\t{\n"
-                + "\t\t\t\t\t\t\t\"nodeId\":\"11195217\",\n"
-                + "\t\t\t\t\t\t\t\"depends\":[\n"
-                + "\t\t\t\t\t\t\t\t{\n"
-                + "\t\t\t\t\t\t\t\t\t\"type\":\"Normal\",\n"
-                + "\t\t\t\t\t\t\t\t\t\"output\":\"dw_scheduler_pre.11195231_out\"\n"
-                + "\t\t\t\t\t\t\t\t}\n"
-                + "\t\t\t\t\t\t\t]\n"
-                + "\t\t\t\t\t\t},\n"
-                + "\t\t\t\t\t\t{\n"
-                + "\t\t\t\t\t\t\t\"nodeId\":\"11195216\",\n"
-                + "\t\t\t\t\t\t\t\"depends\":[\n"
-                + "\t\t\t\t\t\t\t\t\n"
-                + "\t\t\t\t\t\t\t]\n"
-                + "\t\t\t\t\t\t}\n"
-                + "\t\t\t\t\t],\n"
-                + "\t\t\t\t\t\"array\":{\n"
-                + "\t\t\t\t\t\t\"name\":\"loopDataArray\",\n"
-                + "\t\t\t\t\t\t\"artifactType\":\"Variable\",\n"
-                + "\t\t\t\t\t\t\"scope\":\"NodeContext\",\n"
-                + "\t\t\t\t\t\t\"type\":\"Constant\",\n"
-                + "\t\t\t\t\t\t\"node\":{\n"
-                + "\t\t\t\t\t\t\t\"nodeId\":\"11195215\"\n"
-                + "\t\t\t\t\t\t},\n"
-                + "\t\t\t\t\t\t\"referenceVariable\":{\n"
-                + "\t\t\t\t\t\t\t\"name\":\"outputs\",\n"
-                + "\t\t\t\t\t\t\t\"artifactType\":\"Variable\",\n"
-                + "\t\t\t\t\t\t\t\"scope\":\"NodeContext\",\n"
-                + "\t\t\t\t\t\t\t\"type\":\"NodeOutput\",\n"
-                + "\t\t\t\t\t\t\t\"node\":{\n"
-                + "\t\t\t\t\t\t\t\t\"nodeId\":\"11195181\",\n"
-                + "\t\t\t\t\t\t\t\t\"output\":\"dw_scheduler_pre.11195181_out\"\n"
-                + "\t\t\t\t\t\t\t}\n"
-                + "\t\t\t\t\t\t}\n"
-                + "\t\t\t\t\t}\n"
-                + "\t\t\t\t}\n"
-                + "\t\t\t}\n"
-                + "\t\t],\n"
-                + "\t\t\"flow\":[\n"
-                + "\t\t\t{\n"
-                + "\t\t\t\t\"nodeId\":\"11195215\",\n"
-                + "\t\t\t\t\"depends\":[\n"
-                + "\t\t\t\t\t{\n"
-                + "\t\t\t\t\t\t\"type\":\"Normal\",\n"
-                + "\t\t\t\t\t\t\"output\":\"dw_scheduler_pre.11195181_out\"\n"
-                + "\t\t\t\t\t}\n"
-                + "\t\t\t\t]\n"
-                + "\t\t\t}\n"
-                + "\t\t]\n"
-                + "\t},\n"
-                + "\t\"metadata\":{\n"
-                + "\t\t\"owner\":\"068198\"\n"
-                + "\t}\n"
-                + "}";
+            + "\t\"version\":\"1.1.0\",\n"
+            + "\t\"kind\":\"CycleWorkflow\",\n"
+            + "\t\"spec\":{\n"
+            + "\t\t\"nodes\":[\n"
+            + "\t\t\t{\n"
+            + "\t\t\t\t\"recurrence\":\"Normal\",\n"
+            + "\t\t\t\t\"id\":\"11195215\",\n"
+            + "\t\t\t\t\"instanceMode\":\"T+1\",\n"
+            + "\t\t\t\t\"rerunMode\":\"Allowed\",\n"
+            + "\t\t\t\t\"rerunTimes\":0,\n"
+            + "\t\t\t\t\"rerunInterval\":0,\n"
+            + "\t\t\t\t\"script\":{\n"
+            + "\t\t\t\t\t\"path\":\"业务流程/预发回归case_请不要加东西/控制\",\n"
+            + "\t\t\t\t\t\"runtime\":{\n"
+            + "\t\t\t\t\t\t\"command\":\"CONTROLLER_TRAVERSE\"\n"
+            + "\t\t\t\t\t}\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"trigger\":{\n"
+            + "\t\t\t\t\t\"type\":\"Scheduler\",\n"
+            + "\t\t\t\t\t\"cron\":\"00 25 00 * * ?\",\n"
+            + "\t\t\t\t\t\"startTime\":\"1970-01-01 00:00:00\",\n"
+            + "\t\t\t\t\t\"endTime\":\"9999-01-01 00:00:00\"\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"runtimeResource\":{\n"
+            + "\t\t\t\t\t\"resourceGroup\":\"group_2\"\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"name\":\"foreach_regr\",\n"
+            + "\t\t\t\t\"owner\":\"068198\",\n"
+            + "\t\t\t\t\"inputs\":{\n"
+            + "\t\t\t\t\t\"nodeOutputs\":[\n"
+            + "\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\"data\":\"dw_scheduler_pre.11195181_out\",\n"
+            + "\t\t\t\t\t\t\t\"artifactType\":\"NodeOutput\",\n"
+            + "\t\t\t\t\t\t\t\"refTableName\":\"dw_scheduler_pre.11195181_out\"\n"
+            + "\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t]\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"outputs\":{\n"
+            + "\t\t\t\t\t\"nodeOutputs\":[\n"
+            + "\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\"data\":\"dw_scheduler_pre.11195215_out\",\n"
+            + "\t\t\t\t\t\t\t\"artifactType\":\"NodeOutput\"\n"
+            + "\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\"data\":\"dw_scheduler_pre.foreach_regr\",\n"
+            + "\t\t\t\t\t\t\t\"artifactType\":\"NodeOutput\"\n"
+            + "\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t]\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"for-each\":{\n"
+            + "\t\t\t\t\t\"nodes\":[\n"
+            + "\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\"recurrence\":\"Normal\",\n"
+            + "\t\t\t\t\t\t\t\"id\":\"11195231\",\n"
+            + "\t\t\t\t\t\t\t\"instanceMode\":\"T+1\",\n"
+            + "\t\t\t\t\t\t\t\"rerunMode\":\"Allowed\",\n"
+            + "\t\t\t\t\t\t\t\"rerunTimes\":0,\n"
+            + "\t\t\t\t\t\t\t\"rerunInterval\":0,\n"
+            + "\t\t\t\t\t\t\t\"script\":{\n"
+            + "\t\t\t\t\t\t\t\t\"runtime\":{\n"
+            + "\t\t\t\t\t\t\t\t\t\"command\":\"DIDE_SHELL\"\n"
+            + "\t\t\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\t\"trigger\":{\n"
+            + "\t\t\t\t\t\t\t\t\"type\":\"Scheduler\",\n"
+            + "\t\t\t\t\t\t\t\t\"cron\":\"00,00\",\n"
+            + "\t\t\t\t\t\t\t\t\"startTime\":\"1970-01-01 00:00:00\",\n"
+            + "\t\t\t\t\t\t\t\t\"endTime\":\"9999-01-01 16:03:47\"\n"
+            + "\t\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\t\"runtimeResource\":{\n"
+            + "\t\t\t\t\t\t\t\t\"resourceGroup\":\"group_2\"\n"
+            + "\t\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\t\"name\":\"echo_data\",\n"
+            + "\t\t\t\t\t\t\t\"owner\":\"068198\",\n"
+            + "\t\t\t\t\t\t\t\"inputs\":{\n"
+            + "\t\t\t\t\t\t\t\t\"nodeOutputs\":[\n"
+            + "\t\t\t\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\t\t\t\"data\":\"dw_scheduler_pre.11195216_out\",\n"
+            + "\t\t\t\t\t\t\t\t\t\t\"artifactType\":\"NodeOutput\",\n"
+            + "\t\t\t\t\t\t\t\t\t\t\"refTableName\":\"dw_scheduler_pre.11195216_out\"\n"
+            + "\t\t\t\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t\t\t\t]\n"
+            + "\t\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\t\"outputs\":{\n"
+            + "\t\t\t\t\t\t\t\t\"nodeOutputs\":[\n"
+            + "\t\t\t\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\t\t\t\"data\":\"dw_scheduler_pre.11195231_out\",\n"
+            + "\t\t\t\t\t\t\t\t\t\t\"artifactType\":\"NodeOutput\"\n"
+            + "\t\t\t\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t\t\t\t]\n"
+            + "\t\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\"recurrence\":\"Normal\",\n"
+            + "\t\t\t\t\t\t\t\"id\":\"11195217\",\n"
+            + "\t\t\t\t\t\t\t\"instanceMode\":\"T+1\",\n"
+            + "\t\t\t\t\t\t\t\"rerunMode\":\"Allowed\",\n"
+            + "\t\t\t\t\t\t\t\"rerunTimes\":0,\n"
+            + "\t\t\t\t\t\t\t\"rerunInterval\":0,\n"
+            + "\t\t\t\t\t\t\t\"script\":{\n"
+            + "\t\t\t\t\t\t\t\t\"runtime\":{\n"
+            + "\t\t\t\t\t\t\t\t\t\"command\":\"CONTROLLER_TRAVERSE_END\"\n"
+            + "\t\t\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\t\"trigger\":{\n"
+            + "\t\t\t\t\t\t\t\t\"type\":\"Manual\",\n"
+            + "\t\t\t\t\t\t\t\t\"startTime\":\"1970-01-01 00:00:00\",\n"
+            + "\t\t\t\t\t\t\t\t\"endTime\":\"9999-01-01 16:02:31\"\n"
+            + "\t\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\t\"name\":\"end\",\n"
+            + "\t\t\t\t\t\t\t\"owner\":\"068198\",\n"
+            + "\t\t\t\t\t\t\t\"inputs\":{\n"
+            + "\t\t\t\t\t\t\t\t\"nodeOutputs\":[\n"
+            + "\t\t\t\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\t\t\t\"data\":\"dw_scheduler_pre.11195231_out\",\n"
+            + "\t\t\t\t\t\t\t\t\t\t\"artifactType\":\"NodeOutput\",\n"
+            + "\t\t\t\t\t\t\t\t\t\t\"refTableName\":\"dw_scheduler_pre.11195231_out\"\n"
+            + "\t\t\t\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t\t\t\t]\n"
+            + "\t\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\t\"outputs\":{\n"
+            + "\t\t\t\t\t\t\t\t\"nodeOutputs\":[\n"
+            + "\t\t\t\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\t\t\t\"data\":\"dw_scheduler_pre.11195217_out\",\n"
+            + "\t\t\t\t\t\t\t\t\t\t\"artifactType\":\"NodeOutput\"\n"
+            + "\t\t\t\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t\t\t\t]\n"
+            + "\t\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\"recurrence\":\"Normal\",\n"
+            + "\t\t\t\t\t\t\t\"id\":\"11195216\",\n"
+            + "\t\t\t\t\t\t\t\"instanceMode\":\"T+1\",\n"
+            + "\t\t\t\t\t\t\t\"rerunMode\":\"Allowed\",\n"
+            + "\t\t\t\t\t\t\t\"rerunTimes\":0,\n"
+            + "\t\t\t\t\t\t\t\"rerunInterval\":0,\n"
+            + "\t\t\t\t\t\t\t\"script\":{\n"
+            + "\t\t\t\t\t\t\t\t\"runtime\":{\n"
+            + "\t\t\t\t\t\t\t\t\t\"command\":\"CONTROLLER_TRAVERSE_START\"\n"
+            + "\t\t\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\t\"trigger\":{\n"
+            + "\t\t\t\t\t\t\t\t\"type\":\"Manual\",\n"
+            + "\t\t\t\t\t\t\t\t\"startTime\":\"1970-01-01 00:00:00\",\n"
+            + "\t\t\t\t\t\t\t\t\"endTime\":\"9999-01-01 16:02:31\"\n"
+            + "\t\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\t\"name\":\"start\",\n"
+            + "\t\t\t\t\t\t\t\"owner\":\"068198\",\n"
+            + "\t\t\t\t\t\t\t\"inputs\":{\n"
+            + "\t\t\t\t\t\t\t\t\n"
+            + "\t\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\t\"outputs\":{\n"
+            + "\t\t\t\t\t\t\t\t\"nodeOutputs\":[\n"
+            + "\t\t\t\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\t\t\t\"data\":\"dw_scheduler_pre.11195216_out\",\n"
+            + "\t\t\t\t\t\t\t\t\t\t\"artifactType\":\"NodeOutput\"\n"
+            + "\t\t\t\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t\t\t\t]\n"
+            + "\t\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t],\n"
+            + "\t\t\t\t\t\"flow\":[\n"
+            + "\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\"nodeId\":\"11195231\",\n"
+            + "\t\t\t\t\t\t\t\"depends\":[\n"
+            + "\t\t\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\t\t\"type\":\"Normal\",\n"
+            + "\t\t\t\t\t\t\t\t\t\"output\":\"dw_scheduler_pre.11195216_out\"\n"
+            + "\t\t\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t\t\t]\n"
+            + "\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\"nodeId\":\"11195217\",\n"
+            + "\t\t\t\t\t\t\t\"depends\":[\n"
+            + "\t\t\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\t\t\"type\":\"Normal\",\n"
+            + "\t\t\t\t\t\t\t\t\t\"output\":\"dw_scheduler_pre.11195231_out\"\n"
+            + "\t\t\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t\t\t]\n"
+            + "\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\"nodeId\":\"11195216\",\n"
+            + "\t\t\t\t\t\t\t\"depends\":[\n"
+            + "\t\t\t\t\t\t\t\t\n"
+            + "\t\t\t\t\t\t\t]\n"
+            + "\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t],\n"
+            + "\t\t\t\t\t\"array\":{\n"
+            + "\t\t\t\t\t\t\"name\":\"loopDataArray\",\n"
+            + "\t\t\t\t\t\t\"artifactType\":\"Variable\",\n"
+            + "\t\t\t\t\t\t\"scope\":\"NodeContext\",\n"
+            + "\t\t\t\t\t\t\"type\":\"Constant\",\n"
+            + "\t\t\t\t\t\t\"node\":{\n"
+            + "\t\t\t\t\t\t\t\"nodeId\":\"11195215\"\n"
+            + "\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\"referenceVariable\":{\n"
+            + "\t\t\t\t\t\t\t\"name\":\"outputs\",\n"
+            + "\t\t\t\t\t\t\t\"artifactType\":\"Variable\",\n"
+            + "\t\t\t\t\t\t\t\"scope\":\"NodeContext\",\n"
+            + "\t\t\t\t\t\t\t\"type\":\"NodeOutput\",\n"
+            + "\t\t\t\t\t\t\t\"node\":{\n"
+            + "\t\t\t\t\t\t\t\t\"nodeId\":\"11195181\",\n"
+            + "\t\t\t\t\t\t\t\t\"output\":\"dw_scheduler_pre.11195181_out\"\n"
+            + "\t\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t}\n"
+            + "\t\t\t\t}\n"
+            + "\t\t\t}\n"
+            + "\t\t],\n"
+            + "\t\t\"flow\":[\n"
+            + "\t\t\t{\n"
+            + "\t\t\t\t\"nodeId\":\"11195215\",\n"
+            + "\t\t\t\t\"depends\":[\n"
+            + "\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\"type\":\"Normal\",\n"
+            + "\t\t\t\t\t\t\"output\":\"dw_scheduler_pre.11195181_out\"\n"
+            + "\t\t\t\t\t}\n"
+            + "\t\t\t\t]\n"
+            + "\t\t\t}\n"
+            + "\t\t]\n"
+            + "\t},\n"
+            + "\t\"metadata\":{\n"
+            + "\t\t\"owner\":\"068198\"\n"
+            + "\t}\n"
+            + "}";
         Specification<Spec> spec = SpecUtil.parseToDomain(s);
 
         log.info("{}", SpecUtil.writeToSpec(spec));
@@ -1116,159 +1126,159 @@ public class SpecUtilTest {
         SpecWriterContext context = new SpecWriterContext();
         context.setVersion(spec.getVersion());
         log.info("{}",
-                JSON.toJSONString(SpecUtil.write(((DataWorksWorkflowSpec) spec.getSpec()).getNodes().get(0), context),
-                        Feature.PrettyFormat));
+            JSON.toJSONString(SpecUtil.write(((DataWorksWorkflowSpec)spec.getSpec()).getNodes().get(0), context),
+                Feature.PrettyFormat));
     }
 
     @Test
     public void testParseForeach() {
         String json = "{\n"
-                + "          \"nodes\": [\n"
-                + "            {\n"
-                + "              \"id\": \"d0e36d269ed0414d9acd08149f360129\",\n"
-                + "              \"recurrence\": \"Normal\",\n"
-                + "              \"timeout\": 12,\n"
-                + "              \"instanceMode\": \"T+1\",\n"
-                + "              \"rerunMode\": \"Allowed\",\n"
-                + "              \"rerunTimes\": 3,\n"
-                + "              \"rerunInterval\": 18000,\n"
-                + "              \"script\": {\n"
-                + "                \"path\": \"/遍历节点0/traverse_start\",\n"
-                + "                \"runtime\": {\n"
-                + "                  \"engine\": \"GENERAL\",\n"
-                + "                  \"command\": \"CONTROLLER_TRAVERSE_START\"\n"
-                + "                },\n"
-                + "                \"parameters\": []\n"
-                + "              },\n"
-                + "              \"trigger\": {\n"
-                + "                \"type\": \"Scheduler\",\n"
-                + "                \"cron\": \"00 00 00 * * ?\",\n"
-                + "                \"startTime\": \"1970-01-01 00:00:00\",\n"
-                + "                \"endTime\": \"9999-01-01 00:00:00\",\n"
-                + "                \"timezone\": \"Asia/Shanghai\"\n"
-                + "              },\n"
-                + "              \"runtimeResource\": {\n"
-                + "                \"resourceGroup\": \"res_group_1\"\n"
-                + "              },\n"
-                + "              \"name\": \"traverse_start\",\n"
-                + "              \"owner\": \"WORKER_1482465063962\",\n"
-                + "              \"inputs\": {},\n"
-                + "              \"outputs\": {\n"
-                + "                \"nodeOutputs\": [\n"
-                + "                  {\n"
-                + "                    \"artifactType\": \"NodeOutput\",\n"
-                + "                    \"data\": \"d0e36d269ed0414d9acd08149f360129\",\n"
-                + "                    \"refTableName\": \"traverse_start\"\n"
-                + "                  }\n"
-                + "                ]\n"
-                + "              },\n"
-                + "              \"functions\": [],\n"
-                + "              \"fileResources\": []\n"
-                + "            },\n"
-                + "            {\n"
-                + "              \"id\": \"8401efef76224eacbf28cc284b11a788\",\n"
-                + "              \"recurrence\": \"Normal\",\n"
-                + "              \"timeout\": 12,\n"
-                + "              \"instanceMode\": \"T+1\",\n"
-                + "              \"rerunMode\": \"Allowed\",\n"
-                + "              \"rerunTimes\": 3,\n"
-                + "              \"rerunInterval\": 18000,\n"
-                + "              \"script\": {\n"
-                + "                \"path\": \"/遍历节点0/shell\",\n"
-                + "                \"runtime\": {\n"
-                + "                  \"engine\": \"GENERAL\",\n"
-                + "                  \"command\": \"DIDE_SHELL\"\n"
-                + "                },\n"
-                + "                \"parameters\": []\n"
-                + "              },\n"
-                + "              \"trigger\": {\n"
-                + "                \"type\": \"Scheduler\",\n"
-                + "                \"cron\": \"00 00 00 * * ?\",\n"
-                + "                \"startTime\": \"1970-01-01 00:00:00\",\n"
-                + "                \"endTime\": \"9999-01-01 00:00:00\",\n"
-                + "                \"timezone\": \"Asia/Shanghai\"\n"
-                + "              },\n"
-                + "              \"runtimeResource\": {\n"
-                + "                \"resourceGroup\": \"res_group_1\"\n"
-                + "              },\n"
-                + "              \"name\": \"shell\",\n"
-                + "              \"owner\": \"WORKER_1482465063962\",\n"
-                + "              \"inputs\": {},\n"
-                + "              \"outputs\": {\n"
-                + "                \"nodeOutputs\": [\n"
-                + "                  {\n"
-                + "                    \"artifactType\": \"NodeOutput\",\n"
-                + "                    \"data\": \"8401efef76224eacbf28cc284b11a788\",\n"
-                + "                    \"refTableName\": \"shell\"\n"
-                + "                  }\n"
-                + "                ]\n"
-                + "              },\n"
-                + "              \"functions\": [],\n"
-                + "              \"fileResources\": []\n"
-                + "            },\n"
-                + "            {\n"
-                + "              \"id\": \"227b06c3ab0549e3b77731b0c828dcec\",\n"
-                + "              \"recurrence\": \"Normal\",\n"
-                + "              \"timeout\": 12,\n"
-                + "              \"instanceMode\": \"T+1\",\n"
-                + "              \"rerunMode\": \"Allowed\",\n"
-                + "              \"rerunTimes\": 3,\n"
-                + "              \"rerunInterval\": 18000,\n"
-                + "              \"script\": {\n"
-                + "                \"path\": \"/遍历节点0/traverse_end\",\n"
-                + "                \"runtime\": {\n"
-                + "                  \"engine\": \"GENERAL\",\n"
-                + "                  \"command\": \"CONTROLLER_TRAVERSE_END\"\n"
-                + "                },\n"
-                + "                \"parameters\": []\n"
-                + "              },\n"
-                + "              \"trigger\": {\n"
-                + "                \"type\": \"Scheduler\",\n"
-                + "                \"cron\": \"00 00 00 * * ?\",\n"
-                + "                \"startTime\": \"1970-01-01 00:00:00\",\n"
-                + "                \"endTime\": \"9999-01-01 00:00:00\",\n"
-                + "                \"timezone\": \"Asia/Shanghai\"\n"
-                + "              },\n"
-                + "              \"runtimeResource\": {\n"
-                + "                \"resourceGroup\": \"res_group_1\"\n"
-                + "              },\n"
-                + "              \"name\": \"traverse_end\",\n"
-                + "              \"owner\": \"WORKER_1482465063962\",\n"
-                + "              \"inputs\": {},\n"
-                + "              \"outputs\": {\n"
-                + "                \"nodeOutputs\": [\n"
-                + "                  {\n"
-                + "                    \"artifactType\": \"NodeOutput\",\n"
-                + "                    \"data\": \"227b06c3ab0549e3b77731b0c828dcec\",\n"
-                + "                    \"refTableName\": \"traverse_end\"\n"
-                + "                  }\n"
-                + "                ]\n"
-                + "              },\n"
-                + "              \"functions\": [],\n"
-                + "              \"fileResources\": []\n"
-                + "            }\n"
-                + "          ],\n"
-                + "          \"flow\": [\n"
-                + "            {\n"
-                + "              \"nodeId\": \"8401efef76224eacbf28cc284b11a788\",\n"
-                + "              \"depends\": [\n"
-                + "                {\n"
-                + "                  \"nodeId\": \"d0e36d269ed0414d9acd08149f360129\",\n"
-                + "                  \"type\": \"Normal\"\n"
-                + "                }\n"
-                + "              ]\n"
-                + "            },\n"
-                + "            {\n"
-                + "              \"nodeId\": \"227b06c3ab0549e3b77731b0c828dcec\",\n"
-                + "              \"depends\": [\n"
-                + "                {\n"
-                + "                  \"nodeId\": \"8401efef76224eacbf28cc284b11a788\",\n"
-                + "                  \"type\": \"Normal\"\n"
-                + "                }\n"
-                + "              ]\n"
-                + "            }\n"
-                + "          ]\n"
-                + "        }";
+            + "          \"nodes\": [\n"
+            + "            {\n"
+            + "              \"id\": \"d0e36d269ed0414d9acd08149f360129\",\n"
+            + "              \"recurrence\": \"Normal\",\n"
+            + "              \"timeout\": 12,\n"
+            + "              \"instanceMode\": \"T+1\",\n"
+            + "              \"rerunMode\": \"Allowed\",\n"
+            + "              \"rerunTimes\": 3,\n"
+            + "              \"rerunInterval\": 18000,\n"
+            + "              \"script\": {\n"
+            + "                \"path\": \"/遍历节点0/traverse_start\",\n"
+            + "                \"runtime\": {\n"
+            + "                  \"engine\": \"GENERAL\",\n"
+            + "                  \"command\": \"CONTROLLER_TRAVERSE_START\"\n"
+            + "                },\n"
+            + "                \"parameters\": []\n"
+            + "              },\n"
+            + "              \"trigger\": {\n"
+            + "                \"type\": \"Scheduler\",\n"
+            + "                \"cron\": \"00 00 00 * * ?\",\n"
+            + "                \"startTime\": \"1970-01-01 00:00:00\",\n"
+            + "                \"endTime\": \"9999-01-01 00:00:00\",\n"
+            + "                \"timezone\": \"Asia/Shanghai\"\n"
+            + "              },\n"
+            + "              \"runtimeResource\": {\n"
+            + "                \"resourceGroup\": \"res_group_1\"\n"
+            + "              },\n"
+            + "              \"name\": \"traverse_start\",\n"
+            + "              \"owner\": \"WORKER_1482465063962\",\n"
+            + "              \"inputs\": {},\n"
+            + "              \"outputs\": {\n"
+            + "                \"nodeOutputs\": [\n"
+            + "                  {\n"
+            + "                    \"artifactType\": \"NodeOutput\",\n"
+            + "                    \"data\": \"d0e36d269ed0414d9acd08149f360129\",\n"
+            + "                    \"refTableName\": \"traverse_start\"\n"
+            + "                  }\n"
+            + "                ]\n"
+            + "              },\n"
+            + "              \"functions\": [],\n"
+            + "              \"fileResources\": []\n"
+            + "            },\n"
+            + "            {\n"
+            + "              \"id\": \"8401efef76224eacbf28cc284b11a788\",\n"
+            + "              \"recurrence\": \"Normal\",\n"
+            + "              \"timeout\": 12,\n"
+            + "              \"instanceMode\": \"T+1\",\n"
+            + "              \"rerunMode\": \"Allowed\",\n"
+            + "              \"rerunTimes\": 3,\n"
+            + "              \"rerunInterval\": 18000,\n"
+            + "              \"script\": {\n"
+            + "                \"path\": \"/遍历节点0/shell\",\n"
+            + "                \"runtime\": {\n"
+            + "                  \"engine\": \"GENERAL\",\n"
+            + "                  \"command\": \"DIDE_SHELL\"\n"
+            + "                },\n"
+            + "                \"parameters\": []\n"
+            + "              },\n"
+            + "              \"trigger\": {\n"
+            + "                \"type\": \"Scheduler\",\n"
+            + "                \"cron\": \"00 00 00 * * ?\",\n"
+            + "                \"startTime\": \"1970-01-01 00:00:00\",\n"
+            + "                \"endTime\": \"9999-01-01 00:00:00\",\n"
+            + "                \"timezone\": \"Asia/Shanghai\"\n"
+            + "              },\n"
+            + "              \"runtimeResource\": {\n"
+            + "                \"resourceGroup\": \"res_group_1\"\n"
+            + "              },\n"
+            + "              \"name\": \"shell\",\n"
+            + "              \"owner\": \"WORKER_1482465063962\",\n"
+            + "              \"inputs\": {},\n"
+            + "              \"outputs\": {\n"
+            + "                \"nodeOutputs\": [\n"
+            + "                  {\n"
+            + "                    \"artifactType\": \"NodeOutput\",\n"
+            + "                    \"data\": \"8401efef76224eacbf28cc284b11a788\",\n"
+            + "                    \"refTableName\": \"shell\"\n"
+            + "                  }\n"
+            + "                ]\n"
+            + "              },\n"
+            + "              \"functions\": [],\n"
+            + "              \"fileResources\": []\n"
+            + "            },\n"
+            + "            {\n"
+            + "              \"id\": \"227b06c3ab0549e3b77731b0c828dcec\",\n"
+            + "              \"recurrence\": \"Normal\",\n"
+            + "              \"timeout\": 12,\n"
+            + "              \"instanceMode\": \"T+1\",\n"
+            + "              \"rerunMode\": \"Allowed\",\n"
+            + "              \"rerunTimes\": 3,\n"
+            + "              \"rerunInterval\": 18000,\n"
+            + "              \"script\": {\n"
+            + "                \"path\": \"/遍历节点0/traverse_end\",\n"
+            + "                \"runtime\": {\n"
+            + "                  \"engine\": \"GENERAL\",\n"
+            + "                  \"command\": \"CONTROLLER_TRAVERSE_END\"\n"
+            + "                },\n"
+            + "                \"parameters\": []\n"
+            + "              },\n"
+            + "              \"trigger\": {\n"
+            + "                \"type\": \"Scheduler\",\n"
+            + "                \"cron\": \"00 00 00 * * ?\",\n"
+            + "                \"startTime\": \"1970-01-01 00:00:00\",\n"
+            + "                \"endTime\": \"9999-01-01 00:00:00\",\n"
+            + "                \"timezone\": \"Asia/Shanghai\"\n"
+            + "              },\n"
+            + "              \"runtimeResource\": {\n"
+            + "                \"resourceGroup\": \"res_group_1\"\n"
+            + "              },\n"
+            + "              \"name\": \"traverse_end\",\n"
+            + "              \"owner\": \"WORKER_1482465063962\",\n"
+            + "              \"inputs\": {},\n"
+            + "              \"outputs\": {\n"
+            + "                \"nodeOutputs\": [\n"
+            + "                  {\n"
+            + "                    \"artifactType\": \"NodeOutput\",\n"
+            + "                    \"data\": \"227b06c3ab0549e3b77731b0c828dcec\",\n"
+            + "                    \"refTableName\": \"traverse_end\"\n"
+            + "                  }\n"
+            + "                ]\n"
+            + "              },\n"
+            + "              \"functions\": [],\n"
+            + "              \"fileResources\": []\n"
+            + "            }\n"
+            + "          ],\n"
+            + "          \"flow\": [\n"
+            + "            {\n"
+            + "              \"nodeId\": \"8401efef76224eacbf28cc284b11a788\",\n"
+            + "              \"depends\": [\n"
+            + "                {\n"
+            + "                  \"nodeId\": \"d0e36d269ed0414d9acd08149f360129\",\n"
+            + "                  \"type\": \"Normal\"\n"
+            + "                }\n"
+            + "              ]\n"
+            + "            },\n"
+            + "            {\n"
+            + "              \"nodeId\": \"227b06c3ab0549e3b77731b0c828dcec\",\n"
+            + "              \"depends\": [\n"
+            + "                {\n"
+            + "                  \"nodeId\": \"8401efef76224eacbf28cc284b11a788\",\n"
+            + "                  \"type\": \"Normal\"\n"
+            + "                }\n"
+            + "              ]\n"
+            + "            }\n"
+            + "          ]\n"
+            + "        }";
         SpecForEach foreach = SpecUtil.parse(json, SpecForEach.class, new SpecParserContext());
         log.info("before: {}", json);
     }
@@ -1276,356 +1286,774 @@ public class SpecUtilTest {
     @Test
     public void testx() {
         String spec = "{\n"
-                + "\t\"version\":\"1.1.0\",\n"
-                + "\t\"kind\":\"TemporaryWorkflow\",\n"
-                + "\t\"spec\":{\n"
-                + "\t\t\"nodes\":[\n"
-                + "\t\t\t{\n"
-                + "\t\t\t\t\"recurrence\":\"Normal\",\n"
-                + "\t\t\t\t\"id\":\"5143110377713406119\",\n"
-                + "\t\t\t\t\"timeout\":0,\n"
-                + "\t\t\t\t\"instanceMode\":\"T+1\",\n"
-                + "\t\t\t\t\"rerunMode\":\"Allowed\",\n"
-                + "\t\t\t\t\"rerunTimes\":3,\n"
-                + "\t\t\t\t\"rerunInterval\":180000,\n"
-                + "\t\t\t\t\"script\":{\n"
-                + "\t\t\t\t\t\"path\":\"聿剑/flow/flow6/f_ge_shell1\",\n"
-                + "\t\t\t\t\t\"runtime\":{\n"
-                + "\t\t\t\t\t\t\"command\":\"DIDE_SHELL\"\n"
-                + "\t\t\t\t\t},\n"
-                + "\t\t\t\t\t\"content\":\"#!/bin/bash\\n#********************************************************************#\\n##author:聿剑\\n"
-                + "##create time:2024-04-09 16:05:37\\n#********************************************************************#\\necho $1\",\n"
-                + "\t\t\t\t\t\"id\":\"6138281211054878711\",\n"
-                + "\t\t\t\t\t\"parameters\":[\n"
-                + "\t\t\t\t\t\t{\n"
-                + "\t\t\t\t\t\t\t\"name\":\"flow_bizdate\",\n"
-                + "\t\t\t\t\t\t\t\"artifactType\":\"Variable\",\n"
-                + "\t\t\t\t\t\t\t\"scope\":\"NodeParameter\",\n"
-                + "\t\t\t\t\t\t\t\"type\":\"System\",\n"
-                + "\t\t\t\t\t\t\t\"value\":\"$[yyyymmdd-1]\",\n"
-                + "\t\t\t\t\t\t\t\"id\":\"6584333807719816392\"\n"
-                + "\t\t\t\t\t\t}\n"
-                + "\t\t\t\t\t]\n"
-                + "\t\t\t\t},\n"
-                + "\t\t\t\t\"trigger\":{\n"
-                + "\t\t\t\t\t\"type\":\"Scheduler\",\n"
-                + "\t\t\t\t\t\"id\":\"4752762997864777554\",\n"
-                + "\t\t\t\t\t\"cron\":\"00 00 00 * * ?\",\n"
-                + "\t\t\t\t\t\"startTime\":\"1970-01-01 00:00:00\",\n"
-                + "\t\t\t\t\t\"endTime\":\"9999-01-01 00:00:00\",\n"
-                + "\t\t\t\t\t\"timezone\":\"Asia/Shanghai\"\n"
-                + "\t\t\t\t},\n"
-                + "\t\t\t\t\"runtimeResource\":{\n"
-                + "\t\t\t\t\t\"resourceGroup\":\"group_2\",\n"
-                + "\t\t\t\t\t\"id\":\"5623679673296125496\",\n"
-                + "\t\t\t\t\t\"resourceGroupId\":\"2\"\n"
-                + "\t\t\t\t},\n"
-                + "\t\t\t\t\"name\":\"f_ge_shell1\",\n"
-                + "\t\t\t\t\"owner\":\"064152\",\n"
-                + "\t\t\t\t\"metadata\":{\n"
-                + "\t\t\t\t\t\"owner\":{\n"
-                + "\t\t\t\t\t\t\"userId\":\"064152\",\n"
-                + "\t\t\t\t\t\t\"userName\":\"聿剑\"\n"
-                + "\t\t\t\t\t},\n"
-                + "\t\t\t\t\t\"containerUuid\":\"8522335580915008505\"\n"
-                + "\t\t\t\t},\n"
-                + "\t\t\t\t\"inputs\":{\n"
-                + "\t\t\t\t\t\n"
-                + "\t\t\t\t},\n"
-                + "\t\t\t\t\"outputs\":{\n"
-                + "\t\t\t\t\t\"nodeOutputs\":[\n"
-                + "\t\t\t\t\t\t{\n"
-                + "\t\t\t\t\t\t\t\"data\":\"5143110377713406119\",\n"
-                + "\t\t\t\t\t\t\t\"artifactType\":\"NodeOutput\",\n"
-                + "\t\t\t\t\t\t\t\"refTableName\":\"f_ge_shell1\",\n"
-                + "\t\t\t\t\t\t\t\"isDefault\":true\n"
-                + "\t\t\t\t\t\t}\n"
-                + "\t\t\t\t\t]\n"
-                + "\t\t\t\t}\n"
-                + "\t\t\t},\n"
-                + "\t\t\t{\n"
-                + "\t\t\t\t\"recurrence\":\"Normal\",\n"
-                + "\t\t\t\t\"id\":\"7495526614688319692\",\n"
-                + "\t\t\t\t\"timeout\":0,\n"
-                + "\t\t\t\t\"instanceMode\":\"T+1\",\n"
-                + "\t\t\t\t\"rerunMode\":\"Allowed\",\n"
-                + "\t\t\t\t\"rerunTimes\":3,\n"
-                + "\t\t\t\t\"rerunInterval\":180000,\n"
-                + "\t\t\t\t\"datasource\":{\n"
-                + "\t\t\t\t\t\"name\":\"odps_first\",\n"
-                + "\t\t\t\t\t\"type\":\"odps\"\n"
-                + "\t\t\t\t},\n"
-                + "\t\t\t\t\"script\":{\n"
-                + "\t\t\t\t\t\"path\":\"聿剑/flow/flow6/f_mc_sql1\",\n"
-                + "\t\t\t\t\t\"runtime\":{\n"
-                + "\t\t\t\t\t\t\"command\":\"ODPS_SQL\"\n"
-                + "\t\t\t\t\t},\n"
-                + "\t\t\t\t\t\"content\":\"--MaxCompute SQL\\n--********************************************************************--\\n--author: "
-                + "聿剑\\n--create time: 2024-04-09 10:53:58\\n--********************************************************************--\\nSELECT "
-                + "'${flow_bizdate}';\\n\",\n"
-                + "\t\t\t\t\t\"id\":\"5724702094894912201\",\n"
-                + "\t\t\t\t\t\"parameters\":[\n"
-                + "\t\t\t\t\t\t{\n"
-                + "\t\t\t\t\t\t\t\"name\":\"flow_bizdate\",\n"
-                + "\t\t\t\t\t\t\t\"artifactType\":\"Variable\",\n"
-                + "\t\t\t\t\t\t\t\"scope\":\"NodeParameter\",\n"
-                + "\t\t\t\t\t\t\t\"type\":\"System\",\n"
-                + "\t\t\t\t\t\t\t\"value\":\"$[yyyymmdd-1]\",\n"
-                + "\t\t\t\t\t\t\t\"id\":\"6584333807719816392\"\n"
-                + "\t\t\t\t\t\t}\n"
-                + "\t\t\t\t\t]\n"
-                + "\t\t\t\t},\n"
-                + "\t\t\t\t\"trigger\":{\n"
-                + "\t\t\t\t\t\"type\":\"Scheduler\",\n"
-                + "\t\t\t\t\t\"id\":\"8888865284073976707\",\n"
-                + "\t\t\t\t\t\"cron\":\"00 00 00 * * ?\",\n"
-                + "\t\t\t\t\t\"startTime\":\"1970-01-01 00:00:00\",\n"
-                + "\t\t\t\t\t\"endTime\":\"9999-01-01 00:00:00\",\n"
-                + "\t\t\t\t\t\"timezone\":\"Asia/Shanghai\"\n"
-                + "\t\t\t\t},\n"
-                + "\t\t\t\t\"runtimeResource\":{\n"
-                + "\t\t\t\t\t\"resourceGroup\":\"group_2\",\n"
-                + "\t\t\t\t\t\"id\":\"5623679673296125496\",\n"
-                + "\t\t\t\t\t\"resourceGroupId\":\"2\"\n"
-                + "\t\t\t\t},\n"
-                + "\t\t\t\t\"name\":\"f_mc_sql1\",\n"
-                + "\t\t\t\t\"owner\":\"064152\",\n"
-                + "\t\t\t\t\"metadata\":{\n"
-                + "\t\t\t\t\t\"owner\":{\n"
-                + "\t\t\t\t\t\t\"userId\":\"064152\",\n"
-                + "\t\t\t\t\t\t\"userName\":\"聿剑\"\n"
-                + "\t\t\t\t\t},\n"
-                + "\t\t\t\t\t\"containerUuid\":\"8522335580915008505\"\n"
-                + "\t\t\t\t},\n"
-                + "\t\t\t\t\"inputs\":{\n"
-                + "\t\t\t\t\t\n"
-                + "\t\t\t\t},\n"
-                + "\t\t\t\t\"outputs\":{\n"
-                + "\t\t\t\t\t\"nodeOutputs\":[\n"
-                + "\t\t\t\t\t\t{\n"
-                + "\t\t\t\t\t\t\t\"data\":\"7495526614688319692\",\n"
-                + "\t\t\t\t\t\t\t\"artifactType\":\"NodeOutput\",\n"
-                + "\t\t\t\t\t\t\t\"refTableName\":\"f_mc_sql1\",\n"
-                + "\t\t\t\t\t\t\t\"isDefault\":true\n"
-                + "\t\t\t\t\t\t}\n"
-                + "\t\t\t\t\t]\n"
-                + "\t\t\t\t}\n"
-                + "\t\t\t}\n"
-                + "\t\t],\n"
-                + "\t\t\"flow\":[\n"
-                + "\t\t\t{\n"
-                + "\t\t\t\t\"nodeId\":\"5143110377713406119\",\n"
-                + "\t\t\t\t\"depends\":[\n"
-                + "\t\t\t\t\t{\n"
-                + "\t\t\t\t\t\t\"type\":\"Normal\",\n"
-                + "\t\t\t\t\t\t\"output\":\"7495526614688319692\"\n"
-                + "\t\t\t\t\t}\n"
-                + "\t\t\t\t]\n"
-                + "\t\t\t}\n"
-                + "\t\t],\n"
-                + "\t\t\"variables\":[\n"
-                + "\t\t\t{\n"
-                + "\t\t\t\t\"name\":\"flow_bizdate\",\n"
-                + "\t\t\t\t\"artifactType\":\"Variable\",\n"
-                + "\t\t\t\t\"scope\":\"NodeParameter\",\n"
-                + "\t\t\t\t\"type\":\"System\",\n"
-                + "\t\t\t\t\"value\":\"$[yyyymmdd-1]\"\n"
-                + "\t\t\t}\n"
-                + "\t\t]\n"
-                + "\t},\n"
-                + "\t\"metadata\":{\n"
-                + "\t\t\"owner\":{\n"
-                + "\t\t\t\"userId\":\"064152\",\n"
-                + "\t\t\t\"userName\":\"聿剑\"\n"
-                + "\t\t},\n"
-                + "\t\t\"name\":\"fullflow2\",\n"
-                + "\t\t\"tenantId\":\"1\",\n"
-                + "\t\t\"type\":\"CycleWorkflow\",\n"
-                + "\t\t\"uuid\":\"8522335580915008505\",\n"
-                + "\t\t\"projectId\":\"23620\"\n"
-                + "\t}\n"
-                + "}";
+            + "\t\"version\":\"1.1.0\",\n"
+            + "\t\"kind\":\"TemporaryWorkflow\",\n"
+            + "\t\"spec\":{\n"
+            + "\t\t\"nodes\":[\n"
+            + "\t\t\t{\n"
+            + "\t\t\t\t\"recurrence\":\"Normal\",\n"
+            + "\t\t\t\t\"id\":\"5143110377713406119\",\n"
+            + "\t\t\t\t\"timeout\":0,\n"
+            + "\t\t\t\t\"instanceMode\":\"T+1\",\n"
+            + "\t\t\t\t\"rerunMode\":\"Allowed\",\n"
+            + "\t\t\t\t\"rerunTimes\":3,\n"
+            + "\t\t\t\t\"rerunInterval\":180000,\n"
+            + "\t\t\t\t\"script\":{\n"
+            + "\t\t\t\t\t\"path\":\"聿剑/flow/flow6/f_ge_shell1\",\n"
+            + "\t\t\t\t\t\"runtime\":{\n"
+            + "\t\t\t\t\t\t\"command\":\"DIDE_SHELL\"\n"
+            + "\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\"content\":\"#!/bin/bash\\n#********************************************************************#\\n##author:聿剑\\n"
+            + "##create time:2024-04-09 16:05:37\\n#********************************************************************#\\necho $1\",\n"
+            + "\t\t\t\t\t\"id\":\"6138281211054878711\",\n"
+            + "\t\t\t\t\t\"parameters\":[\n"
+            + "\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\"name\":\"flow_bizdate\",\n"
+            + "\t\t\t\t\t\t\t\"artifactType\":\"Variable\",\n"
+            + "\t\t\t\t\t\t\t\"scope\":\"NodeParameter\",\n"
+            + "\t\t\t\t\t\t\t\"type\":\"System\",\n"
+            + "\t\t\t\t\t\t\t\"value\":\"$[yyyymmdd-1]\",\n"
+            + "\t\t\t\t\t\t\t\"id\":\"6584333807719816392\"\n"
+            + "\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t]\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"trigger\":{\n"
+            + "\t\t\t\t\t\"type\":\"Scheduler\",\n"
+            + "\t\t\t\t\t\"id\":\"4752762997864777554\",\n"
+            + "\t\t\t\t\t\"cron\":\"00 00 00 * * ?\",\n"
+            + "\t\t\t\t\t\"startTime\":\"1970-01-01 00:00:00\",\n"
+            + "\t\t\t\t\t\"endTime\":\"9999-01-01 00:00:00\",\n"
+            + "\t\t\t\t\t\"timezone\":\"Asia/Shanghai\"\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"runtimeResource\":{\n"
+            + "\t\t\t\t\t\"resourceGroup\":\"group_2\",\n"
+            + "\t\t\t\t\t\"id\":\"5623679673296125496\",\n"
+            + "\t\t\t\t\t\"resourceGroupId\":\"2\"\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"name\":\"f_ge_shell1\",\n"
+            + "\t\t\t\t\"owner\":\"064152\",\n"
+            + "\t\t\t\t\"metadata\":{\n"
+            + "\t\t\t\t\t\"owner\":{\n"
+            + "\t\t\t\t\t\t\"userId\":\"064152\",\n"
+            + "\t\t\t\t\t\t\"userName\":\"聿剑\"\n"
+            + "\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\"containerUuid\":\"8522335580915008505\"\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"inputs\":{\n"
+            + "\t\t\t\t\t\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"outputs\":{\n"
+            + "\t\t\t\t\t\"nodeOutputs\":[\n"
+            + "\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\"data\":\"5143110377713406119\",\n"
+            + "\t\t\t\t\t\t\t\"artifactType\":\"NodeOutput\",\n"
+            + "\t\t\t\t\t\t\t\"refTableName\":\"f_ge_shell1\",\n"
+            + "\t\t\t\t\t\t\t\"isDefault\":true\n"
+            + "\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t]\n"
+            + "\t\t\t\t}\n"
+            + "\t\t\t},\n"
+            + "\t\t\t{\n"
+            + "\t\t\t\t\"recurrence\":\"Normal\",\n"
+            + "\t\t\t\t\"id\":\"7495526614688319692\",\n"
+            + "\t\t\t\t\"timeout\":0,\n"
+            + "\t\t\t\t\"instanceMode\":\"T+1\",\n"
+            + "\t\t\t\t\"rerunMode\":\"Allowed\",\n"
+            + "\t\t\t\t\"rerunTimes\":3,\n"
+            + "\t\t\t\t\"rerunInterval\":180000,\n"
+            + "\t\t\t\t\"datasource\":{\n"
+            + "\t\t\t\t\t\"name\":\"odps_first\",\n"
+            + "\t\t\t\t\t\"type\":\"odps\"\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"script\":{\n"
+            + "\t\t\t\t\t\"path\":\"聿剑/flow/flow6/f_mc_sql1\",\n"
+            + "\t\t\t\t\t\"runtime\":{\n"
+            + "\t\t\t\t\t\t\"command\":\"ODPS_SQL\"\n"
+            + "\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\"content\":\"--MaxCompute SQL\\n--********************************************************************--\\n--author: "
+            + "聿剑\\n--create time: 2024-04-09 10:53:58\\n--********************************************************************--\\nSELECT "
+            + "'${flow_bizdate}';\\n\",\n"
+            + "\t\t\t\t\t\"id\":\"5724702094894912201\",\n"
+            + "\t\t\t\t\t\"parameters\":[\n"
+            + "\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\"name\":\"flow_bizdate\",\n"
+            + "\t\t\t\t\t\t\t\"artifactType\":\"Variable\",\n"
+            + "\t\t\t\t\t\t\t\"scope\":\"NodeParameter\",\n"
+            + "\t\t\t\t\t\t\t\"type\":\"System\",\n"
+            + "\t\t\t\t\t\t\t\"value\":\"$[yyyymmdd-1]\",\n"
+            + "\t\t\t\t\t\t\t\"id\":\"6584333807719816392\"\n"
+            + "\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t]\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"trigger\":{\n"
+            + "\t\t\t\t\t\"type\":\"Scheduler\",\n"
+            + "\t\t\t\t\t\"id\":\"8888865284073976707\",\n"
+            + "\t\t\t\t\t\"cron\":\"00 00 00 * * ?\",\n"
+            + "\t\t\t\t\t\"startTime\":\"1970-01-01 00:00:00\",\n"
+            + "\t\t\t\t\t\"endTime\":\"9999-01-01 00:00:00\",\n"
+            + "\t\t\t\t\t\"timezone\":\"Asia/Shanghai\"\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"runtimeResource\":{\n"
+            + "\t\t\t\t\t\"resourceGroup\":\"group_2\",\n"
+            + "\t\t\t\t\t\"id\":\"5623679673296125496\",\n"
+            + "\t\t\t\t\t\"resourceGroupId\":\"2\"\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"name\":\"f_mc_sql1\",\n"
+            + "\t\t\t\t\"owner\":\"064152\",\n"
+            + "\t\t\t\t\"metadata\":{\n"
+            + "\t\t\t\t\t\"owner\":{\n"
+            + "\t\t\t\t\t\t\"userId\":\"064152\",\n"
+            + "\t\t\t\t\t\t\"userName\":\"聿剑\"\n"
+            + "\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\"containerUuid\":\"8522335580915008505\"\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"inputs\":{\n"
+            + "\t\t\t\t\t\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"outputs\":{\n"
+            + "\t\t\t\t\t\"nodeOutputs\":[\n"
+            + "\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\"data\":\"7495526614688319692\",\n"
+            + "\t\t\t\t\t\t\t\"artifactType\":\"NodeOutput\",\n"
+            + "\t\t\t\t\t\t\t\"refTableName\":\"f_mc_sql1\",\n"
+            + "\t\t\t\t\t\t\t\"isDefault\":true\n"
+            + "\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t]\n"
+            + "\t\t\t\t}\n"
+            + "\t\t\t}\n"
+            + "\t\t],\n"
+            + "\t\t\"flow\":[\n"
+            + "\t\t\t{\n"
+            + "\t\t\t\t\"nodeId\":\"5143110377713406119\",\n"
+            + "\t\t\t\t\"depends\":[\n"
+            + "\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\"type\":\"Normal\",\n"
+            + "\t\t\t\t\t\t\"output\":\"7495526614688319692\"\n"
+            + "\t\t\t\t\t}\n"
+            + "\t\t\t\t]\n"
+            + "\t\t\t}\n"
+            + "\t\t],\n"
+            + "\t\t\"variables\":[\n"
+            + "\t\t\t{\n"
+            + "\t\t\t\t\"name\":\"flow_bizdate\",\n"
+            + "\t\t\t\t\"artifactType\":\"Variable\",\n"
+            + "\t\t\t\t\"scope\":\"NodeParameter\",\n"
+            + "\t\t\t\t\"type\":\"System\",\n"
+            + "\t\t\t\t\"value\":\"$[yyyymmdd-1]\"\n"
+            + "\t\t\t}\n"
+            + "\t\t]\n"
+            + "\t},\n"
+            + "\t\"metadata\":{\n"
+            + "\t\t\"owner\":{\n"
+            + "\t\t\t\"userId\":\"064152\",\n"
+            + "\t\t\t\"userName\":\"聿剑\"\n"
+            + "\t\t},\n"
+            + "\t\t\"name\":\"fullflow2\",\n"
+            + "\t\t\"tenantId\":\"1\",\n"
+            + "\t\t\"type\":\"CycleWorkflow\",\n"
+            + "\t\t\"uuid\":\"8522335580915008505\",\n"
+            + "\t\t\"projectId\":\"23620\"\n"
+            + "\t}\n"
+            + "}";
         Specification<Spec> resp = SpecUtil.parseToDomain(spec);
         log.info("resp: {}", resp);
         Assert.assertNotNull(resp);
     }
 
     @Test
-    public void testSingleNode() {
-        String spec = "{\n"
-                + "    \"version\":\"1.1.0\",\n"
-                + "    \"kind\":\"Node\",\n"
-                + "    \"spec\":{\n"
-                + "      \"node\": {\n"
-                + "        \"id\": \"4744170535163410393\",\n"
-                + "        \"recurrence\":\"Normal\",\n"
-                + "        \"timeout\":0,\n"
-                + "        \"instanceMode\":\"T+1\",\n"
-                + "        \"rerunMode\":\"Allowed\",\n"
-                + "        \"rerunTimes\":3,\n"
-                + "        \"rerunInterval\":180000,\n"
-                + "        \"owner\": \"064152\",\n"
-                + "        \"script\":{\n"
-                + "          \"path\":\"聿剑/dep1\",\n"
-                + "          \"language\":\"odps-sql\",\n"
-                + "          \"runtime\":{\n"
-                + "            \"command\":\"ODPS_SQL\"\n"
-                + "          }\n"
-                + "        },\n"
-                + "        \"trigger\":{\n"
-                + "          \"type\":\"Scheduler\",\n"
-                + "          \"cron\":\"00 00 00 * * ?\",\n"
-                + "          \"startTime\":\"1970-01-01 00:00:00\",\n"
-                + "          \"endTime\":\"9999-01-01 00:00:00\",\n"
-                + "          \"timezone\":\"Asia/Shanghai\"\n"
-                + "        },\n"
-                + "        \"runtimeResource\":{\n"
-                + "          \"resourceGroup\":\"group_2\",\n"
-                + "          \"resourceGroupId\":\"2\"\n"
-                + "        },\n"
-                + "        \"name\":\"dep1\"\n"
-                + "      } ,    \n"
-                + "      \"flow\":\n"
-                + "        { \n"
-                + "          \"nodeId\":\"1\",\n"
-                + "          \"depends\":[\n"
-                + "            {\n"
-                + "              \"type\":\"Normal\",\n"
-                + "              \"output\":\"4744170535163410393\",\n"
-                + "              \"refTableName\":\"branch_2_pyodps\"\n"
-                + "            },\n"
-                + "            {\n"
-                + "              \"type\":\"Normal\",\n"
-                + "              \"output\":\"5910844902278897501\",\n"
-                + "              \"refTableName\":\"branch_1_odpssql\"\n"
-                + "            }\n"
-                + "          ]\n"
-                + "        }\n"
-                + "      \n"
-                + "    }\n"
-                + "  }";
-        Specification<Spec> specObj = SpecUtil.parseToDomain(spec);
-        SpecWriterContext context = new SpecWriterContext();
-        context.setVersion("1.1.0");
-        log.info("write spec: {}", SpecUtil.writeToSpec(specObj));
-        Assert.assertNotNull(specObj);
-        Assert.assertTrue(specObj.getSpec() instanceof DataWorksNodeSpec);
-        Assert.assertNotNull(((DataWorksNodeSpec) specObj.getSpec()).getNode());
-        Assert.assertNotNull(((DataWorksNodeSpec) specObj.getSpec()).getFlow());
-    }
-
-    @Test
     public void testParseNodeWithComponent() {
         String spec = "{\n"
-                + "    \"version\": \"1.1.0\",\n"
-                + "    \"kind\": \"CycleWorkflow\",\n"
-                + "    \"spec\": {\n"
-                + "      \"nodes\": [\n"
-                + "        {\n"
-                + "          \"recurrence\": \"Normal\",\n"
-                + "          \"id\": \"6289081068484952005\",\n"
-                + "          \"timeout\": 0,\n"
-                + "          \"instanceMode\": \"T+1\",\n"
-                + "          \"rerunMode\": \"Allowed\",\n"
-                + "          \"rerunTimes\": 3,\n"
-                + "          \"rerunInterval\": 180000,\n"
-                + "          \"datasource\": {\n"
-                + "            \"name\": \"odps_first\",\n"
-                + "            \"type\": \"odps\"\n"
-                + "          },\n"
-                + "          \"script\": {\n"
-                + "            \"language\": \"odps-sql\",\n"
-                + "            \"path\": \"昊祯/组件/c1\",\n"
-                + "            \"runtime\": {\n"
-                + "              \"command\": \"COMPONENT_SQL\",\n"
-                + "              \"commandTypeId\": 1010\n"
-                + "            },\n"
-                + "            \"id\": \"6423534013528078585\"\n"
-                + "          },\n"
-                + "          \"trigger\": {\n"
-                + "            \"type\": \"Scheduler\",\n"
-                + "            \"id\": \"5065170306719262538\",\n"
-                + "            \"cron\": \"00 00 00 * * ?\",\n"
-                + "            \"startTime\": \"1970-01-01 00:00:00\",\n"
-                + "            \"endTime\": \"9999-01-01 00:00:00\",\n"
-                + "            \"timezone\": \"Asia/Shanghai\"\n"
-                + "          },\n"
-                + "          \"runtimeResource\": {\n"
-                + "            \"resourceGroup\": \"wengzi_test\",\n"
-                + "            \"id\": \"5700220827937093292\",\n"
-                + "            \"resourceGroupId\": \"9527\"\n"
-                + "          },\n"
-                + "          \"name\": \"c1\",\n"
-                + "          \"owner\": \"067848\",\n"
-                + "          \"component\": {\n"
-                + "            \"description\": \"11\",\n"
-                + "            \"id\": \"6128718817130431653\",\n"
-                + "            \"inputs\": [\n"
-                + "              {\n"
-                + "                \"name\": \"p1\"\n"
-                + "              },\n"
-                + "              {\n"
-                + "                \"name\": \"p2\"\n"
-                + "              }\n"
-                + "            ],\n"
-                + "            \"metadata\": {\n"
-                + "              \"version\": \"3\"\n"
-                + "            },\n"
-                + "            \"name\": \"c1\",\n"
-                + "            \"outputs\": [],\n"
-                + "            \"owner\": \"067848\"\n"
-                + "          },\n"
-                + "          \"metadata\": {\n"
-                + "            \"tenantId\": \"1\",\n"
-                + "            \"projectId\": \"23620\"\n"
-                + "          },\n"
-                + "          \"inputs\": {\n"
-                + "            \"nodeOutputs\": [\n"
-                + "              {\n"
-                + "                \"data\": \"dw_scheduler_pre_root\",\n"
-                + "                \"artifactType\": \"NodeOutput\",\n"
-                + "                \"isDefault\": false\n"
-                + "              }\n"
-                + "            ]\n"
-                + "          },\n"
-                + "          \"outputs\": {\n"
-                + "            \"nodeOutputs\": [\n"
-                + "              {\n"
-                + "                \"data\": \"6289081068484952005\",\n"
-                + "                \"artifactType\": \"NodeOutput\",\n"
-                + "                \"refTableName\": \"c1\",\n"
-                + "                \"isDefault\": true\n"
-                + "              }\n"
-                + "            ]\n"
-                + "          }\n"
-                + "        }\n"
-                + "      ],\n"
-                + "      \"flow\": [\n"
-                + "        {\n"
-                + "          \"nodeId\": \"6289081068484952005\",\n"
-                + "          \"depends\": [\n"
-                + "            {\n"
-                + "              \"type\": \"Normal\",\n"
-                + "              \"output\": \"dw_scheduler_pre_root\"\n"
-                + "            }\n"
-                + "          ]\n"
-                + "        }\n"
-                + "      ]\n"
-                + "    },\n"
-                + "    \"metadata\": {\n"
-                + "      \"uuid\": \"6289081068484952005\"\n"
-                + "    }\n"
-                + "  }";
+            + "    \"version\": \"1.1.0\",\n"
+            + "    \"kind\": \"CycleWorkflow\",\n"
+            + "    \"spec\": {\n"
+            + "      \"nodes\": [\n"
+            + "        {\n"
+            + "          \"recurrence\": \"Normal\",\n"
+            + "          \"id\": \"6289081068484952005\",\n"
+            + "          \"timeout\": 0,\n"
+            + "          \"instanceMode\": \"T+1\",\n"
+            + "          \"rerunMode\": \"Allowed\",\n"
+            + "          \"rerunTimes\": 3,\n"
+            + "          \"rerunInterval\": 180000,\n"
+            + "          \"datasource\": {\n"
+            + "            \"name\": \"odps_first\",\n"
+            + "            \"type\": \"odps\"\n"
+            + "          },\n"
+            + "          \"script\": {\n"
+            + "            \"language\": \"odps-sql\",\n"
+            + "            \"path\": \"昊祯/组件/c1\",\n"
+            + "            \"runtime\": {\n"
+            + "              \"command\": \"COMPONENT_SQL\",\n"
+            + "              \"commandTypeId\": 1010\n"
+            + "            },\n"
+            + "            \"id\": \"6423534013528078585\"\n"
+            + "          },\n"
+            + "          \"trigger\": {\n"
+            + "            \"type\": \"Scheduler\",\n"
+            + "            \"id\": \"5065170306719262538\",\n"
+            + "            \"cron\": \"00 00 00 * * ?\",\n"
+            + "            \"startTime\": \"1970-01-01 00:00:00\",\n"
+            + "            \"endTime\": \"9999-01-01 00:00:00\",\n"
+            + "            \"timezone\": \"Asia/Shanghai\"\n"
+            + "          },\n"
+            + "          \"runtimeResource\": {\n"
+            + "            \"resourceGroup\": \"wengzi_test\",\n"
+            + "            \"id\": \"5700220827937093292\",\n"
+            + "            \"resourceGroupId\": \"9527\"\n"
+            + "          },\n"
+            + "          \"name\": \"c1\",\n"
+            + "          \"owner\": \"067848\",\n"
+            + "          \"component\": {\n"
+            + "            \"description\": \"11\",\n"
+            + "            \"id\": \"6128718817130431653\",\n"
+            + "            \"inputs\": [\n"
+            + "              {\n"
+            + "                \"name\": \"p1\"\n"
+            + "              },\n"
+            + "              {\n"
+            + "                \"name\": \"p2\"\n"
+            + "              }\n"
+            + "            ],\n"
+            + "            \"metadata\": {\n"
+            + "              \"version\": \"3\"\n"
+            + "            },\n"
+            + "            \"name\": \"c1\",\n"
+            + "            \"outputs\": [],\n"
+            + "            \"owner\": \"067848\"\n"
+            + "          },\n"
+            + "          \"metadata\": {\n"
+            + "            \"tenantId\": \"1\",\n"
+            + "            \"projectId\": \"23620\"\n"
+            + "          },\n"
+            + "          \"inputs\": {\n"
+            + "            \"nodeOutputs\": [\n"
+            + "              {\n"
+            + "                \"data\": \"dw_scheduler_pre_root\",\n"
+            + "                \"artifactType\": \"NodeOutput\",\n"
+            + "                \"isDefault\": false\n"
+            + "              }\n"
+            + "            ]\n"
+            + "          },\n"
+            + "          \"outputs\": {\n"
+            + "            \"nodeOutputs\": [\n"
+            + "              {\n"
+            + "                \"data\": \"6289081068484952005\",\n"
+            + "                \"artifactType\": \"NodeOutput\",\n"
+            + "                \"refTableName\": \"c1\",\n"
+            + "                \"isDefault\": true\n"
+            + "              }\n"
+            + "            ]\n"
+            + "          }\n"
+            + "        }\n"
+            + "      ],\n"
+            + "      \"flow\": [\n"
+            + "        {\n"
+            + "          \"nodeId\": \"6289081068484952005\",\n"
+            + "          \"depends\": [\n"
+            + "            {\n"
+            + "              \"type\": \"Normal\",\n"
+            + "              \"output\": \"dw_scheduler_pre_root\"\n"
+            + "            }\n"
+            + "          ]\n"
+            + "        }\n"
+            + "      ]\n"
+            + "    },\n"
+            + "    \"metadata\": {\n"
+            + "      \"uuid\": \"6289081068484952005\"\n"
+            + "    }\n"
+            + "  }";
 
         Specification<DataWorksWorkflowSpec> specification = SpecUtil.parseToDomain(spec);
         Optional<SpecComponent> component = Optional.ofNullable(specification)
-                .map(Specification::getSpec).map(DataWorksWorkflowSpec::getNodes)
-                .flatMap(l -> l.stream().map(SpecNode::getComponent).filter(Objects::nonNull).findAny());
+            .map(Specification::getSpec).map(DataWorksWorkflowSpec::getNodes)
+            .flatMap(l -> l.stream().map(SpecNode::getComponent).filter(Objects::nonNull).findAny());
 
         Assert.assertTrue(component.isPresent());
         Assert.assertNotNull(component.get().getMetadata());
         Assert.assertNotNull(component.get().getId());
         Assert.assertNotNull(component.get().getInputs());
         Assert.assertNotNull(component.get().getOutputs());
+    }
+
+    @Test
+    public void testWorkflow() {
+        String spec = "{\n"
+            + "    \"version\": \"1.1.0\",\n"
+            + "    \"kind\": \"CycleWorkflow\",\n"
+            + "    \"spec\": {\n"
+            + "        \"workflows\": [\n"
+            + "            {\n"
+            + "                \"id\": \"flow_1\",\n"
+            + "                \"name\": \"flow_1\",\n"
+            + "                \"strategy\": {\n"
+            + "                    \"failureStrategy\": \"Continue\"\n"
+            + "                },\n"
+            + "                \"script\": {\n"
+            + "                    \"runtime\": {\n"
+            + "                        \"command\": \"XxxWorkflow\",\n"
+            + "                        \"commandTypeId\": 1111\n"
+            + "                    },\n"
+            + "                    \"parameters\": [\n"
+            + "                        {\n"
+            + "                            \"name\": \"p1\",\n"
+            + "                            \"type\": \"System\",\n"
+            + "                            \"scope\": \"Workflow\",\n"
+            + "                            \"value\": \"$[yyyymmdd]\"\n"
+            + "                        },\n"
+            + "                        {\n"
+            + "                            \"name\": \"p2\",\n"
+            + "                            \"type\": \"Constant\",\n"
+            + "                            \"scope\": \"Workflow\",\n"
+            + "                            \"value\": \"ppp2\"\n"
+            + "                        }\n"
+            + "                    ]\n"
+            + "                },\n"
+            + "                \"runtimeResource\": {\n"
+            + "                    \"resourceGroup\": \"group_xxx\"\n"
+            + "                },\n"
+            + "                \"trigger\": {\n"
+            + "                    \"type\": \"Scheduler\",\n"
+            + "                    \"cron\": \"00 00 00 * * ?\",\n"
+            + "                    \"delaySeconds\": 10\n"
+            + "                },\n"
+            + "                \"inputs\": {},\n"
+            + "                \"outputs\": {\n"
+            + "                    \"nodeOutputs\": [\n"
+            + "                        {\n"
+            + "                            \"data\": \"autotest.workflow_1_xxx\"\n"
+            + "                        }\n"
+            + "                    ]\n"
+            + "                },\n"
+            + "                \"nodes\": [\n"
+            + "                    {\n"
+            + "                        \"id\": \"inner_node_1\",\n"
+            + "                        \"name\": \"inner_node_1\",\n"
+            + "                        \"script\": {\n"
+            + "                            \"runtime\": {\n"
+            + "                                \"command\": \"ODPS_SQL\"\n"
+            + "                            }\n"
+            + "                        },\n"
+            + "                        \"trigger\": {\n"
+            + "                            \"delay\": 10\n"
+            + "                        }\n"
+            + "                    }\n"
+            + "                ],\n"
+            + "                \"dependencies\": [\n"
+            + "                    {\n"
+            + "                        \"nodeId\": \"inner_node_1\",\n"
+            + "                        \"depends\": [\n"
+            + "                            {\n"
+            + "                                \"type\": \"Normal\",\n"
+            + "                                \"output\": \"autotest.inner_node_2_out\"\n"
+            + "                            }\n"
+            + "                        ]\n"
+            + "                    }\n"
+            + "                ]\n"
+            + "            }\n"
+            + "        ],\n"
+            + "        \"flow\": [\n"
+            + "            {\n"
+            + "                \"nodeId\": \"flow_1\",\n"
+            + "                \"depends\": [\n"
+            + "                    {\n"
+            + "                        \"type\": \"Normal\",\n"
+            + "                        \"output\": \"autotest.node_1_xxx\"\n"
+            + "                    }\n"
+            + "                ]\n"
+            + "            }\n"
+            + "        ]\n"
+            + "    }\n"
+            + "}";
+        log.info("spec: {}", spec);
+        Specification<DataWorksWorkflowSpec> specification = SpecUtil.parseToDomain(spec);
+        List<SpecWorkflow> workflows = specification.getSpec().getWorkflows();
+        Assert.assertNotNull(workflows);
+        Assert.assertEquals(1, workflows.size());
+
+        log.info("workflows: {}", workflows);
+        log.info("write spec: {}", SpecUtil.writeToSpec(specification));
+        SpecWorkflow specWorkflow = workflows.get(0);
+        Assert.assertNotNull(specWorkflow.getTrigger());
+        Assert.assertNotNull(specWorkflow.getStrategy());
+        Assert.assertNotNull(specWorkflow.getNodes());
+        Assert.assertNotNull(specWorkflow.getDependencies());
+        Assert.assertNotNull(specification.getSpec().getFlow());
+        Assert.assertNotNull(specWorkflow.getStrategy().getFailureStrategy());
+    }
+
+    @Test
+    public void testParseDepends() {
+        String json = "[\n"
+            + "  {\n"
+            + "    \"nodeId\": \"123\"\n"
+            + "  },\n"
+            + "  {\n"
+            + "    \"output\": \"autotest.1234_out\"\n"
+            + "  }\n"
+            + "]";
+        List<SpecDepend> depends = ListUtils.emptyIfNull(JSONArray.parseArray(json)).stream().map(obj -> {
+            SpecDepend dep = SpecUtil.parse(JSON.toJSONString(obj), SpecDepend.class, new SpecParserContext());
+            log.info("dep: nodeId: {}, output: {}", Optional.ofNullable(dep.getNodeId()).map(SpecRefEntity::getId).orElse(null), dep.getOutput());
+            return dep;
+        }).collect(Collectors.toList());
+
+        Assert.assertEquals(2, CollectionUtils.size(depends));
+        Assert.assertEquals("123", depends.get(0).getNodeId().getId());
+        Assert.assertEquals("autotest.1234_out", depends.get(1).getOutput().getData());
+    }
+
+    @Test
+    public void testSpecWorkflow() {
+        Specification<DataWorksWorkflowSpec> specification = new Specification<>();
+        specification.setVersion(SpecVersion.V_1_1_0.getLabel());
+        specification.setKind(SpecKind.CYCLE_WORKFLOW.getLabel());
+        DataWorksWorkflowSpec spec = new DataWorksWorkflowSpec();
+        specification.setSpec(spec);
+        SpecWorkflow specWorkflow = new SpecWorkflow();
+        specWorkflow.setId("12");
+        specWorkflow.setName("test");
+        spec.setWorkflows(Collections.singletonList(specWorkflow));
+        log.info("{}", SpecUtil.writeToSpec(specification));
+
+        Specification<DataWorksWorkflowSpec> parsed = SpecUtil.parseToDomain(SpecUtil.writeToSpec(specification));
+        Assert.assertNotNull(parsed);
+        Assert.assertNotNull(parsed.getSpec());
+        Assert.assertNotNull(parsed.getSpec().getWorkflows());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(parsed.getSpec().getWorkflows()));
+        SpecWorkflow s = parsed.getSpec().getWorkflows().get(0);
+        Assert.assertNotNull(s);
+        Assert.assertNotNull(s.getNodes());
+        Assert.assertNotNull(s.getDependencies());
+    }
+
+    @Test
+    public void testSpecSchedulerStrategy() {
+        SpecScheduleStrategy scheduleStrategy = new SpecScheduleStrategy();
+        scheduleStrategy.setFailureStrategy(FailureStrategy.CONTINUE);
+        JSONObject js = (JSONObject)SpecUtil.write(scheduleStrategy, new SpecWriterContext());
+        log.info("js: {}", js.toJSONString());
+        Assert.assertEquals("Continue", js.getString("failureStrategy"));
+    }
+
+    @Test
+    public void testSingleNode() {
+        String spec = "{\n"
+            + "    \"version\":\"1.1.0\",\n"
+            + "    \"kind\":\"Node\",\n"
+            + "    \"spec\":{\n"
+            + "      \"nodes\": [{\n"
+            + "        \"id\": \"4744170535163410393\",\n"
+            + "        \"recurrence\":\"Normal\",\n"
+            + "        \"timeout\":0,\n"
+            + "        \"instanceMode\":\"T+1\",\n"
+            + "        \"rerunMode\":\"Allowed\",\n"
+            + "        \"rerunTimes\":3,\n"
+            + "        \"rerunInterval\":180000,\n"
+            + "        \"owner\": \"064152\",\n"
+            + "        \"script\":{\n"
+            + "          \"path\":\"聿剑/dep1\",\n"
+            + "          \"language\":\"odps-sql\",\n"
+            + "          \"runtime\":{\n"
+            + "            \"command\":\"ODPS_SQL\"\n"
+            + "          }\n"
+            + "        },\n"
+            + "        \"trigger\":{\n"
+            + "          \"type\":\"Scheduler\",\n"
+            + "          \"cron\":\"00 00 00 * * ?\",\n"
+            + "          \"startTime\":\"1970-01-01 00:00:00\",\n"
+            + "          \"endTime\":\"9999-01-01 00:00:00\",\n"
+            + "          \"timezone\":\"Asia/Shanghai\"\n"
+            + "        },\n"
+            + "        \"runtimeResource\":{\n"
+            + "          \"resourceGroup\":\"group_2\",\n"
+            + "          \"resourceGroupId\":\"2\"\n"
+            + "        },\n"
+            + "        \"name\":\"dep1\"\n"
+            + "      }] ,    \n"
+            + "      \"flow\":\n"
+            + "        [{ \n"
+            + "          \"nodeId\":\"1\",\n"
+            + "          \"depends\":[\n"
+            + "            {\n"
+            + "              \"type\":\"Normal\",\n"
+            + "              \"output\":\"4744170535163410393\",\n"
+            + "              \"refTableName\":\"branch_2_pyodps\"\n"
+            + "            },\n"
+            + "            {\n"
+            + "              \"type\":\"Normal\",\n"
+            + "              \"output\":\"5910844902278897501\",\n"
+            + "              \"refTableName\":\"branch_1_odpssql\"\n"
+            + "            }\n"
+            + "          ]\n"
+            + "        }]\n"
+            + "      \n"
+            + "    }\n"
+            + "  }";
+        Specification<Spec> specObj = SpecUtil.parseToDomain(spec);
+        SpecWriterContext context = new SpecWriterContext();
+        context.setVersion("1.1.0");
+        log.info("write spec: {}", SpecUtil.writeToSpec(specObj));
+        Assert.assertNotNull(specObj);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(((DataWorksWorkflowSpec)specObj.getSpec()).getNodes()));
+        Assert.assertTrue(CollectionUtils.isNotEmpty(((DataWorksWorkflowSpec)specObj.getSpec()).getFlow()));
+    }
+
+    @Test
+    public void testWorkflows() {
+        String spec = "{\n"
+            + "\t\"version\":\"1.1.0\",\n"
+            + "\t\"kind\":\"CycleWorkflow\",\n"
+            + "\t\"spec\":{\n"
+            + "\t\t\"name\":\"testflow0730_deploy_01\",\n"
+            + "\t\t\"id\":\"8620630926993095479\",\n"
+            + "\t\t\"type\":\"CycleWorkflow\",\n"
+            + "\t\t\"owner\":\"1107550004253538\",\n"
+            + "\t\t\"workflows\":[\n"
+            + "\t\t\t{\n"
+            + "\t\t\t\t\"script\":{\n"
+            + "\t\t\t\t\t\"path\":\"聿剑/testflow0730_deploy_01\",\n"
+            + "\t\t\t\t\t\"runtime\":{\n"
+            + "\t\t\t\t\t\t\"command\":\"WORKFLOW\"\n"
+            + "\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\"id\":\"5162322698918001755\"\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"id\":\"8620630926993095479\",\n"
+            + "\t\t\t\t\"trigger\":{\n"
+            + "\t\t\t\t\t\"type\":\"Scheduler\",\n"
+            + "\t\t\t\t\t\"id\":\"5971686020768809793\",\n"
+            + "\t\t\t\t\t\"cron\":\"00 00 00 * * ?\",\n"
+            + "\t\t\t\t\t\"startTime\":\"1970-01-01 00:00:00\",\n"
+            + "\t\t\t\t\t\"endTime\":\"9999-01-01 00:00:00\",\n"
+            + "\t\t\t\t\t\"timezone\":\"Asia/Shanghai\"\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"strategy\":{\n"
+            + "\t\t\t\t\t\"timeout\":0,\n"
+            + "\t\t\t\t\t\"instanceMode\":\"T+1\",\n"
+            + "\t\t\t\t\t\"rerunMode\":\"Allowed\",\n"
+            + "\t\t\t\t\t\"rerunTimes\":3,\n"
+            + "\t\t\t\t\t\"rerunInterval\":180000,\n"
+            + "\t\t\t\t\t\"failureStrategy\":\"Break\"\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"name\":\"testflow0730_deploy_01\",\n"
+            + "\t\t\t\t\"owner\":\"1107550004253538\",\n"
+            + "\t\t\t\t\"inputs\":{\n"
+            + "\t\t\t\t\t\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"outputs\":{\n"
+            + "\t\t\t\t\t\"nodeOutputs\":[\n"
+            + "\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\"data\":\"8620630926993095479\",\n"
+            + "\t\t\t\t\t\t\t\"artifactType\":\"NodeOutput\",\n"
+            + "\t\t\t\t\t\t\t\"refTableName\":\"testflow0730_deploy_01\",\n"
+            + "\t\t\t\t\t\t\t\"isDefault\":true\n"
+            + "\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t]\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"nodes\":[\n"
+            + "\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\"recurrence\":\"Normal\",\n"
+            + "\t\t\t\t\t\t\"id\":\"7751009343504221738\",\n"
+            + "\t\t\t\t\t\t\"timeout\":0,\n"
+            + "\t\t\t\t\t\t\"instanceMode\":\"T+1\",\n"
+            + "\t\t\t\t\t\t\"rerunMode\":\"Allowed\",\n"
+            + "\t\t\t\t\t\t\"rerunTimes\":3,\n"
+            + "\t\t\t\t\t\t\"rerunInterval\":180000,\n"
+            + "\t\t\t\t\t\t\"datasource\":{\n"
+            + "\t\t\t\t\t\t\t\"name\":\"odps_first\",\n"
+            + "\t\t\t\t\t\t\t\"type\":\"\"\n"
+            + "\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\"script\":{\n"
+            + "\t\t\t\t\t\t\t\"path\":\"聿剑/testflow0730_deploy_01/mcsql_inner_02\",\n"
+            + "\t\t\t\t\t\t\t\"runtime\":{\n"
+            + "\t\t\t\t\t\t\t\t\"command\":\"ODPS_SQL\",\n"
+            + "\t\t\t\t\t\t\t\t\"commandTypeId\":10\n"
+            + "\t\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\t\"id\":\"4646522489197098297\"\n"
+            + "\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\"trigger\":{\n"
+            + "\t\t\t\t\t\t\t\"type\":\"Scheduler\",\n"
+            + "\t\t\t\t\t\t\t\"id\":\"6882497775385480901\",\n"
+            + "\t\t\t\t\t\t\t\"cron\":\"00 00 00 * * ?\",\n"
+            + "\t\t\t\t\t\t\t\"startTime\":\"1970-01-01 00:00:00\",\n"
+            + "\t\t\t\t\t\t\t\"endTime\":\"9999-01-01 00:00:00\",\n"
+            + "\t\t\t\t\t\t\t\"timezone\":\"Asia/Shanghai\",\n"
+            + "\t\t\t\t\t\t\t\"delaySeconds\":0\n"
+            + "\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\"runtimeResource\":{\n"
+            + "\t\t\t\t\t\t\t\"resourceGroup\":\"S_res_group_524257424564736_1681266742041\",\n"
+            + "\t\t\t\t\t\t\t\"id\":\"8099134362653965803\",\n"
+            + "\t\t\t\t\t\t\t\"resourceGroupId\":\"57214326\"\n"
+            + "\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\"name\":\"mcsql_inner_02\",\n"
+            + "\t\t\t\t\t\t\"owner\":\"1107550004253538\",\n"
+            + "\t\t\t\t\t\t\"metadata\":{\n"
+            + "\t\t\t\t\t\t\t\"container\":{\n"
+            + "\t\t\t\t\t\t\t\t\"type\":\"Flow\",\n"
+            + "\t\t\t\t\t\t\t\t\"uuid\":\"8620630926993095479\"\n"
+            + "\t\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\t\"tenantId\":\"524257424564736\",\n"
+            + "\t\t\t\t\t\t\t\"projectId\":\"295425\"\n"
+            + "\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\"inputs\":{\n"
+            + "\t\t\t\t\t\t\t\n"
+            + "\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\"outputs\":{\n"
+            + "\t\t\t\t\t\t\t\"nodeOutputs\":[\n"
+            + "\t\t\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\t\t\"data\":\"7751009343504221738\",\n"
+            + "\t\t\t\t\t\t\t\t\t\"artifactType\":\"NodeOutput\",\n"
+            + "\t\t\t\t\t\t\t\t\t\"refTableName\":\"mcsql_inner_02\",\n"
+            + "\t\t\t\t\t\t\t\t\t\"isDefault\":true\n"
+            + "\t\t\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t\t\t]\n"
+            + "\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t},\n"
+            + "\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\"recurrence\":\"Normal\",\n"
+            + "\t\t\t\t\t\t\"id\":\"5641599010392971076\",\n"
+            + "\t\t\t\t\t\t\"timeout\":0,\n"
+            + "\t\t\t\t\t\t\"instanceMode\":\"T+1\",\n"
+            + "\t\t\t\t\t\t\"rerunMode\":\"Allowed\",\n"
+            + "\t\t\t\t\t\t\"rerunTimes\":3,\n"
+            + "\t\t\t\t\t\t\"rerunInterval\":180000,\n"
+            + "\t\t\t\t\t\t\"datasource\":{\n"
+            + "\t\t\t\t\t\t\t\"name\":\"odps_first\",\n"
+            + "\t\t\t\t\t\t\t\"type\":\"\"\n"
+            + "\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\"script\":{\n"
+            + "\t\t\t\t\t\t\t\"path\":\"聿剑/testflow0730_deploy_01/mcsql_inner_01\",\n"
+            + "\t\t\t\t\t\t\t\"runtime\":{\n"
+            + "\t\t\t\t\t\t\t\t\"command\":\"ODPS_SQL\",\n"
+            + "\t\t\t\t\t\t\t\t\"commandTypeId\":10\n"
+            + "\t\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\t\"id\":\"7359544718446803942\"\n"
+            + "\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\"trigger\":{\n"
+            + "\t\t\t\t\t\t\t\"type\":\"Scheduler\",\n"
+            + "\t\t\t\t\t\t\t\"id\":\"5396511791028633183\",\n"
+            + "\t\t\t\t\t\t\t\"cron\":\"00 00 00 * * ?\",\n"
+            + "\t\t\t\t\t\t\t\"startTime\":\"1970-01-01 00:00:00\",\n"
+            + "\t\t\t\t\t\t\t\"endTime\":\"9999-01-01 00:00:00\",\n"
+            + "\t\t\t\t\t\t\t\"timezone\":\"Asia/Shanghai\",\n"
+            + "\t\t\t\t\t\t\t\"delaySeconds\":0\n"
+            + "\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\"runtimeResource\":{\n"
+            + "\t\t\t\t\t\t\t\"resourceGroup\":\"S_res_group_524257424564736_1681266742041\",\n"
+            + "\t\t\t\t\t\t\t\"id\":\"8099134362653965803\",\n"
+            + "\t\t\t\t\t\t\t\"resourceGroupId\":\"57214326\"\n"
+            + "\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\"name\":\"mcsql_inner_01\",\n"
+            + "\t\t\t\t\t\t\"owner\":\"1107550004253538\",\n"
+            + "\t\t\t\t\t\t\"metadata\":{\n"
+            + "\t\t\t\t\t\t\t\"container\":{\n"
+            + "\t\t\t\t\t\t\t\t\"type\":\"Flow\",\n"
+            + "\t\t\t\t\t\t\t\t\"uuid\":\"8620630926993095479\"\n"
+            + "\t\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\t\"tenantId\":\"524257424564736\",\n"
+            + "\t\t\t\t\t\t\t\"projectId\":\"295425\"\n"
+            + "\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\"inputs\":{\n"
+            + "\t\t\t\t\t\t\t\n"
+            + "\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\"outputs\":{\n"
+            + "\t\t\t\t\t\t\t\"nodeOutputs\":[\n"
+            + "\t\t\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\t\t\"data\":\"5641599010392971076\",\n"
+            + "\t\t\t\t\t\t\t\t\t\"artifactType\":\"NodeOutput\",\n"
+            + "\t\t\t\t\t\t\t\t\t\"refTableName\":\"mcsql_inner_01\",\n"
+            + "\t\t\t\t\t\t\t\t\t\"isDefault\":true\n"
+            + "\t\t\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t\t\t]\n"
+            + "\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t}\n"
+            + "\t\t\t\t],\n"
+            + "\t\t\t\t\"dependencies\":[\n"
+            + "\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\"nodeId\":\"7751009343504221738\",\n"
+            + "\t\t\t\t\t\t\"depends\":[\n"
+            + "\t\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\t\"type\":\"Normal\",\n"
+            + "\t\t\t\t\t\t\t\t\"output\":\"5641599010392971076\",\n"
+            + "\t\t\t\t\t\t\t\t\"refTableName\":\"mcsql_inner_01\"\n"
+            + "\t\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t\t]\n"
+            + "\t\t\t\t\t},\n"
+            + "\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\"nodeId\":\"5641599010392971076\",\n"
+            + "\t\t\t\t\t\t\"depends\":[\n"
+            + "\t\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\t\"type\":\"Normal\",\n"
+            + "\t\t\t\t\t\t\t\t\"output\":\"lwt_test_dd.504470094_out\"\n"
+            + "\t\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t\t]\n"
+            + "\t\t\t\t\t}\n"
+            + "\t\t\t\t]\n"
+            + "\t\t\t}\n"
+            + "\t\t],\n"
+            + "\t\t\"flow\":[\n"
+            + "\t\t\t{\n"
+            + "\t\t\t\t\"nodeId\":\"8620630926993095479\",\n"
+            + "\t\t\t\t\"depends\":[\n"
+            + "\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\"type\":\"Normal\",\n"
+            + "\t\t\t\t\t\t\"output\":\"lwt_test_dd_root\"\n"
+            + "\t\t\t\t\t}\n"
+            + "\t\t\t\t]\n"
+            + "\t\t\t}\n"
+            + "\t\t]\n"
+            + "\t},\n"
+            + "\t\"metadata\":{\n"
+            + "\t\t\"innerVersion\":{\n"
+            + "\t\t\t\"7751009343504221738\":1,\n"
+            + "\t\t\t\"5641599010392971076\":4\n"
+            + "\t\t},\n"
+            + "\t\t\"gmtModified\":1722320416000,\n"
+            + "\t\t\"tenantId\":\"524257424564736\",\n"
+            + "\t\t\"projectId\":\"295425\",\n"
+            + "\t\t\"uuid\":\"8620630926993095479\"\n"
+            + "\t}\n"
+            + "}";
+        Specification<DataWorksWorkflowSpec> specification = SpecUtil.parseToDomain(spec);
+        DataWorksNodeAdapter adapter = new DataWorksNodeAdapter(specification, specification.getSpec().getWorkflows().get(0));
+        log.info("workflow inputs: {}", adapter.getInputs());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(adapter.getInputs()));
+
+        List<SpecNode> nodes = specification.getSpec().getWorkflows().get(0).getNodes();
+        for (SpecNode node : nodes) {
+            DataWorksNodeAdapter nodeAdapter = new DataWorksNodeAdapter(specification, node);
+            log.info("node: {}", nodeAdapter.getInputs());
+            Assert.assertTrue(CollectionUtils.isNotEmpty(nodeAdapter.getInputs()));
+        }
+    }
+
+    @Test
+    public void testInnerNodes() {
+        Specification<DataWorksWorkflowSpec> sp = new Specification<>();
+        sp.setKind(SpecKind.CYCLE_WORKFLOW.getLabel());
+        sp.setVersion(SpecVersion.V_1_2_0.getLabel());
+        DataWorksWorkflowSpec spec = new DataWorksWorkflowSpec();
+        SpecNode node = new SpecNode();
+        SpecSubFlow subflow = new SpecSubFlow();
+        SpecNode subnode = new SpecNode();
+        subnode.setId("subnode1");
+        subnode.setName("subnode1");
+        subflow.setNodes(Collections.singletonList(subnode));
+        node.setSubflow(subflow);
+        spec.setNodes(Collections.singletonList(node));
+        sp.setSpec(spec);
+        JSONObject json = JSONObject.parseObject(SpecUtil.writeToSpec(sp));
+        log.info("spec json: {}", json.toJSONString(Feature.PrettyFormat));
+        Assert.assertNotNull(json);
+        Assert.assertEquals(subnode.getId(), json.getByPath("$.spec.nodes[0].subflow.nodes[0].id"));
+        Assert.assertEquals(subnode.getName(), json.getByPath("$.spec.nodes[0].subflow.nodes[0].name"));
+
+        Specification<DataWorksWorkflowSpec> parsed = SpecUtil.parseToDomain(json.toJSONString());
+        Assert.assertNotNull(parsed);
+        Assert.assertNotNull(parsed.getSpec());
+        Assert.assertNotNull(parsed.getSpec().getNodes());
+        Assert.assertNotNull(parsed.getSpec().getNodes().get(0).getSubflow());
+        Assert.assertNotNull(parsed.getSpec().getNodes().get(0).getSubflow().getNodes());
+        Assert.assertEquals(subnode.getId(), parsed.getSpec().getNodes().get(0).getSubflow().getNodes().get(0).getId());
+        Assert.assertEquals(subnode.getName(), parsed.getSpec().getNodes().get(0).getSubflow().getNodes().get(0).getName());
     }
 }

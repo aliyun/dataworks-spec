@@ -50,6 +50,10 @@ public class DataWorksWorkflowSpecWriter extends DefaultJsonObjectWriter<DataWor
             jsonObject.put("nodes", writeByWriter(specObj.getNodes()));
         }
 
+        if (CollectionUtils.isNotEmpty(specObj.getWorkflows())) {
+            jsonObject.put("workflows", writeByWriter(specObj.getWorkflows()));
+        }
+
         if (CollectionUtils.isNotEmpty(specObj.getFlow())) {
             jsonObject.put("flow", writeFlow(specObj));
         }

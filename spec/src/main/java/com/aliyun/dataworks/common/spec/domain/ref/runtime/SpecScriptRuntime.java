@@ -17,10 +17,9 @@ package com.aliyun.dataworks.common.spec.domain.ref.runtime;
 
 import java.util.Map;
 
-import com.aliyun.dataworks.common.spec.domain.dw.types.CodeProgramType;
-import com.aliyun.dataworks.common.spec.domain.ref.runtime.container.SpecContainer;
 import com.aliyun.dataworks.common.spec.domain.SpecNoRefEntity;
 import com.aliyun.dataworks.common.spec.domain.dw.types.CodeProgramType;
+import com.aliyun.dataworks.common.spec.domain.ref.runtime.container.SpecContainer;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -64,9 +63,16 @@ public class SpecScriptRuntime extends SpecNoRefEntity {
      * flink configurations
      */
     private Map<String, Object> flinkConf;
-
+    /**
+     * streaming job config
+     */
+    private Map<String, Object> streamJobConfig;
     /**
      * runtime container info
      */
     private SpecContainer container;
+    /**
+     * runtime resource info
+     */
+    private String cu;
 }

@@ -35,10 +35,12 @@ public class SpecScript extends SpecFile {
     /**
      * Script runtime configuration
      */
+    @EqualsAndHashCode.Include
     private SpecScriptRuntime runtime;
     /**
      * Script parameters
      */
+    @EqualsAndHashCode.Include
     private List<SpecVariable> parameters;
     /**
      * Script content

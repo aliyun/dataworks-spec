@@ -1,6 +1,7 @@
 package com.aliyun.dataworks.migrationx.domain.dataworks.service.converter;
 
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -10,6 +11,7 @@ import com.aliyun.dataworks.common.spec.domain.DataWorksWorkflowSpec;
 import com.aliyun.dataworks.common.spec.domain.SpecRefEntity;
 import com.aliyun.dataworks.common.spec.domain.Specification;
 import com.aliyun.dataworks.common.spec.domain.dw.nodemodel.DataWorksNodeAdapter;
+import com.aliyun.dataworks.common.spec.domain.dw.nodemodel.DataWorksNodeAdapter.Context;
 import com.aliyun.dataworks.common.spec.domain.dw.nodemodel.DwNodeDependentTypeInfo;
 import com.aliyun.dataworks.common.spec.domain.dw.nodemodel.OutputContext;
 import com.aliyun.dataworks.common.spec.domain.dw.types.CodeProgramType;
@@ -45,6 +47,7 @@ import com.google.common.base.Joiner;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -97,6 +100,46 @@ public class DataWorksSpecNodeConverter {
 
     public static FileDetail functionSpecToFileDetail(Specification<DataWorksWorkflowSpec> spec) {
         return functionSpecToFileDetail(spec, null);
+    }
+
+    public static FileDetail componentSpecToFileDetail(Specification<DataWorksWorkflowSpec> spec) {
+        return componentSpecToFileDetail(spec, null);
+    }
+
+    private static FileDetail componentSpecToFileDetail(Specification<DataWorksWorkflowSpec> spec, String resourceId) {
+        FileDetail fileDetail = new FileDetail();
+        File file = componentSpecToFile(spec, resourceId);
+        if (file == null) {
+            log.error("get file from function spec is null");
+            return null;
+        }
+
+        fileDetail.setFile(file);
+        fileDetail.setNodeCfg(initFileNodeCfgByFile(file));
+        return fileDetail;
+    }
+
+    private static File componentSpecToFile(Specification<DataWorksWorkflowSpec> spec, String functionId) {
+        DataWorksWorkflowSpec dataWorksWorkflowSpec = spec.getSpec();
+        if (spec.getSpec() == null) {
+            log.warn("dataworks component spec is null");
+            return null;
+        }
+
+        return ListUtils.emptyIfNull(dataWorksWorkflowSpec.getComponents()).stream()
+            .filter(x -> StringUtils.isBlank(functionId) || StringUtils.equals(x.getId(), functionId))
+            .findFirst()
+            .map(specCom -> {
+                File fileCom = new File();
+                fileCom.setFileName(specCom.getName());
+                fileCom.setOwner(Optional.ofNullable(specCom.getMetadata()).map(m -> (String)m.get("owner")).orElse(null));
+                fileCom.setFileTypeStr(Optional.ofNullable(specCom.getScript()).map(SpecScript::getRuntime).map(SpecScriptRuntime::getCommand)
+                    .orElse(null));
+                fileCom.setFileType(getScriptCommandTypeId(specCom.getScript()));
+                fileCom.setUseType(NodeUseType.COMPONENT.getValue());
+                fileCom.setContent(Optional.ofNullable(specCom.getScript()).map(SpecScript::getContent).orElse(null));
+                return fileCom;
+            }).orElse(null);
     }
 
     private static File functionSpecToFile(Specification<DataWorksWorkflowSpec> spec, String functionId) {
@@ -154,20 +197,26 @@ public class DataWorksSpecNodeConverter {
     }
 
     public static FileDetail nodeSpecToFileDetail(Specification<DataWorksWorkflowSpec> spec, String nodeId) {
+        return nodeSpecToFileDetail(spec, nodeId, null);
+    }
+
+    public static FileDetail nodeSpecToFileDetail(Specification<DataWorksWorkflowSpec> spec, String nodeId, String content) {
         FileDetail fileDetail = new FileDetail();
-        fileDetail.setFile(nodeSpecToFile(spec, nodeId));
+        fileDetail.setFile(nodeSpecToFile(spec, nodeId, content));
         fileDetail.setNodeCfg(nodeSpecToNodeCfg(spec, nodeId));
         return fileDetail;
     }
 
     public static FileDetail nodeSpecToFileDetail(Specification<DataWorksWorkflowSpec> spec) {
         FileDetail fileDetail = new FileDetail();
-        fileDetail.setFile(nodeSpecToFile(spec, null));
+        String nodeId = Optional.ofNullable(MapUtils.emptyIfNull(spec.getMetadata()).get("uuid"))
+            .map(String::valueOf).orElse(null);
+        fileDetail.setFile(nodeSpecToFile(spec, nodeId));
         fileDetail.setNodeCfg(nodeSpecToNodeCfg(spec, null));
         return fileDetail;
     }
 
-    public static File nodeSpecToFile(Specification<DataWorksWorkflowSpec> spec, String nodeId) {
+    public static File nodeSpecToFile(Specification<DataWorksWorkflowSpec> spec, String nodeId, String content) {
         DataWorksWorkflowSpec dataWorksWorkflowSpec = spec.getSpec();
         if (spec.getSpec() == null) {
             log.warn("dataworks workflow spec is null");
@@ -181,7 +230,8 @@ public class DataWorksSpecNodeConverter {
             file.setCloudUuid(null);
             file.setCommitStatus(null);
             file.setConnName(Optional.ofNullable(specNode.getDatasource()).map(SpecDatasource::getName).orElse(null));
-            file.setContent(Optional.ofNullable(specNode.getScript()).map(SpecScript::getContent).orElse(null));
+            Optional.ofNullable(content).ifPresent(x -> Optional.ofNullable(specNode.getScript()).ifPresent(s -> s.setContent(x)));
+            file.setContent(new DataWorksNodeAdapter(spec, specNode, Context.builder().deployToScheduler(true).build()).getCode());
             file.setCreateTime(null);
             file.setCreateUser(null);
             file.setCurrentVersion(null);
@@ -251,18 +301,47 @@ public class DataWorksSpecNodeConverter {
         }).orElse(null);
     }
 
+    public static File nodeSpecToFile(Specification<DataWorksWorkflowSpec> spec, String nodeId) {
+        return nodeSpecToFile(spec, nodeId, null);
+    }
+
     public static SpecNode getMatchSpecNode(DataWorksWorkflowSpec dataWorksWorkflowSpec, String nodeId) {
-        for (SpecNode node : dataWorksWorkflowSpec.getNodes()) {
+        for (SpecNode node : ListUtils.emptyIfNull(dataWorksWorkflowSpec.getNodes())) {
+            // normal nodes
             if (StringUtils.isBlank(nodeId) || StringUtils.equalsIgnoreCase(node.getId(), nodeId)) {
                 return node;
             }
+
+            // inner nodes of normal nodes
             for (SpecNode innerNode : node.getInnerNodes()) {
                 if (StringUtils.isBlank(nodeId) || StringUtils.equalsIgnoreCase(innerNode.getId(), nodeId)) {
                     return innerNode;
                 }
             }
         }
-        return null;
+
+        // workflow inner node
+        SpecNode node = ListUtils.emptyIfNull(dataWorksWorkflowSpec.getWorkflows()).stream()
+            .map(wf -> ListUtils.emptyIfNull(wf.getNodes()))
+            .map(nodes -> nodes.stream().filter(n -> StringUtils.equalsIgnoreCase(nodeId, n.getId())).findAny().orElse(null))
+            .filter(Objects::nonNull)
+            .findAny()
+            .orElse(null);
+        if (node != null) {
+            return node;
+        }
+
+        // inner nodes of workflow inner node
+        return ListUtils.emptyIfNull(dataWorksWorkflowSpec.getWorkflows()).stream()
+            // workflow nodes
+            .map(wf -> ListUtils.emptyIfNull(wf.getNodes()))
+            .flatMap(List::stream)
+            // inner nodes of workflow nodes
+            .map(nodes -> ListUtils.emptyIfNull(nodes.getInnerNodes()))
+            .map(nodes -> nodes.stream().filter(n -> StringUtils.equalsIgnoreCase(nodeId, n.getId())).findAny().orElse(null))
+            .filter(Objects::nonNull)
+            .findAny()
+            .orElse(null);
     }
 
     /**
@@ -283,7 +362,11 @@ public class DataWorksSpecNodeConverter {
             FileNodeCfg nodeCfg = new FileNodeCfg();
             nodeCfg.setAppId(null);
             nodeCfg.setBaselineId(null);
-            nodeCfg.setCreateTime(null);
+            Optional.ofNullable(specNode.getMetadata())
+                .map(x -> x.get("createTime"))
+                .map(String::valueOf)
+                .map(DateUtils::convertStringToDate)
+                .ifPresent(nodeCfg::setCreateTime);
             nodeCfg.setCreateUser(null);
             nodeCfg.setCronExpress(Optional.ofNullable(specNode.getTrigger()).map(SpecTrigger::getCron).orElse(null));
             nodeCfg.setCycleType(CronExpressUtil.parseCronToCycleType(nodeCfg.getCronExpress()));
@@ -411,8 +494,9 @@ public class DataWorksSpecNodeConverter {
             .flatMap(snapshot -> Optional.ofNullable(DataSnapshotContent.of(snapshot.getContent()))
                 .map(content -> {
                     Specification<DataWorksWorkflowSpec> specification = SpecUtil.parseToDomain(content.getSpec());
-                    FileDetail fileDetail = nodeSpecToFileDetail(specification);
-                    Optional.ofNullable(fileDetail.getFile()).ifPresent(file -> file.setContent(content.getContent()));
+                    String nodeId = Optional.ofNullable(MapUtils.emptyIfNull(specification.getMetadata()).get("uuid"))
+                        .map(String::valueOf).orElse(snapshot.getEntityUuid());
+                    FileDetail fileDetail = nodeSpecToFileDetail(specification, nodeId, content.getContent());
                     return fileDetail;
                 }))
             .orElse(null);

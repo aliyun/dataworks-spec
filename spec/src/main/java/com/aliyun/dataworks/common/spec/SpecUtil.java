@@ -30,6 +30,7 @@ import com.aliyun.dataworks.common.spec.parser.SpecParserContext;
 import com.aliyun.dataworks.common.spec.parser.SpecParserFactory;
 import com.aliyun.dataworks.common.spec.parser.ToDomainRootParser;
 import com.aliyun.dataworks.common.spec.utils.ParserUtil;
+import com.aliyun.dataworks.common.spec.utils.SpecDevUtil;
 import com.aliyun.dataworks.common.spec.writer.SpecWriterContext;
 import com.aliyun.dataworks.common.spec.writer.WriterFactory;
 import com.aliyun.dataworks.common.spec.writer.impl.SpecificationWriter;
@@ -81,7 +82,7 @@ public class SpecUtil {
 
         return Optional.ofNullable(WriterFactory.getWriter(specObject.getClass(), context))
             .map(writer -> writer.write(specObject, context))
-            .orElse(JSON.toJSON(specObject));
+            .orElse(SpecDevUtil.writeJsonObject(specObject, false));
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})

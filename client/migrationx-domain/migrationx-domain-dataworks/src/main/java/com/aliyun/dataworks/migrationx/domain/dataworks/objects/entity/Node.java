@@ -47,7 +47,7 @@ import org.apache.commons.lang3.StringUtils;
 @JsonTypeInfo(
         use = Id.MINIMAL_CLASS,
         property = "@class")
-public abstract class Node extends DmObject {
+public class Node extends DmObject {
     @JacksonXmlProperty(isAttribute = true, localName = "name")
     private String name;
 

@@ -25,6 +25,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.aliyun.dataworks.common.spec.domain.SpecConstants;
+import com.aliyun.dataworks.common.spec.domain.SpecRefEntity;
 import com.aliyun.dataworks.common.spec.domain.dw.codemodel.Code;
 import com.aliyun.dataworks.common.spec.domain.dw.codemodel.CodeModel;
 import com.aliyun.dataworks.common.spec.domain.dw.codemodel.CodeModelFactory;
@@ -73,23 +74,23 @@ public class DataWorksNodeCodeAdapter implements DataWorksNodeAdapterContextAwar
     private static final String LOGIC_OR = "or";
     private static final List<String> JOIN_BRANCH_LOGICS = Arrays.asList(LOGIC_OR, LOGIC_AND);
 
-    private final SpecNode specNode;
+    private final SpecEntityDelegate<? extends SpecRefEntity> delegate;
     private Context context;
 
-    public DataWorksNodeCodeAdapter(SpecNode specNode) {
-        this.specNode = specNode;
+    public DataWorksNodeCodeAdapter(SpecRefEntity entity) {
+        this.delegate = new SpecEntityDelegate<>(entity);
     }
 
     public String getCode() {
-        SpecScript script = Optional.ofNullable(specNode).map(SpecNode::getScript).orElseThrow(
-                () -> new SpecException(SpecErrorCode.PARSE_ERROR, "node.script is null"));
+        SpecScript script = Optional.ofNullable(delegate.getScript()).orElseThrow(
+            () -> new SpecException(SpecErrorCode.PARSE_ERROR, "node.script is null"));
 
         SpecScriptRuntime runtime = Optional.ofNullable(script.getRuntime()).orElseThrow(
                 () -> new SpecException(SpecErrorCode.PARSE_ERROR, "node.script.runtime is null"));
 
         try {
             String command = runtime.getCommand();
-            CodeModel<Code> codeModel = CodeModelFactory.getCodeModel(command, specNode.getScript().getContent());
+            CodeModel<Code> codeModel = CodeModelFactory.getCodeModel(command, null);
             Code code = codeModel.getCodeModel();
             Class<? extends Code> codeClass = code.getClass();
 
@@ -99,11 +100,11 @@ public class DataWorksNodeCodeAdapter implements DataWorksNodeAdapterContextAwar
             }
 
             if (ControllerBranchCode.class.equals(codeClass)) {
-                return getControllerBranchCode(specNode, script);
+                return getControllerBranchCode((SpecNode)delegate.getObject(), script);
             }
 
             if (ControllerJoinCode.class.equals(codeClass)) {
-                return getControllerJoinCode(specNode);
+                return getControllerJoinCode((SpecNode)delegate.getObject());
             }
 
             if (DataIntegrationCode.class.equals(codeClass)) {
@@ -115,7 +116,7 @@ public class DataWorksNodeCodeAdapter implements DataWorksNodeAdapterContextAwar
             }
 
             if (ComponentSqlCode.class.equals(codeClass)) {
-                return getComponentSqlCode(specNode, script);
+                return getComponentSqlCode((SpecNode)delegate.getObject(), script);
             }
 
             // common default logic to get content

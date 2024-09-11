@@ -16,6 +16,10 @@
 package com.aliyun.dataworks.common.spec.parser;
 
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Define a parser for domain classes
@@ -40,5 +44,9 @@ public interface Parser<T> {
      */
     default String getKeyType() {
         return null;
+    }
+
+    default Set<String> getKeyTypes() {
+        return Stream.of(getKeyType()).filter(Objects::nonNull).collect(Collectors.toSet());
     }
 }

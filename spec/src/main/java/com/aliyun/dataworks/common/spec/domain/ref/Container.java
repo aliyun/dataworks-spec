@@ -13,25 +13,31 @@
  * limitations under the License.
  */
 
-package com.aliyun.dataworks.common.spec.domain.noref;
+package com.aliyun.dataworks.common.spec.domain.ref;
 
 import java.util.List;
 
-import com.aliyun.dataworks.common.spec.domain.SpecNoRefEntity;
-import com.aliyun.dataworks.common.spec.domain.ref.SpecNode;
-import lombok.Data;
-import lombok.EqualsAndHashCode;
+import com.aliyun.dataworks.common.spec.domain.noref.SpecFlowDepend;
 
 /**
- * @author yiwei.qyw
- * @date 2023/7/4
- * @see SpecJoin
- * @see SpecBranches
- * @deprecated
+ * container node interface
+ *
+ * @author 聿剑
+ * @date 2024/5/2
  */
-@EqualsAndHashCode(callSuper = true)
-@Data
-public class SpecAnd extends SpecNoRefEntity {
-    private SpecNode nodeId;
-    private List<String> status;
+public interface Container {
+
+    /**
+     * get inner nodes
+     *
+     * @return list of inner nodes
+     */
+    List<SpecNode> getInnerNodes();
+
+    /**
+     * get inner flow depends of inner nodes
+     *
+     * @return List of spec flow depend
+     */
+    List<SpecFlowDepend> getInnerDependencies();
 }

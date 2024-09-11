@@ -55,25 +55,25 @@ public class EmrNodeSpecHandler extends BasicNodeSpecHandler {
         CodeModel<EmrCode> code = CodeModelFactory.getCodeModel(scr.getType(), scr.getCode());
         Map<String, Object> emrJobConfig = Maps.newHashMap();
         Optional.ofNullable(code.getCodeModel()).flatMap(emrCode -> Optional.ofNullable(emrCode.getLauncher()).map(EmrLauncher::getAllocationSpec))
-                .ifPresent(allocSpecMap -> {
-                    EmrAllocationSpec allocSpec = EmrAllocationSpec.of(allocSpecMap);
-                    emrJobConfig.put("session_enabled", allocSpec.getReuseSession());
-                    emrJobConfig.put("priority", allocSpec.getPriority());
-                    emrJobConfig.put("cores", allocSpec.getVcores());
-                    emrJobConfig.put("memory", allocSpec.getMemory());
-                    emrJobConfig.put("queue", allocSpec.getQueue());
-                    emrJobConfig.put("submit_mode", Optional.ofNullable(allocSpec.getUseGateway())
-                            .map(useGateway -> useGateway ? EmrJobSubmitMode.LOCAL : EmrJobSubmitMode.YARN));
-                    emrJobConfig.put("submitter", allocSpec.getUserName());
-                    emrJobConfig.put("execute_mode", Optional.ofNullable(allocSpec.getBatchMode())
-                            .map(batchMode -> batchMode ? EmrJobExecuteMode.BATCH : EmrJobExecuteMode.SINGLE));
-                });
+            .ifPresent(allocSpecMap -> {
+                EmrAllocationSpec allocSpec = EmrAllocationSpec.of(allocSpecMap);
+                emrJobConfig.put("session_enabled", allocSpec.getReuseSession());
+                emrJobConfig.put("priority", allocSpec.getPriority());
+                emrJobConfig.put("cores", allocSpec.getVcores());
+                emrJobConfig.put("memory", allocSpec.getMemory());
+                emrJobConfig.put("queue", allocSpec.getQueue());
+                emrJobConfig.put("submit_mode", Optional.ofNullable(allocSpec.getUseGateway())
+                    .map(useGateway -> useGateway ? EmrJobSubmitMode.LOCAL : EmrJobSubmitMode.YARN));
+                emrJobConfig.put("submitter", allocSpec.getUserName());
+                emrJobConfig.put("execute_mode", Optional.ofNullable(allocSpec.getBatchMode())
+                    .map(batchMode -> batchMode ? EmrJobExecuteMode.BATCH : EmrJobExecuteMode.SINGLE));
+            });
         emrRuntime.setEmrJobConfig(emrJobConfig);
         return emrRuntime;
     }
 
     @Override
-    public String toSpectScriptContent(DwNodeEntity dmNodeBO) {
+    public String toSpecScriptContent(DwNodeEntity dmNodeBO) {
         CodeModel<EmrCode> code = CodeModelFactory.getCodeModel(dmNodeBO.getType(), dmNodeBO.getCode());
         return code.getSourceCode();
     }

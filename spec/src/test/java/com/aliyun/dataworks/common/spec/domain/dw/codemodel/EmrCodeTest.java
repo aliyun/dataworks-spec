@@ -17,7 +17,6 @@ package com.aliyun.dataworks.common.spec.domain.dw.codemodel;
 
 import java.util.Collections;
 
-import com.google.gson.JsonSyntaxException;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -92,11 +91,12 @@ public class EmrCodeTest {
         Assert.assertTrue(StringUtils.indexOf(emr.getContent(), "hive -e") > 0);
     }
 
-    @Test(expected = JsonSyntaxException.class)
+    @Test
     public void testEmrCodeParseException() {
         CodeModel<EmrCode> emr = CodeModelFactory.getCodeModel("EMR_HIVE", "select 1");
         Assert.assertNotNull(emr);
         Assert.assertNotNull(emr.getCodeModel());
+        Assert.assertEquals(EmrJobType.HIVE_SQL, emr.getCodeModel().getType());
     }
 
     @Test

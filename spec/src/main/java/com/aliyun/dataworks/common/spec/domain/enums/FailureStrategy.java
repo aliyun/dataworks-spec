@@ -13,14 +13,34 @@
  * limitations under the License.
  */
 
-package com.aliyun.dataworks.common.spec.domain.adapter;
+package com.aliyun.dataworks.common.spec.domain.enums;
 
-import com.aliyun.dataworks.common.spec.domain.ref.SpecNode;
+import com.aliyun.dataworks.common.spec.domain.interfaces.LabelEnum;
 
 /**
  * @author 聿剑
- * @date 2023/11/9
+ * @date 2024/07/09
  */
-public interface SpecNodeAdapter {
-    SpecNode getSpecNode();
+public enum FailureStrategy implements LabelEnum {
+
+    /**
+     * Continue
+     */
+    CONTINUE("Continue"),
+
+    /**
+     * Break
+     */
+    BREAK("Break");
+
+    private final String label;
+
+    FailureStrategy(String label) {
+        this.label = label;
+    }
+
+    @Override
+    public String getLabel() {
+        return label;
+    }
 }

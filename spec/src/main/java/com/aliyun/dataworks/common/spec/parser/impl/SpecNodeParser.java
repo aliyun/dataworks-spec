@@ -47,7 +47,7 @@ import org.reflections.Reflections;
  * @date 2023/7/6
  */
 @SpecParser
-public class NodeParser implements Parser<SpecNode> {
+public class SpecNodeParser implements Parser<SpecNode> {
     @SuppressWarnings("unchecked")
     @Override
     public SpecNode parse(Map<String, Object> ctxMap, SpecParserContext specParserContext) {
@@ -57,6 +57,7 @@ public class NodeParser implements Parser<SpecNode> {
         SpecDevUtil.setSpecObject(specNode, "doWhile", ctxMap.get(DoWhileParser.DO_WHILE), specParserContext);
         SpecDevUtil.setSpecObject(specNode, "foreach", ctxMap.get(SpecForEachParser.FOREACH), specParserContext);
         SpecDevUtil.setSpecObject(specNode, "paramHub", ctxMap.get(SpecParamHubParser.PARAM_HUB), specParserContext);
+        SpecDevUtil.setSpecObject(specNode, SubFlowParser.KEY_TYPE_SUBFLOW, ctxMap.get(SubFlowParser.KEY_TYPE_SUBFLOW), specParserContext);
 
         specNode.setInputs(parseInputOutputs(specParserContext, (Map<String, Object>)ctxMap.get("inputs")));
         specNode.setOutputs(parseInputOutputs(specParserContext, (Map<String, Object>)ctxMap.get("outputs")));
@@ -78,7 +79,7 @@ public class NodeParser implements Parser<SpecNode> {
     public String getKeyType() {return "node";}
 
     @SuppressWarnings("unchecked")
-    private static <T extends NodeIO> ArrayList<T> parseInputOutputs(SpecParserContext contextMeta, Map<String, Object> ioCtxMap) {
+    public static <T extends NodeIO> ArrayList<T> parseInputOutputs(SpecParserContext contextMeta, Map<String, Object> ioCtxMap) {
         ArrayList<T> ioList = new ArrayList<>();
         Reflections reflections = new Reflections(SpecArtifact.class.getPackage().getName());
         Set<Class<? extends SpecArtifact>> artifactClzTypes = reflections.getSubTypesOf(SpecArtifact.class);

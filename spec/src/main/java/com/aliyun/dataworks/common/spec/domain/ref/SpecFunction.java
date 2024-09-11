@@ -21,6 +21,7 @@ import com.aliyun.dataworks.common.spec.domain.SpecRefEntity;
 import com.aliyun.dataworks.common.spec.domain.enums.FunctionType;
 import com.aliyun.dataworks.common.spec.domain.enums.SpecEmbeddedCodeType;
 import com.aliyun.dataworks.common.spec.domain.enums.SpecEmbeddedResourceType;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -30,13 +31,18 @@ import lombok.Setter;
  */
 @Getter
 @Setter
-public class SpecFunction extends SpecRefEntity {
+@EqualsAndHashCode(callSuper = true)
+public class SpecFunction extends SpecRefEntity implements ScriptWired {
     private String name;
+    @EqualsAndHashCode.Include
     private SpecScript script;
     private FunctionType type;
     private String className;
+    @EqualsAndHashCode.Include
     private SpecDatasource datasource;
+    @EqualsAndHashCode.Include
     private SpecRuntimeResource runtimeResource;
+    @EqualsAndHashCode.Include
     private List<SpecFileResource> fileResources;
     private String armResource;
     private String usageDescription;
