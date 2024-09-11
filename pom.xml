@@ -19,7 +19,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.aliyun.dataworks</groupId>
     <artifactId>dataworks-tool</artifactId>
-    <version>1.1.7-workflow-preview3</version>
+    <version>1.1.7-2</version>
     <packaging>pom</packaging>
     <name>dataworks-tool</name>
     <modules>
