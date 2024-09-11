@@ -1,8 +1,19 @@
 {
   "format": "SPEC",
   "locale": "zh_CN",
+  "skipUnSupportType": true,
+  "transformContinueWithError": true,
+  "specContinueWithError": true,
+  "filterTasks": [
+    "ff.python112.*"
+  ],
   "settings": {
-    "workflow.converter.shellNodeType": "EMR_SHELL",
+    "workflow.converter.shellNodeType": {
+      "ff.shell1.shell2": "DIDE_SHELL",
+      "ff.shell1.*": "EMR_SHELL",
+      "ff.*": "EMR_SHELL",
+      "*": "EMR_SHELL"
+    },
     "workflow.converter.commandSqlAs": "EMR_HIVE",
     "workflow.converter.sparkSubmitAs": "EMR_SPARK",
     "workflow.converter.target.unknownNodeTypeAs": "DIDE_SHELL",

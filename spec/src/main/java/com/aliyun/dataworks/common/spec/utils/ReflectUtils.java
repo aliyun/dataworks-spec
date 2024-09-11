@@ -15,28 +15,42 @@
 
 package com.aliyun.dataworks.common.spec.utils;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.net.JarURLConnection;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.function.Predicate;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.collections4.SetUtils;
 import org.apache.commons.lang3.ClassUtils;
+import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * @author sam.liux
  * @date 2019/12/05
  */
 @SuppressWarnings("unchecked")
+@Slf4j
 public class ReflectUtils {
-    private static final Logger LOGGER = LoggerFactory.getLogger(ReflectUtils.class);
-
     /**
      * 递归获取父类的成员
      *
@@ -108,8 +122,7 @@ public class ReflectUtils {
                 field.set(res, value);
             }
         } catch (NoSuchFieldException | IllegalAccessException e) {
-            LOGGER.warn("set field {} failed for object type: {}, exception: {}", fieldName, res.getClass(),
-                e.getMessage());
+            log.warn("set field {} failed for object type: {}, exception: {}", fieldName, res.getClass(), e.getMessage());
         }
     }
 
@@ -199,5 +212,107 @@ public class ReflectUtils {
             }
         }
         return null;
+    }
+
+    public static Set<Class<?>> getSubTypeOf(String packageName, Class<?> supperClass) {
+        Set<Class<?>> classes = new HashSet<>();
+        scanPackage(packageName, supperClass::isAssignableFrom, classes);
+        return SetUtils.unmodifiableSet(classes);
+    }
+
+    /**
+     * scan subtype classes of specific java package
+     *
+     * @param packageName Package name
+     * @param predicate   Predicate
+     * @param resultSet   Result Set
+     * @see Package#getName()
+     */
+    public static void scanPackage(String packageName, Predicate<Class<?>> predicate, Set<Class<?>> resultSet) {
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        Optional.ofNullable(classLoader.getResource(packageName.replaceAll("[.]", "/"))).ifPresent(url -> {
+            File file = new File(url.getFile());
+            if (StringUtils.equalsIgnoreCase("jar", url.getProtocol())) {
+                // jar protocol
+                try {
+                    List<JarEntry> entities = openJarUrl(url);
+                    // recursive scan package directory
+                    SetUtils.emptyIfNull(listSubdirectories(entities, url.getPath())).forEach(
+                        dir -> scanPackage(packageName + "." + dir, predicate, resultSet));
+                    // load class type
+                    entities.forEach(jarEntry -> {
+                        String className = jarEntry.getName().replaceAll("/", ".");
+                        if (!jarEntry.isDirectory() && jarEntry.getName().endsWith(".class") && className.startsWith(packageName)) {
+                            String classFileName = className.substring(StringUtils.length(packageName) + 1);
+                            resultSet.add(getClass(classFileName, packageName));
+                        }
+                    });
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+
+            } else {
+                // file protocol
+                // recursive scan package directory
+                Optional.ofNullable(file.listFiles(File::isDirectory)).map(Stream::of).ifPresent(s ->
+                    s.forEach(dir -> scanPackage(packageName + "." + dir.getName(), predicate, resultSet)));
+                // load class type
+                readClassesByStream(packageName, predicate, resultSet, url);
+            }
+        });
+    }
+
+    private static List<JarEntry> openJarUrl(URL url) throws IOException {
+        try {
+            JarURLConnection connection = (JarURLConnection)url.openConnection();
+            JarFile jarFile = connection.getJarFile();
+            return jarFile.stream().collect(Collectors.toList());
+        } catch (IllegalStateException e) {
+            log.warn("open jar failed: {}", e.getMessage());
+            JarURLConnection connection = (JarURLConnection)url.openConnection();
+            JarFile jarFile = connection.getJarFile();
+            return jarFile.stream().collect(Collectors.toList());
+        }
+    }
+
+    private static void readClassesByStream(String packageName, Predicate<Class<?>> predicate, Set<Class<?>> resultSet, URL url) {
+        try {
+            BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(url.openStream()));
+            bufferedReader.lines().filter(line -> line.endsWith(".class"))
+                .peek(line -> log.debug("line: {}", line))
+                .map(classFileName -> getClass(classFileName, packageName))
+                .filter(predicate)
+                .forEach(resultSet::add);
+        } catch (IOException e) {
+            log.error("scan classes error: ", e);
+            throw new RuntimeException(e);
+        }
+    }
+
+    private static Set<String> listSubdirectories(List<JarEntry> entities, String jarPath) {
+        Set<String> directories = new HashSet<>();
+        String directoryPath = jarPath.contains("!") ? jarPath.split("!")[1] : "";
+        directoryPath = StringUtils.startsWith(directoryPath, "/") ? directoryPath.substring(1) : directoryPath;
+        String finalDirectoryPath = directoryPath;
+        ListUtils.emptyIfNull(entities).forEach(entry -> {
+            if (entry.isDirectory() && entry.getName().startsWith(finalDirectoryPath)) {
+                String name = entry.getName().substring(finalDirectoryPath.length());
+                name = RegExUtils.replacePattern(name, "^/", "");
+                name = RegExUtils.replacePattern(name, "/$", "");
+                if (StringUtils.isNotBlank(name)) {
+                    // Extract the subdirectory name and add it to the set
+                    directories.add(name);
+                }
+            }
+        });
+        return SetUtils.unmodifiableSet(directories);
+    }
+
+    private static Class<?> getClass(String classFileName, String packageName) {
+        try {
+            return Class.forName(packageName + "." + classFileName.substring(0, classFileName.lastIndexOf(".")));
+        } catch (ClassNotFoundException e) {
+            throw new RuntimeException(e);
+        }
     }
 }

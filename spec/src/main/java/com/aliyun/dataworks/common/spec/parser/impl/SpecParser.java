@@ -15,10 +15,14 @@
 
 package com.aliyun.dataworks.common.spec.parser.impl;
 
+import java.util.List;
 import java.util.Map;
 
 import com.aliyun.dataworks.common.spec.domain.Spec;
+import com.aliyun.dataworks.common.spec.domain.enums.SpecKind;
 import com.aliyun.dataworks.common.spec.parser.SpecParserContext;
+import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author 聿剑
@@ -27,7 +31,12 @@ import com.aliyun.dataworks.common.spec.parser.SpecParserContext;
 @com.aliyun.dataworks.common.spec.annotation.SpecParser
 public class SpecParser<T extends Spec> extends DefaultSpecParser<T> {
     public boolean support(String kind) {
-        return false;
+        T t = instantiateSpecObject();
+        return matchKinds(t.getKinds(), kind);
+    }
+
+    protected boolean matchKinds(List<SpecKind> kinds, String kind) {
+        return ListUtils.emptyIfNull(kinds).stream().anyMatch(k -> StringUtils.equalsIgnoreCase(k.getLabel(), kind));
     }
 
     @Override

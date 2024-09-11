@@ -43,8 +43,10 @@ public class SpecVariable extends SpecArtifact {
     private String description;
     @Exclude
     @JSONField(serialize = false)
+    @EqualsAndHashCode.Exclude
     private SpecVariable referenceVariable;
     @Exclude
+    @EqualsAndHashCode.Exclude
     @JSONField(serialize = false)
     private SpecDepend node;
 }

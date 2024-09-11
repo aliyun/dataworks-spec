@@ -15,6 +15,9 @@
 
 package com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.v2.ExportProject;
 import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.v2.IdeEngineInfo;
 import com.aliyun.dataworks.migrationx.domain.dataworks.objects.types.DmObjectType;
@@ -22,9 +25,6 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import lombok.ToString;
-
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * @author sam.liux
@@ -39,6 +39,10 @@ public class Project extends DmObject {
 
     @JacksonXmlProperty(localName = "ExportProject")
     private ExportProject exportProject;
+
+    @JacksonXmlProperty(localName = "Asset")
+    @JacksonXmlElementWrapper(localName = "Assets")
+    private List<Asset> assets = new ArrayList<>();
 
     @JacksonXmlProperty(isAttribute = true, localName = "name")
     private String name;
@@ -256,6 +260,15 @@ public class Project extends DmObject {
 
     public Project setEngineInfo(IdeEngineInfo engineInfo) {
         this.engineInfo = engineInfo;
+        return this;
+    }
+
+    public List<Asset> getAssets() {
+        return assets;
+    }
+
+    public Project setAssets(List<Asset> assets) {
+        this.assets = assets;
         return this;
     }
 }

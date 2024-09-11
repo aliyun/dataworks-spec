@@ -23,11 +23,14 @@ import com.alibaba.fastjson2.JSONWriter.Feature;
 import com.aliyun.dataworks.common.spec.domain.Spec;
 import com.aliyun.dataworks.common.spec.domain.SpecEntity;
 import com.aliyun.dataworks.common.spec.domain.Specification;
+import com.aliyun.dataworks.common.spec.exception.SpecErrorCode;
+import com.aliyun.dataworks.common.spec.exception.SpecException;
 import com.aliyun.dataworks.common.spec.parser.Parser;
 import com.aliyun.dataworks.common.spec.parser.SpecParserContext;
 import com.aliyun.dataworks.common.spec.parser.SpecParserFactory;
 import com.aliyun.dataworks.common.spec.parser.ToDomainRootParser;
 import com.aliyun.dataworks.common.spec.utils.ParserUtil;
+import com.aliyun.dataworks.common.spec.utils.SpecDevUtil;
 import com.aliyun.dataworks.common.spec.writer.SpecWriterContext;
 import com.aliyun.dataworks.common.spec.writer.WriterFactory;
 import com.aliyun.dataworks.common.spec.writer.impl.SpecificationWriter;
@@ -64,7 +67,10 @@ public class SpecUtil {
 
         SpecWriterContext context = new SpecWriterContext();
         context.setVersion(specification.getVersion());
-        SpecificationWriter writer = (SpecificationWriter)WriterFactory.getWriter(Specification.class, context);
+        SpecificationWriter writer = (SpecificationWriter)WriterFactory.getWriter(specification.getClass(), context);
+        if (writer == null) {
+            throw new SpecException(SpecErrorCode.PARSER_LOAD_ERROR, "no available registered writer found for type: " + specification.getClass());
+        }
         return JSON.toJSONString(writer.write(specification, context), Feature.PrettyFormat);
     }
 
@@ -76,7 +82,7 @@ public class SpecUtil {
 
         return Optional.ofNullable(WriterFactory.getWriter(specObject.getClass(), context))
             .map(writer -> writer.write(specObject, context))
-            .orElse(JSON.toJSON(specObject));
+            .orElse(SpecDevUtil.writeJsonObject(specObject, false));
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})

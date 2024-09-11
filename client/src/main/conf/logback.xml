@@ -15,8 +15,6 @@
   -->
 
 <configuration>
-    <!-- https://github.com/spring-projects/spring-boot/blob/v1.4.2.RELEASE/spring-boot/src/main/resources/org/springframework/boot/logging/logback/defaults.xml -->
-    <include resource="org/springframework/boot/logging/logback/defaults.xml"/>
     <property name="APPENDER_REF" value="${logging.appenderRef}"/>
     <property name="LOG_FILE" value="${logging.file}"/>
     <property name="FILE_LOG_PATTERN"
@@ -33,12 +31,50 @@
         </encoder>
     </appender>
 
+    <appender name="metrics" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/metrics.log</file>
+        <encoder>
+            <pattern>%msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>logs/metrics.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>10MB</maxFileSize>
+            <!-- only one day -->
+            <maxHistory>5</maxHistory>
+            <totalSizeCap>200MB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
+    <appender name="summary" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>logs/summary.log</file>
+        <encoder>
+            <pattern>%msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <fileNamePattern>logs/summary.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <maxFileSize>10MB</maxFileSize>
+            <!-- only one day -->
+            <maxHistory>5</maxHistory>
+            <totalSizeCap>200MB</totalSizeCap>
+        </rollingPolicy>
+    </appender>
+
     <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
         <encoder>
             <pattern>${CONSOLE_LOG_PATTERN}</pattern>
             <charset>utf8</charset>
         </encoder>
     </appender>
+
+    <logger name="metrics.log" level="INFO" additivity="false">
+        <appender-ref ref="metrics"/>
+    </logger>
+
+    <logger name="summary.log" level="INFO" additivity="false">
+        <appender-ref ref="summary"/>
+    </logger>
 
     <root level="INFO">
         <appender-ref ref="${APPENDER_REF}"/>

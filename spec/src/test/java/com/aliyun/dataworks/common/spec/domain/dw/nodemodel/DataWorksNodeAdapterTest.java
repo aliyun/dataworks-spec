@@ -18,18 +18,27 @@ package com.aliyun.dataworks.common.spec.domain.dw.nodemodel;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.aliyun.dataworks.common.spec.SpecUtil;
 import com.aliyun.dataworks.common.spec.domain.DataWorksWorkflowSpec;
 import com.aliyun.dataworks.common.spec.domain.Specification;
+import com.aliyun.dataworks.common.spec.domain.dw.nodemodel.DataWorksNodeAdapter.Context;
+import com.aliyun.dataworks.common.spec.domain.dw.types.CodeProgramType;
 import com.aliyun.dataworks.common.spec.domain.enums.DependencyType;
 import com.aliyun.dataworks.common.spec.domain.enums.NodeRecurrenceType;
 import com.aliyun.dataworks.common.spec.domain.noref.SpecDepend;
 import com.aliyun.dataworks.common.spec.domain.noref.SpecFlowDepend;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecNode;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecNodeOutput;
+import com.aliyun.dataworks.common.spec.domain.ref.SpecScript;
+import com.aliyun.dataworks.common.spec.domain.ref.SpecWorkflow;
+import com.aliyun.dataworks.common.spec.domain.ref.component.SpecComponent;
+import com.aliyun.dataworks.common.spec.domain.ref.component.SpecComponentParameter;
+import com.aliyun.dataworks.common.spec.domain.ref.runtime.SpecScriptRuntime;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
@@ -75,8 +84,6 @@ public class DataWorksNodeAdapterTest {
         System.out.println("context outputs: " + adapter.getOutputContexts());
         Assert.assertTrue(CollectionUtils.isNotEmpty(adapter.getInputContexts()));
         Assert.assertTrue(CollectionUtils.isNotEmpty(adapter.getOutputContexts()));
-
-        System.out.println(SpecUtil.writeToSpec(specObj));
     }
 
     @Test
@@ -137,10 +144,15 @@ public class DataWorksNodeAdapterTest {
         Assert.assertNotNull(dowhile.getDoWhile());
         Assert.assertNotNull(dowhile.getDoWhile().getSpecWhile());
         Assert.assertNotNull(dowhile.getDoWhile().getNodes());
-
+        Assert.assertEquals(4, (int)dowhile.getDoWhile().getMaxIterations());
         DataWorksNodeAdapter dataWorksNodeAdapter = new DataWorksNodeAdapter(specObj, dowhile.getDoWhile().getSpecWhile());
         System.out.println(dataWorksNodeAdapter.getCode());
         System.out.println(dataWorksNodeAdapter.getInputs());
+
+        DataWorksNodeAdapter dowhileAdapter = new DataWorksNodeAdapter(specObj, dowhile);
+        Map<String, Object> extConfig = dowhileAdapter.getExtConfig();
+        Assert.assertNotNull(extConfig);
+        Assert.assertEquals(4, (int)extConfig.get(DataWorksNodeAdapter.LOOP_COUNT));
     }
 
     @Test
@@ -164,7 +176,7 @@ public class DataWorksNodeAdapterTest {
         Assert.assertNotNull(foreach.getForeach());
         Assert.assertNotNull(foreach.getForeach().getNodes());
         Assert.assertEquals(3, CollectionUtils.size(foreach.getInnerNodes()));
-        Assert.assertNotNull(foreach.getInnerFlow());
+        Assert.assertNotNull(foreach.getInnerDependencies());
 
         ListUtils.emptyIfNull(specObj.getSpec().getNodes().get(0).getInnerNodes()).forEach(inner -> {
             DataWorksNodeAdapter adapter = new DataWorksNodeAdapter(specObj, inner);
@@ -225,8 +237,8 @@ public class DataWorksNodeAdapterTest {
 
         log.info("extConfig: {}", adapter.getExtConfig());
         Assert.assertNotNull(adapter.getExtConfig());
-        Assert.assertTrue(adapter.getExtConfig().contains(DataWorksNodeAdapter.IGNORE_BRANCH_CONDITION_SKIP));
-        Assert.assertFalse(adapter.getExtConfig().contains(DataWorksNodeAdapter.TIMEOUT));
+        Assert.assertTrue(adapter.getExtConfig().containsKey(DataWorksNodeAdapter.IGNORE_BRANCH_CONDITION_SKIP));
+        Assert.assertFalse(adapter.getExtConfig().containsKey(DataWorksNodeAdapter.TIMEOUT));
 
         Assert.assertEquals(0, (int)adapter.getNodeType());
     }
@@ -258,6 +270,175 @@ public class DataWorksNodeAdapterTest {
         Assert.assertTrue(info.getDependentNodeOutputList().contains("output1"));
 
         Assert.assertEquals(2, (int)dataWorksNodeAdapter.getNodeType());
+    }
+
+    @Test
+    public void testGetDependentTypeForWorkflowWithOutputs() {
+        String specStr = "{\n"
+            + "\t\"version\":\"1.1.0\",\n"
+            + "\t\"kind\":\"CycleWorkflow\",\n"
+            + "\t\"spec\":{\n"
+            + "\t\t\"name\":\"工作流跨周期小时依赖内部节点依赖外部\",\n"
+            + "\t\t\"id\":\"5992975956233455901\",\n"
+            + "\t\t\"type\":\"CycleWorkflow\",\n"
+            + "\t\t\"owner\":\"206561090452322657\",\n"
+            + "\t\t\"workflows\":[\n"
+            + "\t\t\t{\n"
+            + "\t\t\t\t\"script\":{\n"
+            + "\t\t\t\t\t\"path\":\"李文涛测试工作流/工作流调度依赖跨周期场景/工作流跨周期小时依赖内部节点依赖外部\",\n"
+            + "\t\t\t\t\t\"runtime\":{\n"
+            + "\t\t\t\t\t\t\"command\":\"WORKFLOW\"\n"
+            + "\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\"id\":\"4928814091066534424\"\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"id\":\"5992975956233455901\",\n"
+            + "\t\t\t\t\"trigger\":{\n"
+            + "\t\t\t\t\t\"type\":\"Scheduler\",\n"
+            + "\t\t\t\t\t\"id\":\"7019189558026663217\",\n"
+            + "\t\t\t\t\t\"cron\":\"00 13 00 * * ?\",\n"
+            + "\t\t\t\t\t\"startTime\":\"1970-01-01 00:00:00\",\n"
+            + "\t\t\t\t\t\"endTime\":\"9999-01-01 00:00:00\",\n"
+            + "\t\t\t\t\t\"timezone\":\"Asia/Shanghai\",\n"
+            + "\t\t\t\t\t\"delaySeconds\":0\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"strategy\":{\n"
+            + "\t\t\t\t\t\"timeout\":0,\n"
+            + "\t\t\t\t\t\"rerunTimes\":3,\n"
+            + "\t\t\t\t\t\"rerunInterval\":180000,\n"
+            + "\t\t\t\t\t\"failureStrategy\":\"Break\"\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"name\":\"工作流跨周期小时依赖内部节点依赖外部\",\n"
+            + "\t\t\t\t\"owner\":\"206561090452322657\",\n"
+            + "\t\t\t\t\"metadata\":{\n"
+            + "\t\t\t\t\t\"owner\":\"206561090452322657\",\n"
+            + "\t\t\t\t\t\"tenantId\":\"524257424564736\",\n"
+            + "\t\t\t\t\t\"project\":{\n"
+            + "\t\t\t\t\t\t\"mode\":\"SIMPLE\",\n"
+            + "\t\t\t\t\t\t\"projectOwnerId\":\"1107550004253538\",\n"
+            + "\t\t\t\t\t\t\"tenantId\":\"524257424564736\",\n"
+            + "\t\t\t\t\t\t\"simple\":true,\n"
+            + "\t\t\t\t\t\t\"projectIdentifier\":\"lwt_test_newIde\",\n"
+            + "\t\t\t\t\t\t\"projectName\":\"李文涛测试新版ide\",\n"
+            + "\t\t\t\t\t\t\"projectId\":\"528891\"\n"
+            + "\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\"ownerName\":\"lwttest04\",\n"
+            + "\t\t\t\t\t\"projectId\":\"528891\",\n"
+            + "\t\t\t\t\t\"schedulerNodeId\":700006657376\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"inputs\":{\n"
+            + "\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"outputs\":{\n"
+            + "\t\t\t\t\t\"nodeOutputs\":[\n"
+            + "\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\"data\":\"5992975956233455901\",\n"
+            + "\t\t\t\t\t\t\t\"artifactType\":\"NodeOutput\",\n"
+            + "\t\t\t\t\t\t\t\"refTableName\":\"工作流跨周期小时依赖内部节点依赖外部\",\n"
+            + "\t\t\t\t\t\t\t\"isDefault\":true\n"
+            + "\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t]\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"nodes\":[\n"
+            + "\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\"recurrence\":\"Normal\",\n"
+            + "\t\t\t\t\t\t\"id\":\"6203019234746940306\",\n"
+            + "\t\t\t\t\t\t\"timeout\":0,\n"
+            + "\t\t\t\t\t\t\"instanceMode\":\"T+1\",\n"
+            + "\t\t\t\t\t\t\"rerunMode\":\"Allowed\",\n"
+            + "\t\t\t\t\t\t\"rerunTimes\":3,\n"
+            + "\t\t\t\t\t\t\"rerunInterval\":180000,\n"
+            + "\t\t\t\t\t\t\"script\":{\n"
+            + "\t\t\t\t\t\t\t\"path\":\"李文涛测试工作流/工作流调度依赖跨周期场景/工作流跨周期小时依赖内部节点依赖外部/工作流跨周期小时依赖内部节点依赖外部_内部节点\",\n"
+            + "\t\t\t\t\t\t\t\"runtime\":{\n"
+            + "\t\t\t\t\t\t\t\t\"command\":\"DIDE_SHELL\",\n"
+            + "\t\t\t\t\t\t\t\t\"commandTypeId\":6\n"
+            + "\t\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\t\"content\":\"#!/bin/bash\\n#********************************************************************#\\n##author"
+            + ":lwttest04\\n##create time:2024-08-19 18:41:26\\n#********************************************************************#\",\n"
+            + "\t\t\t\t\t\t\t\"id\":\"8296284929718477332\"\n"
+            + "\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\"trigger\":{\n"
+            + "\t\t\t\t\t\t\t\"type\":\"Scheduler\",\n"
+            + "\t\t\t\t\t\t\t\"id\":\"4696080677296779430\",\n"
+            + "\t\t\t\t\t\t\t\"cron\":\"00 06 00 * * ?\",\n"
+            + "\t\t\t\t\t\t\t\"startTime\":\"1970-01-01 00:00:00\",\n"
+            + "\t\t\t\t\t\t\t\"endTime\":\"9999-01-01 00:00:00\",\n"
+            + "\t\t\t\t\t\t\t\"timezone\":\"Asia/Shanghai\",\n"
+            + "\t\t\t\t\t\t\t\"delaySeconds\":0\n"
+            + "\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\"runtimeResource\":{\n"
+            + "\t\t\t\t\t\t\t\"resourceGroup\":\"S_res_group_524257424564736_1722829742200\",\n"
+            + "\t\t\t\t\t\t\t\"id\":\"7011860292150347087\",\n"
+            + "\t\t\t\t\t\t\t\"resourceGroupId\":\"72014319\"\n"
+            + "\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\"name\":\"工作流跨周期小时依赖内部节点依赖外部_内部节点\",\n"
+            + "\t\t\t\t\t\t\"owner\":\"206561090452322657\",\n"
+            + "\t\t\t\t\t\t\"metadata\":{\n"
+            + "\t\t\t\t\t\t\t\"owner\":\"206561090452322657\",\n"
+            + "\t\t\t\t\t\t\t\"container\":{\n"
+            + "\t\t\t\t\t\t\t\t\"type\":\"Flow\",\n"
+            + "\t\t\t\t\t\t\t\t\"uuid\":\"5992975956233455901\"\n"
+            + "\t\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\t\"ownerName\":\"lwttest04\",\n"
+            + "\t\t\t\t\t\t\t\"schedulerNodeId\":700006657377,\n"
+            + "\t\t\t\t\t\t\t\"tenantId\":\"524257424564736\",\n"
+            + "\t\t\t\t\t\t\t\"project\":{\n"
+            + "\t\t\t\t\t\t\t\t\"mode\":\"SIMPLE\",\n"
+            + "\t\t\t\t\t\t\t\t\"projectOwnerId\":\"1107550004253538\",\n"
+            + "\t\t\t\t\t\t\t\t\"tenantId\":\"524257424564736\",\n"
+            + "\t\t\t\t\t\t\t\t\"simple\":true,\n"
+            + "\t\t\t\t\t\t\t\t\"projectIdentifier\":\"lwt_test_newIde\",\n"
+            + "\t\t\t\t\t\t\t\t\"projectName\":\"李文涛测试新版ide\",\n"
+            + "\t\t\t\t\t\t\t\t\"projectId\":\"528891\"\n"
+            + "\t\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\t\"projectId\":\"528891\"\n"
+            + "\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\"inputs\":{\n"
+            + "\n"
+            + "\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\"outputs\":{\n"
+            + "\t\t\t\t\t\t\t\"nodeOutputs\":[\n"
+            + "\t\t\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\t\t\"data\":\"6203019234746940306\",\n"
+            + "\t\t\t\t\t\t\t\t\t\"artifactType\":\"NodeOutput\",\n"
+            + "\t\t\t\t\t\t\t\t\t\"refTableName\":\"工作流跨周期小时依赖内部节点依赖外部_内部节点\",\n"
+            + "\t\t\t\t\t\t\t\t\t\"isDefault\":true\n"
+            + "\t\t\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t\t\t]\n"
+            + "\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t}\n"
+            + "\t\t\t\t],\n"
+            + "\t\t\t\t\"dependencies\":[\n"
+            + "\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\"nodeId\":\"6203019234746940306\",\n"
+            + "\t\t\t\t\t\t\"depends\":[\n"
+            + "\t\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\t\"type\":\"CrossCycleDependsOnOtherNode\",\n"
+            + "\t\t\t\t\t\t\t\t\"output\":\"7922382126549470808\",\n"
+            + "\t\t\t\t\t\t\t\t\"refTableName\":\"工作流跨周期依赖上游\"\n"
+            + "\t\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t\t]\n"
+            + "\t\t\t\t\t}\n"
+            + "\t\t\t\t]\n"
+            + "\t\t\t}\n"
+            + "\t\t]\n"
+            + "\t},\n"
+            + "\t\"metadata\":{\n"
+            + "\t\t\"uuid\":\"6203019234746940306\",\n"
+            + "\t\t\"gmtModified\":1724064225000\n"
+            + "\t}\n"
+            + "}";
+        Specification<DataWorksWorkflowSpec> spec = SpecUtil.parseToDomain(specStr);
+        SpecWorkflow workflow = spec.getSpec().getWorkflows().get(0);
+        DataWorksNodeAdapter dataWorksNodeAdapter = new DataWorksNodeAdapter(spec, workflow.getNodes().get(0));
+        DwNodeDependentTypeInfo info = dataWorksNodeAdapter.getDependentType(outputs -> Collections.singletonList(123456789L));
+        Assert.assertNotNull(info);
+        Assert.assertEquals(info.getDependentType(), DwNodeDependentTypeInfo.USER_DEFINE);
+        Assert.assertNotNull(info.getDependentNodeOutputList());
+        Assert.assertTrue(info.getDependentNodeOutputList().contains("7922382126549470808"));
+        Assert.assertTrue(info.getDependentNodeIdList().contains(123456789L));
+
+        Assert.assertEquals(0, (int)dataWorksNodeAdapter.getNodeType());
     }
 
     @Test
@@ -718,5 +899,107 @@ public class DataWorksNodeAdapterTest {
         Assert.assertNotNull(adapter.getParaValue());
         Assert.assertEquals("2=222222 1=111111", adapter.getParaValue());
         Assert.assertEquals(1, (int)adapter.getNodeType());
+    }
+
+    @Test
+    public void testGetPrgType() {
+        Specification<DataWorksWorkflowSpec> spec = new Specification<>();
+        SpecNode node = new SpecNode();
+        SpecScript script = new SpecScript();
+        SpecScriptRuntime runtime1 = new SpecScriptRuntime();
+        runtime1.setCommand("ODPS_SQL");
+        script.setRuntime(runtime1);
+        node.setScript(script);
+
+        DataWorksNodeAdapter adapter = new DataWorksNodeAdapter(spec, node);
+        Assert.assertEquals(10, (int)adapter.getPrgType(s -> CodeProgramType.getNodeTypeByName(s).getCode()));
+
+        SpecScriptRuntime runtime2 = new SpecScriptRuntime();
+        runtime2.setCommand("MySQL");
+        runtime2.setCommandTypeId(1000039);
+        script.setRuntime(runtime2);
+        adapter = new DataWorksNodeAdapter(spec, node);
+        Assert.assertEquals(1000039, (int)adapter.getPrgType(s -> CodeProgramType.getNodeTypeByName(s).getCode()));
+    }
+
+    @Test
+    public void testComponentSqlCode() {
+        String content = "select '@@{p1}', '@@{p2}', '@@{p3}';";
+
+        Specification<DataWorksWorkflowSpec> specification = new Specification<>();
+        DataWorksWorkflowSpec spec = new DataWorksWorkflowSpec();
+        SpecNode specNode = new SpecNode();
+        SpecScript script = new SpecScript();
+        SpecScriptRuntime runtime = new SpecScriptRuntime();
+        runtime.setCommand(CodeProgramType.COMPONENT_SQL.getName());
+        script.setContent(content);
+        script.setRuntime(runtime);
+        specNode.setScript(script);
+        SpecComponent component = new SpecComponent();
+        SpecComponentParameter in1 = new SpecComponentParameter();
+        in1.setName("p1");
+        in1.setValue("var1");
+        component.setInputs(Collections.singletonList(in1));
+        specNode.setComponent(component);
+        spec.setNodes(Collections.singletonList(specNode));
+        specification.setSpec(spec);
+
+        DataWorksNodeAdapter adapter = new DataWorksNodeAdapter(specification, specNode, Context.builder()
+            .deployToScheduler(true)
+            .build());
+        String code = adapter.getCode();
+        log.info("code: {}", code);
+        Assert.assertEquals("select 'var1', '@@{p2}', '@@{p3}';", code);
+    }
+
+    @Test
+    public void testWorkflow() {
+        Specification<DataWorksWorkflowSpec> specification = new Specification<>();
+        DataWorksWorkflowSpec spec = new DataWorksWorkflowSpec();
+        SpecWorkflow specWorkflow = new SpecWorkflow();
+        SpecNodeOutput input = new SpecNodeOutput();
+        input.setData("autotest.123_out");
+        specWorkflow.setInputs(Collections.singletonList(input));
+        SpecNodeOutput output = new SpecNodeOutput();
+        output.setData("autotest.456_out");
+        specWorkflow.setOutputs(Collections.singletonList(output));
+
+        SpecScript script = new SpecScript();
+        SpecScriptRuntime runtime = new SpecScriptRuntime();
+        runtime.setCommand("WORKFLOW");
+        script.setRuntime(runtime);
+        specWorkflow.setScript(script);
+        spec.setWorkflows(Collections.singletonList(specWorkflow));
+
+        DataWorksNodeAdapter adapter = new DataWorksNodeAdapter(specification, specWorkflow);
+
+        Assert.assertNotNull(adapter.getInputs());
+        Assert.assertEquals(1, adapter.getInputs().size());
+        Assert.assertNotNull(adapter.getOutputs());
+        Assert.assertEquals(1, adapter.getOutputs().size());
+        Assert.assertEquals(123, (int)adapter.getPrgType(cmd -> 123));
+    }
+
+    @Test
+    public void testStreamLaunchMode() {
+        Specification<DataWorksWorkflowSpec> sp = new Specification<>();
+        DataWorksWorkflowSpec spec = new DataWorksWorkflowSpec();
+        SpecNode node = new SpecNode();
+        node.setId("11");
+        node.setName("sparkstreaming1");
+        SpecScript script = new SpecScript();
+        SpecScriptRuntime runtime = new SpecScriptRuntime();
+        Map<String, Object> config = new HashMap<>();
+        config.put(DataWorksNodeAdapter.STREAM_LAUNCH_MODE, 1);
+        runtime.setStreamJobConfig(config);
+        script.setRuntime(runtime);
+        node.setScript(script);
+        spec.setNodes(Collections.singletonList(node));
+        sp.setSpec(spec);
+
+        DataWorksNodeAdapter dataWorksNodeAdapter = new DataWorksNodeAdapter(sp, node);
+        Map<String, Object> extraConf = dataWorksNodeAdapter.getExtConfig();
+        Assert.assertNotNull(extraConf);
+        Assert.assertEquals(1, extraConf.get(DataWorksNodeAdapter.STREAM_LAUNCH_MODE));
     }
 }

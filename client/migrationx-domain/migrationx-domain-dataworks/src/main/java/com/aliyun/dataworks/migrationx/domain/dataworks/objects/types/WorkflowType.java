@@ -33,7 +33,6 @@ public enum WorkflowType {
      */
     OLD_WORKFLOW(2);
 
-
     private Integer value;
 
     WorkflowType(Integer value) {
@@ -53,4 +52,21 @@ public enum WorkflowType {
         return value;
     }
 
+    public static WorkflowType getWorkflowTypeByUseType(NodeUseType useType) {
+        if (useType == null) {
+            return null;
+        }
+
+        switch (useType) {
+            case SCHEDULED:
+            case SKIP:
+                return WorkflowType.BUSINESS;
+            case MANUAL_WORKFLOW:
+            case MANUAL:
+                return WorkflowType.MANUAL_BUSINESS;
+            default:
+        }
+
+        throw new RuntimeException("unknown use type: " + useType);
+    }
 }

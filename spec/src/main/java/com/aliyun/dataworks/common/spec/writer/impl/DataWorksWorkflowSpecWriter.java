@@ -17,6 +17,7 @@ package com.aliyun.dataworks.common.spec.writer.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson2.JSONArray;
@@ -47,6 +48,10 @@ public class DataWorksWorkflowSpecWriter extends DefaultJsonObjectWriter<DataWor
         JSONObject jsonObject = writeJsonObject(specObj, true);
         if (CollectionUtils.isNotEmpty(specObj.getNodes())) {
             jsonObject.put("nodes", writeByWriter(specObj.getNodes()));
+        }
+
+        if (CollectionUtils.isNotEmpty(specObj.getWorkflows())) {
+            jsonObject.put("workflows", writeByWriter(specObj.getWorkflows()));
         }
 
         if (CollectionUtils.isNotEmpty(specObj.getFlow())) {
@@ -80,6 +85,10 @@ public class DataWorksWorkflowSpecWriter extends DefaultJsonObjectWriter<DataWor
         if (CollectionUtils.isNotEmpty(specObj.getVariables())) {
             jsonObject.put("variables", writerListByWriter(new ArrayList<>(specObj.getVariables())));
         }
+
+        if (CollectionUtils.isNotEmpty(specObj.getComponents())) {
+            jsonObject.put("components", writerListByWriter(new ArrayList<>(specObj.getComponents())));
+        }
         return jsonObject;
     }
 
@@ -98,6 +107,7 @@ public class DataWorksWorkflowSpecWriter extends DefaultJsonObjectWriter<DataWor
         JSONArray arr = new JSONArray();
         ListUtils.emptyIfNull(specObj.getFlow()).stream()
             .map(this::writeByWriter)
+            .filter(Objects::nonNull)
             .forEach(arr::add);
         return arr;
     }

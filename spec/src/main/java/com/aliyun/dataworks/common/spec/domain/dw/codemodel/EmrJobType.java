@@ -29,6 +29,10 @@ public enum EmrJobType {
      */
     HIVE_SQL("HIVE_SQL"),
     /**
+     * Trino Sql
+     */
+    TRINO_SQL("TRINO_SQL"),
+    /**
      * Spark sql
      */
     SPARK_SQL("SPARK_SQL"),
@@ -75,7 +79,11 @@ public enum EmrJobType {
     /**
      * shell
      */
-    SHELL("SHELL");
+    SHELL("SHELL"),
+    /**
+     * KYUUBI
+     */
+    KYUUBI("KYUUBI");
 
     EmrJobType(String text) {
         this.text = text;

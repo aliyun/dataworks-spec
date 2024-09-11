@@ -20,10 +20,12 @@ import com.aliyun.dataworks.common.spec.domain.enums.DependencyType;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecNode;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecNodeOutput;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * @author yiwei
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 public class SpecDepend extends SpecNoRefEntity {
     private SpecNode nodeId;

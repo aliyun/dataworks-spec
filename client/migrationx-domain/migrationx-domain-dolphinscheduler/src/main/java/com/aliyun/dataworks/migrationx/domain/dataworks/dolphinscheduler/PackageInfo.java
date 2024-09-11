@@ -15,15 +15,15 @@
 
 package com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler;
 
+import java.util.Arrays;
+import java.util.List;
+import java.util.stream.Collectors;
+
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import lombok.experimental.Accessors;
 import org.apache.commons.lang3.StringUtils;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 /**
  * @author 聿剑
@@ -46,7 +46,7 @@ public class PackageInfo {
 
         String[] versionNumbers = StringUtils.split(this.getVersion(), ".");
         if (versionNumbers == null || versionNumbers.length == 0
-            || Arrays.stream(versionNumbers).anyMatch(num -> !StringUtils.isNumeric(num))) {
+                || Arrays.stream(versionNumbers).anyMatch(num -> !StringUtils.isNumeric(num))) {
             throw new RuntimeException("package info version invalid: " + this.getVersion());
         }
 
@@ -54,8 +54,9 @@ public class PackageInfo {
         if (numbers.get(0) < 2) {
             return DolphinSchedulerVersion.V1;
         }
-
-        return DolphinSchedulerVersion.V2;
+        if (numbers.get(0) < 3) {
+            return DolphinSchedulerVersion.V2;
+        }
+        return DolphinSchedulerVersion.V3;
     }
-
 }

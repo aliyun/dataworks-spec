@@ -29,7 +29,7 @@ import lombok.ToString;
  * @date 2023/7/25
  */
 @Data
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, exclude = "isRef")
 @ToString(callSuper = true)
 public class SpecRefEntity extends SpecEntity {
     private String id;

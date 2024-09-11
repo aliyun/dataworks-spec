@@ -56,7 +56,7 @@ import org.yaml.snakeyaml.introspector.BeanAccess;
 @Accessors(chain = true)
 @ToString
 @Slf4j
-public class PaiFlowCode extends AbstractBaseCode implements SpecDescribableCode<DataWorksWorkflowSpec> {
+public class PaiFlowCode extends DefaultJsonFormCode implements SpecDescribableCode<DataWorksWorkflowSpec> {
     @Override
     public Specification<DataWorksWorkflowSpec> getSpec() {
         Yaml yaml = new Yaml();
@@ -205,7 +205,7 @@ public class PaiFlowCode extends AbstractBaseCode implements SpecDescribableCode
 
     @Override
     public PaiFlowCode parse(String code) {
-        return GsonUtils.fromJsonString(code, getClass());
+        return (PaiFlowCode)super.parse(code);
     }
 
     @Override

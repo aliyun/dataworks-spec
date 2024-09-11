@@ -19,12 +19,12 @@
     <parent>
         <groupId>com.aliyun.dataworks</groupId>
         <artifactId>dataworks-tool</artifactId>
-        <version>1.1.5</version>
+        <version>1.1.7-workflow-preview3</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <modelVersion>4.0.0</modelVersion>
     <artifactId>migrationx</artifactId>
-    <version>1.1.5</version>
     <packaging>pom</packaging>
     <name>migrationx</name>
     <modules>
@@ -35,31 +35,22 @@
         <module>migrationx-writer</module>
     </modules>
     <properties>
-        <lombok.version>1.16.16</lombok.version>
         <jackson.databind.version>2.13.4.2</jackson.databind.version>
         <jackson.core.version>2.13.1</jackson.core.version>
         <jackson.dataformat.xml.version>2.13.1</jackson.dataformat.xml.version>
         <jackson.annotations.version>2.13.1</jackson.annotations.version>
-        <gson.version>2.8.9</gson.version>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.8</maven.compiler.source>
         <logback.version>1.2.11</logback.version>
-        <hive.version>2.1.0</hive.version>
         <xml.apis.version>1.4.01</xml.apis.version>
         <dom4j.version>1.6.1</dom4j.version>
-        <maven.compiler.target>1.8</maven.compiler.target>
-        <spark.launcher.version>2.4.3</spark.launcher.version>
-        <oozie.version>5.1.0</oozie.version>
-        <druid-version>1.2.9_preview_04</druid-version>
-        <azkaban.version>3.58.0</azkaban.version>
-        <powermock.version>2.0.9</powermock.version>
+        <oozie.version>5.2.1</oozie.version>
+        <azkaban.version>3.71.0-3</azkaban.version>
     </properties>
     <dependencyManagement>
         <dependencies>
             <dependency>
                 <groupId>com.aliyun.dataworks</groupId>
                 <artifactId>dw-common-spec</artifactId>
-                <version>1.1.5</version>
+                <version>${project.version}</version>
                 <exclusions>
                     <exclusion>
                         <groupId>org.slf4j</groupId>
@@ -68,9 +59,54 @@
                 </exclusions>
             </dependency>
             <dependency>
-                <groupId>org.apache.tomcat.embed</groupId>
-                <artifactId>tomcat-embed-core</artifactId>
-                <version>9.0.83</version>
+                <groupId>com.aliyun.dataworks</groupId>
+                <artifactId>migrationx-domain-core</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.aliyun.dataworks</groupId>
+                <artifactId>migrationx-domain-dataworks</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.aliyun.dataworks</groupId>
+                <artifactId>migrationx-domain-caiyunjian</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.aliyun.dataworks</groupId>
+                <artifactId>migrationx-domain-aliyunemr</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.aliyun.dataworks</groupId>
+                <artifactId>migrationx-domain-airflow</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.aliyun.dataworks</groupId>
+                <artifactId>migrationx-domain-dolphinscheduler</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.aliyun.dataworks</groupId>
+                <artifactId>migrationx-domain-datago</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.aliyun.dataworks</groupId>
+                <artifactId>migrationx-domain-azkaban</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.aliyun.dataworks</groupId>
+                <artifactId>migrationx-domain-oozie</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.aliyun.dataworks</groupId>
+                <artifactId>migrationx-common</artifactId>
+                <version>${project.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.aliyun</groupId>
@@ -281,55 +317,22 @@
                         <artifactId>hive-exec</artifactId>
                         <groupId>org.apache.hive</groupId>
                     </exclusion>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-log4j12</artifactId>
+                    </exclusion>
                 </exclusions>
             </dependency>
             <dependency>
                 <groupId>org.apache.oozie</groupId>
                 <artifactId>oozie-client</artifactId>
                 <version>${oozie.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>org.projectlombok</groupId>
-                <artifactId>lombok</artifactId>
-                <version>${lombok.version}</version>
-            </dependency>
-
-            <!--Test start-->
-            <dependency>
-                <groupId>org.powermock</groupId>
-                <artifactId>powermock-module-junit4-rule-agent</artifactId>
-                <version>${powermock.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.powermock</groupId>
-                <artifactId>powermock-module-junit4</artifactId>
-                <version>${powermock.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.powermock</groupId>
-                <artifactId>powermock-api-mockito2</artifactId>
-                <version>${powermock.version}</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.mockito</groupId>
-                <artifactId>mockito-inline</artifactId>
-                <version>3.9.0</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>org.mockito</groupId>
-                <artifactId>mockito-core</artifactId>
-                <version>3.9.0</version>
-                <scope>test</scope>
-            </dependency>
-            <dependency>
-                <groupId>junit</groupId>
-                <artifactId>junit</artifactId>
-                <version>4.13.2</version>
-                <scope>test</scope>
+                <exclusions>
+                    <exclusion>
+                        <groupId>org.slf4j</groupId>
+                        <artifactId>slf4j-log4j12</artifactId>
+                    </exclusion>
+                </exclusions>
             </dependency>
         </dependencies>
     </dependencyManagement>
@@ -343,60 +346,14 @@
     </dependencies>
 
     <build>
-        <pluginManagement>
-            <plugins>
-                <plugin>
-                    <artifactId>maven-antrun-plugin</artifactId>
-                    <version>1.7</version>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-compiler-plugin</artifactId>
-                    <version>3.8.0</version>
-                    <configuration>
-                        <source>1.8</source>
-                        <target>1.8</target>
-                    </configuration>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-clean-plugin</artifactId>
-                    <version>3.1.0</version>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-resources-plugin</artifactId>
-                    <version>3.0.2</version>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-surefire-plugin</artifactId>
-                    <version>2.22.1</version>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-jar-plugin</artifactId>
-                    <version>3.0.2</version>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-install-plugin</artifactId>
-                    <version>2.5.2</version>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-deploy-plugin</artifactId>
-                    <version>2.8.2</version>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-site-plugin</artifactId>
-                    <version>3.7.1</version>
-                </plugin>
-                <plugin>
-                    <artifactId>maven-project-info-reports-plugin</artifactId>
-                    <version>3.0.0</version>
-                </plugin>
-            </plugins>
-        </pluginManagement>
         <plugins>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
                 <version>2.8.2</version>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-enforcer-plugin</artifactId>
                 <version>3.0.0-M1</version>
                 <executions>
@@ -411,7 +368,7 @@
                                     <version>3.0.0</version>
                                 </requireMavenVersion>
                                 <requireJavaVersion>
-                                    <version>1.8</version>
+                                    <version>${maven.compiler.source}</version>
                                 </requireJavaVersion>
                             </rules>
                         </configuration>
@@ -437,6 +394,7 @@
             </plugin>
 
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-dependency-plugin</artifactId>
                 <executions>
                     <execution>
@@ -460,7 +418,6 @@
                         <id>make-assembly</id>
                         <phase>package</phase>
                         <configuration>
-                            <finalName>migrationx</finalName>
                             <descriptors>
                                 <descriptor>package.xml</descriptor>
                             </descriptors>
@@ -474,6 +431,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-source-plugin</artifactId>
+                <version>3.0.1</version>
                 <executions>
                     <execution>
                         <id>attach-sources</id>

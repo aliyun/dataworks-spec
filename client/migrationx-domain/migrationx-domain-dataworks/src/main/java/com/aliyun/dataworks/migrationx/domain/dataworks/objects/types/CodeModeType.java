@@ -15,11 +15,14 @@
 
 package com.aliyun.dataworks.migrationx.domain.dataworks.objects.types;
 
+import lombok.Getter;
+
 /**
  * @author sam.liux
  * @date 2020/01/09
  */
-public enum  CodeModeType {
+@Getter
+public enum CodeModeType {
     /**
      * 向导模式
      */
@@ -30,14 +33,10 @@ public enum  CodeModeType {
      */
     CODE("code");
 
-    private String value;
+    private final String value;
 
     CodeModeType(String value) {
         this.value = value;
-    }
-
-    public String getValue() {
-        return value;
     }
 
     public static CodeModeType getCodeModeByValue(String value) {

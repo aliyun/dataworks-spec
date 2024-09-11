@@ -22,8 +22,8 @@ import java.util.stream.Collectors;
 
 import com.aliyun.dataworks.common.spec.domain.dw.types.CodeProgramType;
 import com.aliyun.dataworks.common.spec.utils.GsonUtils;
+
 import com.google.common.base.Joiner;
-import com.google.gson.reflect.TypeToken;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import org.apache.commons.collections4.CollectionUtils;
@@ -46,7 +46,35 @@ public class OdpsSparkCode extends AbstractBaseCode {
 
     private CodeJson sparkJson;
 
-    @Data
+    @Override
+    public OdpsSparkCode parse(String code) {
+        if (StringUtils.isEmpty(code)) {
+            return this;
+        }
+
+        List<String> resourceNames = Arrays.stream(code.trim().split("\n"))
+                .filter(line -> line.matches("##@resource_reference\\{\"([^\\{|^\\}]+)\"\\}"))
+                .map(line -> line.replace("##@resource_reference{\"", "").replace("\"}", ""))
+                .collect(Collectors.toList());
+        OdpsSparkCode model = new OdpsSparkCode();
+        model.setResourceReferences(resourceNames);
+
+        String json = Joiner.on("\\n").join(Arrays.stream(code.split("\n"))
+                .filter(line -> !line.matches("##@resource_reference\\{\"([^\\{|^\\}]+)\"\\}"))
+                .collect(Collectors.toList()));
+        CodeJson codeJson = GsonUtils.gson.fromJson(json, new com.google.gson.reflect.TypeToken<CodeJson>() {}.getType());
+        model.setSparkJson(codeJson);
+
+        setResourceReferences(model.getResourceReferences());
+        setSparkJson(model.getSparkJson());
+        return this;
+    }
+
+    @Override
+    public List<String> getProgramTypes() {
+        return Collections.singletonList(CodeProgramType.ODPS_SPARK.name());
+    }
+
     public static class CodeJson {
         private String version = SPARK_VERSION_2X;
         private String language;
@@ -60,6 +88,110 @@ public class OdpsSparkCode extends AbstractBaseCode {
         private List<String> assistFiles;
         private List<String> assistArchives;
         private List<String> archivesName;
+
+        public String getMainPy() {
+            return mainPy;
+        }
+
+        public void setMainPy(String mainPy) {
+            this.mainPy = mainPy;
+        }
+
+        public List<String> getAssistPys() {
+            return assistPys;
+        }
+
+        public void setAssistPys(List<String> assistPys) {
+            this.assistPys = assistPys;
+        }
+
+        public String getVersion() {
+            return version;
+        }
+
+        public void setVersion(String version) {
+            this.version = version;
+        }
+
+        public String getLanguage() {
+            return language;
+        }
+
+        public void setLanguage(String language) {
+            this.language = language;
+        }
+
+        public String getMainClass() {
+            return mainClass;
+        }
+
+        public void setMainClass(String mainClass) {
+            this.mainClass = mainClass;
+        }
+
+        public String getArgs() {
+            return args;
+        }
+
+        public void setArgs(String args) {
+            this.args = args;
+        }
+
+        public List<String> getConfigs() {
+            return configs;
+        }
+
+        public void setConfigs(List<String> configs) {
+            this.configs = configs;
+        }
+
+        public String getMainJar() {
+            return mainJar;
+        }
+
+        public void setMainJar(String mainJar) {
+            this.mainJar = mainJar;
+        }
+
+        public List<String> getAssistJars() {
+            return assistJars;
+        }
+
+        public void setAssistJars(List<String> assistJars) {
+            this.assistJars = assistJars;
+        }
+
+        public List<String> getAssistFiles() {
+            return assistFiles;
+        }
+
+        public void setAssistFiles(List<String> assistFiles) {
+            this.assistFiles = assistFiles;
+        }
+
+        public List<String> getAssistArchives() {
+            return assistArchives;
+        }
+
+        public void setAssistArchives(List<String> assistArchives) {
+            this.assistArchives = assistArchives;
+        }
+
+        public List<String> getArchivesName() {
+            return archivesName;
+        }
+
+        public void setArchivesName(List<String> archivesName) {
+            this.archivesName = archivesName;
+        }
+    }
+
+    public CodeJson getSparkJson() {
+        return sparkJson;
+    }
+
+    public void setSparkJson(CodeJson sparkJson) {
+        this.sparkJson = sparkJson;
     }
 
     @Override
@@ -67,9 +199,9 @@ public class OdpsSparkCode extends AbstractBaseCode {
         StringBuilder code = new StringBuilder();
         if (!CollectionUtils.isEmpty(resourceReferences)) {
             String refs = Joiner.on("\n").join(
-                resourceReferences.stream()
-                    .map(str -> "##@resource_reference{\"" + str + "\"}")
-                    .collect(Collectors.toList())
+                    resourceReferences.stream()
+                            .map(str -> "##@resource_reference{\"" + str + "\"}")
+                            .collect(Collectors.toList())
             );
             code.append(refs);
         }
@@ -79,33 +211,22 @@ public class OdpsSparkCode extends AbstractBaseCode {
         }
         return code.toString();
     }
-
+    
     @Override
-    public OdpsSparkCode parse(String code) {
-        if (StringUtils.isEmpty(code)) {
-            return this;
+    public String toString() {
+        StringBuilder code = new StringBuilder();
+        if (!CollectionUtils.isEmpty(resourceReferences)) {
+            String refs = Joiner.on("\n").join(
+                    resourceReferences.stream()
+                            .map(str -> "##@resource_reference{\"" + str + "\"}")
+                            .collect(Collectors.toList())
+            );
+            code.append(refs);
         }
 
-        List<String> resourceNames = Arrays.stream(code.trim().split("\n"))
-            .filter(line -> line.matches("##@resource_reference\\{\"([^\\{|^\\}]+)\"\\}"))
-            .map(line -> line.replace("##@resource_reference{\"", "").replace("\"}", ""))
-            .collect(Collectors.toList());
-        OdpsSparkCode model = new OdpsSparkCode();
-        model.setResourceReferences(resourceNames);
-
-        String json = Joiner.on("\\n").join(Arrays.stream(code.split("\n"))
-            .filter(line -> !line.matches("##@resource_reference\\{\"([^\\{|^\\}]+)\"\\}"))
-            .collect(Collectors.toList()));
-        CodeJson codeJson = GsonUtils.gson.fromJson(json, new TypeToken<CodeJson>() {}.getType());
-        model.setSparkJson(codeJson);
-
-        setResourceReferences(model.getResourceReferences());
-        setSparkJson(model.getSparkJson());
-        return this;
-    }
-
-    @Override
-    public List<String> getProgramTypes() {
-        return Collections.singletonList(CodeProgramType.ODPS_SPARK.name());
+        if (sparkJson != null) {
+            code.append("\n" + GsonUtils.defaultGson.toJson(sparkJson));
+        }
+        return code.toString();
     }
 }

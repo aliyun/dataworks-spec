@@ -18,6 +18,7 @@ package com.aliyun.dataworks.common.spec.parser.impl;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import com.aliyun.dataworks.common.spec.annotation.SpecParser;
 import com.aliyun.dataworks.common.spec.domain.noref.SpecAssertIn;
@@ -29,6 +30,7 @@ import com.aliyun.dataworks.common.spec.exception.SpecErrorCode;
 import com.aliyun.dataworks.common.spec.exception.SpecException;
 import com.aliyun.dataworks.common.spec.parser.SpecParserContext;
 import com.aliyun.dataworks.common.spec.utils.SpecDevUtil;
+import org.apache.commons.collections4.MapUtils;
 
 /**
  * @author 聿剑
@@ -47,23 +49,15 @@ public class SpecJoinParser extends DefaultSpecParser<SpecJoin> {
     @SuppressWarnings("unchecked")
     @Override
     public SpecJoin parse(Map<String, Object> rawContext, SpecParserContext specParserContext) {
-        if (!rawContext.containsKey(KEY_LOGIC)) {
-            throw new SpecException(SpecErrorCode.PARSE_ERROR, "'" + KEY_LOGIC + "' field is required");
-        }
-
-        if (!rawContext.containsKey(KEY_BRANCHES)) {
-            throw new SpecException(SpecErrorCode.PARSE_ERROR, "'" + KEY_BRANCHES + "' field is required");
-        }
-
         SpecJoin specJoin = new SpecJoin();
         // parse logic
-        Map<String, Object> ctxMapLogic = (Map<String, Object>)rawContext.get(KEY_LOGIC);
         SpecLogic specLogic = new SpecLogic();
         specJoin.setLogic(specLogic);
-        specLogic.setExpression((String)ctxMapLogic.getOrDefault(KEY_LOGIC_EXPRESSION, ""));
+        specLogic.setExpression((String)MapUtils.emptyIfNull((Map<String, Object>)rawContext.get(KEY_LOGIC))
+            .getOrDefault(KEY_LOGIC_EXPRESSION, ""));
 
         // parse branches
-        List<Object> ctxMapBranches = (List<Object>)rawContext.get(KEY_BRANCHES);
+        List<Object> ctxMapBranches = (List<Object>)Optional.ofNullable(rawContext.get(KEY_BRANCHES)).orElse(new ArrayList<>());
         ArrayList<SpecJoinBranch> specJoinBranches = new ArrayList<>();
         for (Object o : ctxMapBranches) {
             Map<String, Object> ctxMapBranch = (Map<String, Object>)o;

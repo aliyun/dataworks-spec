@@ -58,35 +58,36 @@ public class Constants {
     public static final String PROPERTIES_CONVERTER_DETECT_TASK_STOP_AT = "workflow.converter.detectTask.stopAt";
     public static final String PROPERTIES_CONVERTER_PERL2SHELL_PERL_BIN = "workflow.converter.perl2shell.perlBin";
     public static final String PROPERTIES_CONVERTER_PERL2SHELL_PERL_INCLUDE_PATHS
-        = "workflow.converter.perl2shell.perlIncludePaths";
+            = "workflow.converter.perl2shell.perlIncludePaths";
 
     public static final String CONVERTER_TARGET_SQL_NODE_TYPE_AS = "workflow.converter.sqlNodeType";
     public static final String CONVERTER_TARGET_MR_NODE_TYPE_AS = "workflow.converter.mrNodeType";
     public static final String CONVERTER_TARGET_SPARK_SUBMIT_TYPE_AS = "workflow.converter.sparkSubmitAs";
     public static final String CONVERTER_TARGET_UNSUPPORTED_NODE_TYPE_AS
-        = "workflow.converter.target.unknownNodeTypeAs";
+            = "workflow.converter.target.unknownNodeTypeAs";
     public static final String CONVERTER_TARGET_ENGINE_TYPE = "workflow.converter.target.engine.type";
     public static final String CONVERTER_TARGET_ENGINE_DATASOURCE_NAME
-        = "workflow.converter.target.engine.datasource.name";
+            = "workflow.converter.target.engine.datasource.name";
     public static final String CONVERTER_TARGET_ENGINE_DATASOURCE_TYPE
-        = "workflow.converter.target.engine.datasource.type";
+            = "workflow.converter.target.engine.datasource.type";
     public static final String CONVERTER_TARGET_SHELL_NODE_TYPE_AS = "workflow.converter.shellNodeType";
+    public static final String CONVERTER_TARGET_PYTHON_NODE_TYPE_AS = "workflow.converter.pythonNodeType";
     public static final String UNDEFINED_VARIABLE_VALUE = "UNDEFINED_VARIABLE_VALUE";
     public static final String OBJECT_CONFLICT_RESOLVE_STRATEGY = "object.conflict.resolve.strategy";
     public static final String WORKFLOW_PARAMETER_CONFLICT_RESOLVE_STRATEGY
-        = "workflow.parameter.conflict.resolve.strategy";
+            = "workflow.parameter.conflict.resolve.strategy";
     public static final String CONVERTER_ALIYUN_EMR_TO_DATAWORKS_NODE_TYPE_MAP
-        = "workflow.converter.aliyunEmr.nodeTypeMapping";
+            = "workflow.converter.aliyunEmr.nodeTypeMapping";
     public static final String CONVERTER_ALIYUN_EMR_TO_DATAWORKS_JOB_SUBMIT_MODE
-        = "workflow.converter.aliyunEmr.jobSubmitMode";
+            = "workflow.converter.aliyunEmr.jobSubmitMode";
     public static final String CONVERTER_ALIYUN_EMR_TO_DATAWORKS_REUSE_SESSION
-        = "workflow.converter.aliyunEmr.reuseSession";
+            = "workflow.converter.aliyunEmr.reuseSession";
     public static final String CONVERTER_ALIYUN_EMR_TO_DATAWORKS_START_RIGHT_NOW
-        = "workflow.converter.aliyunEmr.startRightNow";
+            = "workflow.converter.aliyunEmr.startRightNow";
     public static final String CONVERTER_ALIYUN_DATAGO_TO_DATAWORKS_NODE_TYPE_MAP
-        = "workflow.converter.datago.nodeTypeMapping";
+            = "workflow.converter.datago.nodeTypeMapping";
     public static final String CONVERTER_ALIYUN_CAIYUNJIAN_TO_DATAWORKS_NODE_TYPE_MAP
-        = "workflow.converter.caiyunjian.nodeTypeMapping";
+            = "workflow.converter.caiyunjian.nodeTypeMapping";
 
     // Airflow
     public static final String CONVERTER_SPARK_SUBMIT_TYPE_AS = "workflow.converter.sparkSubmitAs";
@@ -94,7 +95,7 @@ public class Constants {
     // 设置通过命令行跑的sql任务转为什么类型的节点
     public static final String CONVERTER_TARGET_COMMAND_SQL_TYPE_AS = "workflow.converter.commandSqlAs";
     public static final String CONVERTER_TARGET_SCHEDULE_RES_GROUP_IDENTIFIER
-        = "workflow.converter.target.schedule.resGroupIdentifier";
+            = "workflow.converter.target.schedule.resGroupIdentifier";
 
     public static final String WORKFLOW_DATASTUDIO_UPLOADER_AUTO_COMMIT = "workflow.datastudio.uploader.autoCommit";
     public static final String WORKFLOW_DATASTUDIO_UPLOADER_AUTO_DEPLOY = "workflow.datastudio.uploader.autoDeploy";
@@ -106,7 +107,17 @@ public class Constants {
     public static final String EXPORTER_ALIYUN_EMR_PROJECT_NAMES = "exporter.aliyun.emr.projectNames";
 
     public static final String CONVERTER_DOLPHINSCHEDULER_TO_DATAWORKS_NODE_TYPE_MAP
-        = "workflow.converter.dolphinscheduler.nodeTypeMapping";
+            = "workflow.converter.dolphinscheduler.nodeTypeMapping";
     public static final String CONVERTER_TARGET_SQL_NODE_TYPE_MAP
-        = "workflow.converter.dolphinscheduler.sqlNodeTypeMapping";
+            = "workflow.converter.dolphinscheduler.sqlNodeTypeMapping";
+
+    public static final String CONVERTER_PYTHON_CODE_BLOCK = "workflow.converter.dolphinscheduler.python.code.block";
+
+    /**
+     * sql type and resource connection name custom mapping
+     */
+    public static final String WORKFLOW_CONVERTER_CONNECTION_MAPPING = "workflow.converter.connection.mapping";
+
+    public static final String CONVERTER_TARGET_DATAX_NODE_TYPE_AS
+            = "workflow.converter.dataxNodeType";
 }

@@ -20,7 +20,8 @@
     <parent>
         <artifactId>migrationx-domain</artifactId>
         <groupId>com.aliyun.dataworks</groupId>
-        <version>1.1.5</version>
+        <version>1.1.7-workflow-preview3</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -30,9 +31,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <maven.compiler.source>1.7</maven.compiler.source>
-        <maven.compiler.target>1.7</maven.compiler.target>
-        <azkaban.version>3.58.0</azkaban.version>
+        <azkaban.version>3.71.0-3</azkaban.version>
     </properties>
 
     <dependencies>

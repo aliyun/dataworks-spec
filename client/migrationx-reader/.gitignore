@@ -36,3 +36,5 @@ build/
 
 ### Mac OS ###
 .DS_Store
+
+ client/migrationx-reader/src/test/java/com/aliyun/dataworks/migrationx/reader/dolphinscheduler/DolphinSchedulerCommandAppTest.java

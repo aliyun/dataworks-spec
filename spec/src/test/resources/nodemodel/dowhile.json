@@ -52,6 +52,7 @@
         "functions": [],
         "fileResources": [],
         "do-while": {
+          "maxIterations": 4,
           "nodes": [
             {
               "id": "1c2af127ca5548e8a5dfa9ef4ccca2d8",

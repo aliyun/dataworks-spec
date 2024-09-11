@@ -64,7 +64,7 @@ public enum SpecErrorCode implements SpecIErrorCode {
     /**
      * RefId parser error
      */
-    REFID_PARSER_ERROR("0x5083000000000008"),
+    REF_ID_PARSER_ERROR("0x5083000000000008"),
 
     /**
      * Target entity not found
@@ -73,11 +73,15 @@ public enum SpecErrorCode implements SpecIErrorCode {
     /**
      * validate error
      */
-    VALIDATE_ERROR("0x5083000000000010");
+    VALIDATE_ERROR("0x5083000000000010"),
+    /**
+     * writer load error
+     */
+    WRITER_LOAD_ERROR("0x5083000000000011");
 
-    private String code;
+    private final String code;
 
-    private String msg;
+    private final String msg;
 
     SpecErrorCode(String code) {
         this.code = code;

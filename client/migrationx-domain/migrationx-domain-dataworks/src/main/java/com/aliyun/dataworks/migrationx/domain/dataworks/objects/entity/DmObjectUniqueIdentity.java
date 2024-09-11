@@ -15,13 +15,17 @@
 
 package com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity;
 
+import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
+
+import com.aliyun.migrationx.common.utils.GsonUtils;
+import com.google.gson.reflect.TypeToken;
 import lombok.Data;
 import lombok.ToString;
 import lombok.experimental.Accessors;
 import org.apache.commons.collections4.MapUtils;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * @author 聿剑
@@ -52,5 +56,18 @@ public class DmObjectUniqueIdentity {
 
     public static DmObjectUniqueIdentity ofLong(String fieldName, Long value) {
         return new DmObjectUniqueIdentity().setField(fieldName, String.valueOf(value));
+    }
+
+    public String toUuidString() {
+        String json = GsonUtils.toJsonString(this);
+        return UUID.nameUUIDFromBytes(json.getBytes(StandardCharsets.UTF_8)).toString();
+    }
+
+    public String toJsonString() {
+        return GsonUtils.defaultGson.toJson(this);
+    }
+
+    public static DmObjectUniqueIdentity fromJsonString(String json) {
+        return GsonUtils.fromJsonString(json, new TypeToken<DmObjectUniqueIdentity>() {}.getType());
     }
 }

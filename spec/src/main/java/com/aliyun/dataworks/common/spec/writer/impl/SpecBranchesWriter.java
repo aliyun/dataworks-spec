@@ -17,6 +17,7 @@ package com.aliyun.dataworks.common.spec.writer.impl;
 
 import com.alibaba.fastjson2.JSONObject;
 
+import com.aliyun.dataworks.common.spec.annotation.SpecWriter;
 import com.aliyun.dataworks.common.spec.domain.noref.SpecBranches;
 import com.aliyun.dataworks.common.spec.writer.SpecWriterContext;
 
@@ -24,6 +25,7 @@ import com.aliyun.dataworks.common.spec.writer.SpecWriterContext;
  * @author 聿剑
  * @date 2023/12/16
  */
+@SpecWriter
 public class SpecBranchesWriter extends DefaultJsonObjectWriter<SpecBranches> {
     public SpecBranchesWriter(SpecWriterContext context) {
         super(context);

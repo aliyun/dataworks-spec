@@ -40,6 +40,7 @@ import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.v1.Quer
 import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.v1.Response;
 import com.aliyun.migrationx.common.http.HttpClientUtil;
 import com.aliyun.migrationx.common.utils.GsonUtils;
+
 import com.google.common.base.Joiner;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.JsonObject;
@@ -51,6 +52,7 @@ import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.util.EntityUtils;
@@ -91,8 +93,8 @@ public class DolphinschedulerApiV3Service implements DolphinSchedulerApi {
     @Override
     public PaginateResponse<JsonObject> queryProcessDefinitionByPaging(QueryProcessDefinitionByPaginateRequest request) throws Exception {
         HttpClientUtil client = new HttpClientUtil();
-        String url = MessageFormat.format("projects/{0}/process-definition/list&pageNo={1}&pageSize={2}",
-            request.getProjectCode(), request.getPageNo(), request.getPageSize());
+        String url = String.format("projects/%s/process-definition?pageNo=%s&pageSize=%s",
+                request.getProjectCode(), request.getPageNo(), request.getPageSize());
         String responseStr = client.executeAndGet(newHttpGet(url));
         return GsonUtils.fromJsonString(responseStr, new TypeToken<PaginateResponse<JsonObject>>() {}.getType());
     }
@@ -100,51 +102,54 @@ public class DolphinschedulerApiV3Service implements DolphinSchedulerApi {
     @Override
     public String batchExportProcessDefinitionByIds(BatchExportProcessDefinitionByIdsRequest request) throws Exception {
         HttpClientUtil client = new HttpClientUtil();
-        String url = MessageFormat.format("projects/{0}/process-definition/batch-export?codes={1}",
-            request.getProjectCode(),
-            Joiner.on(",").join(ListUtils.emptyIfNull(request.getIds()).stream().distinct().collect(Collectors.toList())));
+        String url = String.format("projects/%s/process-definition/batch-export?codes=%s",
+                request.getProjectCode(),
+                Joiner.on(",").join(ListUtils.emptyIfNull(request.getIds()).stream().distinct().collect(Collectors.toList())));
         return client.executeAndGet(newHttpPost(url));
     }
 
     @Override
     public Response<List<JsonObject>> queryResourceList(QueryResourceListRequest request) throws Exception {
         HttpClientUtil client = new HttpClientUtil();
-        String url = MessageFormat.format("resources/query-by-type?type={0}", request.getType());
+        String url = String.format("resources/query-by-type?type=%s", request.getType());
         HttpGet httpGet = newHttpGet(url);
         String responseStr = client.executeAndGet(httpGet);
         return GsonUtils.fromJsonString(responseStr, new TypeToken<Response<List<JsonObject>>>() {}.getType());
     }
 
-    private String getSuggestedFileName(Header contentDispositionHeader) {
+    public String getSuggestedFileName(Header contentDispositionHeader) {
         String value = contentDispositionHeader.getValue();
         return Arrays.stream(StringUtils.split(value, ";"))
-            .map(StringUtils::trim)
-            .filter(token -> StringUtils.startsWithIgnoreCase(token, "filename="))
-            .findFirst()
-            .map(fileNamePart -> StringUtils.replace(fileNamePart, "filename=", ""))
-            .map(fileName -> RegExUtils.replaceAll(fileName, "^\"", ""))
-            .map(fileName -> RegExUtils.replaceAll(fileName, "\"$", ""))
-            .orElse(null);
+                .map(StringUtils::trim)
+                .filter(token -> StringUtils.startsWithIgnoreCase(token, "filename="))
+                .findFirst()
+                .map(fileNamePart -> StringUtils.replace(fileNamePart, "filename=", ""))
+                .map(fileName -> RegExUtils.replaceAll(fileName, "^\"", ""))
+                .map(fileName -> RegExUtils.replaceAll(fileName, "\"$", ""))
+                .orElse(null);
     }
 
     @Override
     public File downloadResource(DownloadResourceRequest request) throws Exception {
         HttpClientUtil client = new HttpClientUtil();
-        String url = MessageFormat.format("resources/download?fullName={0}", request.getFullName());
+        String url = String.format("resources/download?fullName=%s", request.getFullName());
         HttpGet httpGet = newHttpGet(url);
         HttpResponse resp = client.executeAndGetHttpResponse(httpGet);
+        if (HttpStatus.SC_OK != resp.getStatusLine().getStatusCode()) {
+            throw new RuntimeException("download file " + request.getFullName() + " error with status " + resp.getStatusLine());
+        }
         InputStream inputStream = resp.getEntity().getContent();
         String fileName = Stream.of(resp.getAllHeaders())
-            .filter(header -> StringUtils.equalsIgnoreCase(header.getName(), "Content-Disposition"))
-            .findFirst()
-            .map(this::getSuggestedFileName)
-            .orElse(null);
+                .filter(header -> StringUtils.equalsIgnoreCase(header.getName(), "Content-Disposition"))
+                .findFirst()
+                .map(this::getSuggestedFileName)
+                .orElse(null);
 
         if (StringUtils.isBlank(fileName)) {
             String content = EntityUtils.toString(resp.getEntity(), StandardCharsets.UTF_8);
             Response<Object> response = GsonUtils.fromJsonString(content, new TypeToken<Response<Object>>() {}.getType());
-            log.warn("download resource id: {} failed: {}",
-                request.getId(), Optional.ofNullable(response).map(Response::getMsg).orElse(content));
+            log.warn("download resource url: {} failed: {}",
+                    url, Optional.ofNullable(response).map(Response::getMsg).orElse(content));
             return null;
         }
 
@@ -157,7 +162,7 @@ public class DolphinschedulerApiV3Service implements DolphinSchedulerApi {
     @Override
     public PaginateResponse<JsonObject> queryUdfFuncListByPaging(QueryUdfFuncListByPaginateRequest request) throws Exception {
         HttpClientUtil client = new HttpClientUtil();
-        String url = MessageFormat.format("resources/udf-func?pageNo={0}&pageSize={1}", request.getPageNo(), request.getPageSize());
+        String url = String.format("resources/udf-func?pageNo=%s&pageSize=%s", request.getPageNo(), request.getPageSize());
         HttpGet httpGet = newHttpGet(url);
         String responseStr = client.executeAndGet(httpGet);
         return GsonUtils.fromJsonString(responseStr, new TypeToken<PaginateResponse<JsonObject>>() {}.getType());
@@ -166,7 +171,7 @@ public class DolphinschedulerApiV3Service implements DolphinSchedulerApi {
     @Override
     public PaginateResponse<JsonObject> queryDataSourceListByPaging(QueryDataSourceListByPaginateRequest request) throws Exception {
         HttpClientUtil client = new HttpClientUtil();
-        String url = MessageFormat.format("datasources/list-paging?pageNo={0}&pageSize={1}", request.getPageNo(), request.getPageSize());
+        String url = String.format("datasources?pageNo=%s&pageSize=%s", request.getPageNo(), request.getPageSize());
         HttpGet httpGet = newHttpGet(url);
         String responseStr = client.executeAndGet(httpGet);
         return GsonUtils.fromJsonString(responseStr, new TypeToken<PaginateResponse<JsonObject>>() {}.getType());

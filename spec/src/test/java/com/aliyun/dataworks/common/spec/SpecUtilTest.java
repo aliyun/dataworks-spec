@@ -19,20 +19,29 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
 import java.util.Scanner;
+import java.util.stream.Collectors;
 
 import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONArray;
+import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.JSONWriter.Feature;
 
 import com.aliyun.dataworks.common.spec.domain.DataWorksWorkflowSpec;
 import com.aliyun.dataworks.common.spec.domain.Spec;
+import com.aliyun.dataworks.common.spec.domain.SpecRefEntity;
 import com.aliyun.dataworks.common.spec.domain.Specification;
 import com.aliyun.dataworks.common.spec.domain.dw.codemodel.Code;
 import com.aliyun.dataworks.common.spec.domain.dw.codemodel.CodeModel;
 import com.aliyun.dataworks.common.spec.domain.dw.codemodel.CodeModelFactory;
 import com.aliyun.dataworks.common.spec.domain.dw.codemodel.EmrCode;
+import com.aliyun.dataworks.common.spec.domain.dw.nodemodel.DataWorksNodeAdapter;
 import com.aliyun.dataworks.common.spec.domain.dw.nodemodel.DataWorksNodeCodeAdapter;
+import com.aliyun.dataworks.common.spec.domain.enums.FailureStrategy;
 import com.aliyun.dataworks.common.spec.domain.enums.FunctionType;
 import com.aliyun.dataworks.common.spec.domain.enums.SpecKind;
 import com.aliyun.dataworks.common.spec.domain.enums.SpecVersion;
@@ -46,6 +55,7 @@ import com.aliyun.dataworks.common.spec.domain.noref.SpecForEach;
 import com.aliyun.dataworks.common.spec.domain.noref.SpecJoinBranch;
 import com.aliyun.dataworks.common.spec.domain.noref.SpecLogic;
 import com.aliyun.dataworks.common.spec.domain.noref.SpecParamHub;
+import com.aliyun.dataworks.common.spec.domain.noref.SpecSubFlow;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecArtifact;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecDatasource;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecDqcRule;
@@ -53,10 +63,13 @@ import com.aliyun.dataworks.common.spec.domain.ref.SpecFunction;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecNode;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecNodeOutput;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecRuntimeResource;
+import com.aliyun.dataworks.common.spec.domain.ref.SpecScheduleStrategy;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecScript;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecTable;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecTrigger;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecVariable;
+import com.aliyun.dataworks.common.spec.domain.ref.SpecWorkflow;
+import com.aliyun.dataworks.common.spec.domain.ref.component.SpecComponent;
 import com.aliyun.dataworks.common.spec.parser.SpecParserContext;
 import com.aliyun.dataworks.common.spec.utils.GsonUtils;
 import com.aliyun.dataworks.common.spec.utils.SpecDevUtil;
@@ -65,6 +78,8 @@ import com.aliyun.dataworks.common.spec.writer.Writer;
 import com.aliyun.dataworks.common.spec.writer.WriterFactory;
 import com.aliyun.dataworks.common.spec.writer.impl.SpecificationWriter;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.junit.Assert;
 import org.junit.Test;
@@ -376,7 +391,6 @@ public class SpecUtilTest {
             .findFirst().get();
 
         Assert.assertSame(ctx_var_2.getScope(), VariableScopeType.NODE_PARAMETER);
-
     }
 
     @Test
@@ -543,7 +557,6 @@ public class SpecUtilTest {
                 ex.printStackTrace();
             }
             Assert.assertNotNull(specification);
-
         });
     }
 
@@ -1268,7 +1281,6 @@ public class SpecUtilTest {
             + "        }";
         SpecForEach foreach = SpecUtil.parse(json, SpecForEach.class, new SpecParserContext());
         log.info("before: {}", json);
-        log.info("foreach: {}", JSON.toJSONString(SpecUtil.write(foreach, new SpecWriterContext()), Feature.PrettyFormat));
     }
 
     @Test
@@ -1446,5 +1458,602 @@ public class SpecUtilTest {
         Specification<Spec> resp = SpecUtil.parseToDomain(spec);
         log.info("resp: {}", resp);
         Assert.assertNotNull(resp);
+    }
+
+    @Test
+    public void testParseNodeWithComponent() {
+        String spec = "{\n"
+            + "    \"version\": \"1.1.0\",\n"
+            + "    \"kind\": \"CycleWorkflow\",\n"
+            + "    \"spec\": {\n"
+            + "      \"nodes\": [\n"
+            + "        {\n"
+            + "          \"recurrence\": \"Normal\",\n"
+            + "          \"id\": \"6289081068484952005\",\n"
+            + "          \"timeout\": 0,\n"
+            + "          \"instanceMode\": \"T+1\",\n"
+            + "          \"rerunMode\": \"Allowed\",\n"
+            + "          \"rerunTimes\": 3,\n"
+            + "          \"rerunInterval\": 180000,\n"
+            + "          \"datasource\": {\n"
+            + "            \"name\": \"odps_first\",\n"
+            + "            \"type\": \"odps\"\n"
+            + "          },\n"
+            + "          \"script\": {\n"
+            + "            \"language\": \"odps-sql\",\n"
+            + "            \"path\": \"昊祯/组件/c1\",\n"
+            + "            \"runtime\": {\n"
+            + "              \"command\": \"COMPONENT_SQL\",\n"
+            + "              \"commandTypeId\": 1010\n"
+            + "            },\n"
+            + "            \"id\": \"6423534013528078585\"\n"
+            + "          },\n"
+            + "          \"trigger\": {\n"
+            + "            \"type\": \"Scheduler\",\n"
+            + "            \"id\": \"5065170306719262538\",\n"
+            + "            \"cron\": \"00 00 00 * * ?\",\n"
+            + "            \"startTime\": \"1970-01-01 00:00:00\",\n"
+            + "            \"endTime\": \"9999-01-01 00:00:00\",\n"
+            + "            \"timezone\": \"Asia/Shanghai\"\n"
+            + "          },\n"
+            + "          \"runtimeResource\": {\n"
+            + "            \"resourceGroup\": \"wengzi_test\",\n"
+            + "            \"id\": \"5700220827937093292\",\n"
+            + "            \"resourceGroupId\": \"9527\"\n"
+            + "          },\n"
+            + "          \"name\": \"c1\",\n"
+            + "          \"owner\": \"067848\",\n"
+            + "          \"component\": {\n"
+            + "            \"description\": \"11\",\n"
+            + "            \"id\": \"6128718817130431653\",\n"
+            + "            \"inputs\": [\n"
+            + "              {\n"
+            + "                \"name\": \"p1\"\n"
+            + "              },\n"
+            + "              {\n"
+            + "                \"name\": \"p2\"\n"
+            + "              }\n"
+            + "            ],\n"
+            + "            \"metadata\": {\n"
+            + "              \"version\": \"3\"\n"
+            + "            },\n"
+            + "            \"name\": \"c1\",\n"
+            + "            \"outputs\": [],\n"
+            + "            \"owner\": \"067848\"\n"
+            + "          },\n"
+            + "          \"metadata\": {\n"
+            + "            \"tenantId\": \"1\",\n"
+            + "            \"projectId\": \"23620\"\n"
+            + "          },\n"
+            + "          \"inputs\": {\n"
+            + "            \"nodeOutputs\": [\n"
+            + "              {\n"
+            + "                \"data\": \"dw_scheduler_pre_root\",\n"
+            + "                \"artifactType\": \"NodeOutput\",\n"
+            + "                \"isDefault\": false\n"
+            + "              }\n"
+            + "            ]\n"
+            + "          },\n"
+            + "          \"outputs\": {\n"
+            + "            \"nodeOutputs\": [\n"
+            + "              {\n"
+            + "                \"data\": \"6289081068484952005\",\n"
+            + "                \"artifactType\": \"NodeOutput\",\n"
+            + "                \"refTableName\": \"c1\",\n"
+            + "                \"isDefault\": true\n"
+            + "              }\n"
+            + "            ]\n"
+            + "          }\n"
+            + "        }\n"
+            + "      ],\n"
+            + "      \"flow\": [\n"
+            + "        {\n"
+            + "          \"nodeId\": \"6289081068484952005\",\n"
+            + "          \"depends\": [\n"
+            + "            {\n"
+            + "              \"type\": \"Normal\",\n"
+            + "              \"output\": \"dw_scheduler_pre_root\"\n"
+            + "            }\n"
+            + "          ]\n"
+            + "        }\n"
+            + "      ]\n"
+            + "    },\n"
+            + "    \"metadata\": {\n"
+            + "      \"uuid\": \"6289081068484952005\"\n"
+            + "    }\n"
+            + "  }";
+
+        Specification<DataWorksWorkflowSpec> specification = SpecUtil.parseToDomain(spec);
+        Optional<SpecComponent> component = Optional.ofNullable(specification)
+            .map(Specification::getSpec).map(DataWorksWorkflowSpec::getNodes)
+            .flatMap(l -> l.stream().map(SpecNode::getComponent).filter(Objects::nonNull).findAny());
+
+        Assert.assertTrue(component.isPresent());
+        Assert.assertNotNull(component.get().getMetadata());
+        Assert.assertNotNull(component.get().getId());
+        Assert.assertNotNull(component.get().getInputs());
+        Assert.assertNotNull(component.get().getOutputs());
+    }
+
+    @Test
+    public void testWorkflow() {
+        String spec = "{\n"
+            + "    \"version\": \"1.1.0\",\n"
+            + "    \"kind\": \"CycleWorkflow\",\n"
+            + "    \"spec\": {\n"
+            + "        \"workflows\": [\n"
+            + "            {\n"
+            + "                \"id\": \"flow_1\",\n"
+            + "                \"name\": \"flow_1\",\n"
+            + "                \"strategy\": {\n"
+            + "                    \"failureStrategy\": \"Continue\"\n"
+            + "                },\n"
+            + "                \"script\": {\n"
+            + "                    \"runtime\": {\n"
+            + "                        \"command\": \"XxxWorkflow\",\n"
+            + "                        \"commandTypeId\": 1111\n"
+            + "                    },\n"
+            + "                    \"parameters\": [\n"
+            + "                        {\n"
+            + "                            \"name\": \"p1\",\n"
+            + "                            \"type\": \"System\",\n"
+            + "                            \"scope\": \"Workflow\",\n"
+            + "                            \"value\": \"$[yyyymmdd]\"\n"
+            + "                        },\n"
+            + "                        {\n"
+            + "                            \"name\": \"p2\",\n"
+            + "                            \"type\": \"Constant\",\n"
+            + "                            \"scope\": \"Workflow\",\n"
+            + "                            \"value\": \"ppp2\"\n"
+            + "                        }\n"
+            + "                    ]\n"
+            + "                },\n"
+            + "                \"runtimeResource\": {\n"
+            + "                    \"resourceGroup\": \"group_xxx\"\n"
+            + "                },\n"
+            + "                \"trigger\": {\n"
+            + "                    \"type\": \"Scheduler\",\n"
+            + "                    \"cron\": \"00 00 00 * * ?\",\n"
+            + "                    \"delaySeconds\": 10\n"
+            + "                },\n"
+            + "                \"inputs\": {},\n"
+            + "                \"outputs\": {\n"
+            + "                    \"nodeOutputs\": [\n"
+            + "                        {\n"
+            + "                            \"data\": \"autotest.workflow_1_xxx\"\n"
+            + "                        }\n"
+            + "                    ]\n"
+            + "                },\n"
+            + "                \"nodes\": [\n"
+            + "                    {\n"
+            + "                        \"id\": \"inner_node_1\",\n"
+            + "                        \"name\": \"inner_node_1\",\n"
+            + "                        \"script\": {\n"
+            + "                            \"runtime\": {\n"
+            + "                                \"command\": \"ODPS_SQL\"\n"
+            + "                            }\n"
+            + "                        },\n"
+            + "                        \"trigger\": {\n"
+            + "                            \"delay\": 10\n"
+            + "                        }\n"
+            + "                    }\n"
+            + "                ],\n"
+            + "                \"dependencies\": [\n"
+            + "                    {\n"
+            + "                        \"nodeId\": \"inner_node_1\",\n"
+            + "                        \"depends\": [\n"
+            + "                            {\n"
+            + "                                \"type\": \"Normal\",\n"
+            + "                                \"output\": \"autotest.inner_node_2_out\"\n"
+            + "                            }\n"
+            + "                        ]\n"
+            + "                    }\n"
+            + "                ]\n"
+            + "            }\n"
+            + "        ],\n"
+            + "        \"flow\": [\n"
+            + "            {\n"
+            + "                \"nodeId\": \"flow_1\",\n"
+            + "                \"depends\": [\n"
+            + "                    {\n"
+            + "                        \"type\": \"Normal\",\n"
+            + "                        \"output\": \"autotest.node_1_xxx\"\n"
+            + "                    }\n"
+            + "                ]\n"
+            + "            }\n"
+            + "        ]\n"
+            + "    }\n"
+            + "}";
+        log.info("spec: {}", spec);
+        Specification<DataWorksWorkflowSpec> specification = SpecUtil.parseToDomain(spec);
+        List<SpecWorkflow> workflows = specification.getSpec().getWorkflows();
+        Assert.assertNotNull(workflows);
+        Assert.assertEquals(1, workflows.size());
+
+        log.info("workflows: {}", workflows);
+        log.info("write spec: {}", SpecUtil.writeToSpec(specification));
+        SpecWorkflow specWorkflow = workflows.get(0);
+        Assert.assertNotNull(specWorkflow.getTrigger());
+        Assert.assertNotNull(specWorkflow.getStrategy());
+        Assert.assertNotNull(specWorkflow.getNodes());
+        Assert.assertNotNull(specWorkflow.getDependencies());
+        Assert.assertNotNull(specification.getSpec().getFlow());
+        Assert.assertNotNull(specWorkflow.getStrategy().getFailureStrategy());
+    }
+
+    @Test
+    public void testParseDepends() {
+        String json = "[\n"
+            + "  {\n"
+            + "    \"nodeId\": \"123\"\n"
+            + "  },\n"
+            + "  {\n"
+            + "    \"output\": \"autotest.1234_out\"\n"
+            + "  }\n"
+            + "]";
+        List<SpecDepend> depends = ListUtils.emptyIfNull(JSONArray.parseArray(json)).stream().map(obj -> {
+            SpecDepend dep = SpecUtil.parse(JSON.toJSONString(obj), SpecDepend.class, new SpecParserContext());
+            log.info("dep: nodeId: {}, output: {}", Optional.ofNullable(dep.getNodeId()).map(SpecRefEntity::getId).orElse(null), dep.getOutput());
+            return dep;
+        }).collect(Collectors.toList());
+
+        Assert.assertEquals(2, CollectionUtils.size(depends));
+        Assert.assertEquals("123", depends.get(0).getNodeId().getId());
+        Assert.assertEquals("autotest.1234_out", depends.get(1).getOutput().getData());
+    }
+
+    @Test
+    public void testSpecWorkflow() {
+        Specification<DataWorksWorkflowSpec> specification = new Specification<>();
+        specification.setVersion(SpecVersion.V_1_1_0.getLabel());
+        specification.setKind(SpecKind.CYCLE_WORKFLOW.getLabel());
+        DataWorksWorkflowSpec spec = new DataWorksWorkflowSpec();
+        specification.setSpec(spec);
+        SpecWorkflow specWorkflow = new SpecWorkflow();
+        specWorkflow.setId("12");
+        specWorkflow.setName("test");
+        spec.setWorkflows(Collections.singletonList(specWorkflow));
+        log.info("{}", SpecUtil.writeToSpec(specification));
+
+        Specification<DataWorksWorkflowSpec> parsed = SpecUtil.parseToDomain(SpecUtil.writeToSpec(specification));
+        Assert.assertNotNull(parsed);
+        Assert.assertNotNull(parsed.getSpec());
+        Assert.assertNotNull(parsed.getSpec().getWorkflows());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(parsed.getSpec().getWorkflows()));
+        SpecWorkflow s = parsed.getSpec().getWorkflows().get(0);
+        Assert.assertNotNull(s);
+        Assert.assertNotNull(s.getNodes());
+        Assert.assertNotNull(s.getDependencies());
+    }
+
+    @Test
+    public void testSpecSchedulerStrategy() {
+        SpecScheduleStrategy scheduleStrategy = new SpecScheduleStrategy();
+        scheduleStrategy.setFailureStrategy(FailureStrategy.CONTINUE);
+        JSONObject js = (JSONObject)SpecUtil.write(scheduleStrategy, new SpecWriterContext());
+        log.info("js: {}", js.toJSONString());
+        Assert.assertEquals("Continue", js.getString("failureStrategy"));
+    }
+
+    @Test
+    public void testSingleNode() {
+        String spec = "{\n"
+            + "    \"version\":\"1.1.0\",\n"
+            + "    \"kind\":\"Node\",\n"
+            + "    \"spec\":{\n"
+            + "      \"nodes\": [{\n"
+            + "        \"id\": \"4744170535163410393\",\n"
+            + "        \"recurrence\":\"Normal\",\n"
+            + "        \"timeout\":0,\n"
+            + "        \"instanceMode\":\"T+1\",\n"
+            + "        \"rerunMode\":\"Allowed\",\n"
+            + "        \"rerunTimes\":3,\n"
+            + "        \"rerunInterval\":180000,\n"
+            + "        \"owner\": \"064152\",\n"
+            + "        \"script\":{\n"
+            + "          \"path\":\"聿剑/dep1\",\n"
+            + "          \"language\":\"odps-sql\",\n"
+            + "          \"runtime\":{\n"
+            + "            \"command\":\"ODPS_SQL\"\n"
+            + "          }\n"
+            + "        },\n"
+            + "        \"trigger\":{\n"
+            + "          \"type\":\"Scheduler\",\n"
+            + "          \"cron\":\"00 00 00 * * ?\",\n"
+            + "          \"startTime\":\"1970-01-01 00:00:00\",\n"
+            + "          \"endTime\":\"9999-01-01 00:00:00\",\n"
+            + "          \"timezone\":\"Asia/Shanghai\"\n"
+            + "        },\n"
+            + "        \"runtimeResource\":{\n"
+            + "          \"resourceGroup\":\"group_2\",\n"
+            + "          \"resourceGroupId\":\"2\"\n"
+            + "        },\n"
+            + "        \"name\":\"dep1\"\n"
+            + "      }] ,    \n"
+            + "      \"flow\":\n"
+            + "        [{ \n"
+            + "          \"nodeId\":\"1\",\n"
+            + "          \"depends\":[\n"
+            + "            {\n"
+            + "              \"type\":\"Normal\",\n"
+            + "              \"output\":\"4744170535163410393\",\n"
+            + "              \"refTableName\":\"branch_2_pyodps\"\n"
+            + "            },\n"
+            + "            {\n"
+            + "              \"type\":\"Normal\",\n"
+            + "              \"output\":\"5910844902278897501\",\n"
+            + "              \"refTableName\":\"branch_1_odpssql\"\n"
+            + "            }\n"
+            + "          ]\n"
+            + "        }]\n"
+            + "      \n"
+            + "    }\n"
+            + "  }";
+        Specification<Spec> specObj = SpecUtil.parseToDomain(spec);
+        SpecWriterContext context = new SpecWriterContext();
+        context.setVersion("1.1.0");
+        log.info("write spec: {}", SpecUtil.writeToSpec(specObj));
+        Assert.assertNotNull(specObj);
+        Assert.assertTrue(CollectionUtils.isNotEmpty(((DataWorksWorkflowSpec)specObj.getSpec()).getNodes()));
+        Assert.assertTrue(CollectionUtils.isNotEmpty(((DataWorksWorkflowSpec)specObj.getSpec()).getFlow()));
+    }
+
+    @Test
+    public void testWorkflows() {
+        String spec = "{\n"
+            + "\t\"version\":\"1.1.0\",\n"
+            + "\t\"kind\":\"CycleWorkflow\",\n"
+            + "\t\"spec\":{\n"
+            + "\t\t\"name\":\"testflow0730_deploy_01\",\n"
+            + "\t\t\"id\":\"8620630926993095479\",\n"
+            + "\t\t\"type\":\"CycleWorkflow\",\n"
+            + "\t\t\"owner\":\"1107550004253538\",\n"
+            + "\t\t\"workflows\":[\n"
+            + "\t\t\t{\n"
+            + "\t\t\t\t\"script\":{\n"
+            + "\t\t\t\t\t\"path\":\"聿剑/testflow0730_deploy_01\",\n"
+            + "\t\t\t\t\t\"runtime\":{\n"
+            + "\t\t\t\t\t\t\"command\":\"WORKFLOW\"\n"
+            + "\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\"id\":\"5162322698918001755\"\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"id\":\"8620630926993095479\",\n"
+            + "\t\t\t\t\"trigger\":{\n"
+            + "\t\t\t\t\t\"type\":\"Scheduler\",\n"
+            + "\t\t\t\t\t\"id\":\"5971686020768809793\",\n"
+            + "\t\t\t\t\t\"cron\":\"00 00 00 * * ?\",\n"
+            + "\t\t\t\t\t\"startTime\":\"1970-01-01 00:00:00\",\n"
+            + "\t\t\t\t\t\"endTime\":\"9999-01-01 00:00:00\",\n"
+            + "\t\t\t\t\t\"timezone\":\"Asia/Shanghai\"\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"strategy\":{\n"
+            + "\t\t\t\t\t\"timeout\":0,\n"
+            + "\t\t\t\t\t\"instanceMode\":\"T+1\",\n"
+            + "\t\t\t\t\t\"rerunMode\":\"Allowed\",\n"
+            + "\t\t\t\t\t\"rerunTimes\":3,\n"
+            + "\t\t\t\t\t\"rerunInterval\":180000,\n"
+            + "\t\t\t\t\t\"failureStrategy\":\"Break\"\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"name\":\"testflow0730_deploy_01\",\n"
+            + "\t\t\t\t\"owner\":\"1107550004253538\",\n"
+            + "\t\t\t\t\"inputs\":{\n"
+            + "\t\t\t\t\t\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"outputs\":{\n"
+            + "\t\t\t\t\t\"nodeOutputs\":[\n"
+            + "\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\"data\":\"8620630926993095479\",\n"
+            + "\t\t\t\t\t\t\t\"artifactType\":\"NodeOutput\",\n"
+            + "\t\t\t\t\t\t\t\"refTableName\":\"testflow0730_deploy_01\",\n"
+            + "\t\t\t\t\t\t\t\"isDefault\":true\n"
+            + "\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t]\n"
+            + "\t\t\t\t},\n"
+            + "\t\t\t\t\"nodes\":[\n"
+            + "\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\"recurrence\":\"Normal\",\n"
+            + "\t\t\t\t\t\t\"id\":\"7751009343504221738\",\n"
+            + "\t\t\t\t\t\t\"timeout\":0,\n"
+            + "\t\t\t\t\t\t\"instanceMode\":\"T+1\",\n"
+            + "\t\t\t\t\t\t\"rerunMode\":\"Allowed\",\n"
+            + "\t\t\t\t\t\t\"rerunTimes\":3,\n"
+            + "\t\t\t\t\t\t\"rerunInterval\":180000,\n"
+            + "\t\t\t\t\t\t\"datasource\":{\n"
+            + "\t\t\t\t\t\t\t\"name\":\"odps_first\",\n"
+            + "\t\t\t\t\t\t\t\"type\":\"\"\n"
+            + "\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\"script\":{\n"
+            + "\t\t\t\t\t\t\t\"path\":\"聿剑/testflow0730_deploy_01/mcsql_inner_02\",\n"
+            + "\t\t\t\t\t\t\t\"runtime\":{\n"
+            + "\t\t\t\t\t\t\t\t\"command\":\"ODPS_SQL\",\n"
+            + "\t\t\t\t\t\t\t\t\"commandTypeId\":10\n"
+            + "\t\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\t\"id\":\"4646522489197098297\"\n"
+            + "\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\"trigger\":{\n"
+            + "\t\t\t\t\t\t\t\"type\":\"Scheduler\",\n"
+            + "\t\t\t\t\t\t\t\"id\":\"6882497775385480901\",\n"
+            + "\t\t\t\t\t\t\t\"cron\":\"00 00 00 * * ?\",\n"
+            + "\t\t\t\t\t\t\t\"startTime\":\"1970-01-01 00:00:00\",\n"
+            + "\t\t\t\t\t\t\t\"endTime\":\"9999-01-01 00:00:00\",\n"
+            + "\t\t\t\t\t\t\t\"timezone\":\"Asia/Shanghai\",\n"
+            + "\t\t\t\t\t\t\t\"delaySeconds\":0\n"
+            + "\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\"runtimeResource\":{\n"
+            + "\t\t\t\t\t\t\t\"resourceGroup\":\"S_res_group_524257424564736_1681266742041\",\n"
+            + "\t\t\t\t\t\t\t\"id\":\"8099134362653965803\",\n"
+            + "\t\t\t\t\t\t\t\"resourceGroupId\":\"57214326\"\n"
+            + "\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\"name\":\"mcsql_inner_02\",\n"
+            + "\t\t\t\t\t\t\"owner\":\"1107550004253538\",\n"
+            + "\t\t\t\t\t\t\"metadata\":{\n"
+            + "\t\t\t\t\t\t\t\"container\":{\n"
+            + "\t\t\t\t\t\t\t\t\"type\":\"Flow\",\n"
+            + "\t\t\t\t\t\t\t\t\"uuid\":\"8620630926993095479\"\n"
+            + "\t\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\t\"tenantId\":\"524257424564736\",\n"
+            + "\t\t\t\t\t\t\t\"projectId\":\"295425\"\n"
+            + "\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\"inputs\":{\n"
+            + "\t\t\t\t\t\t\t\n"
+            + "\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\"outputs\":{\n"
+            + "\t\t\t\t\t\t\t\"nodeOutputs\":[\n"
+            + "\t\t\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\t\t\"data\":\"7751009343504221738\",\n"
+            + "\t\t\t\t\t\t\t\t\t\"artifactType\":\"NodeOutput\",\n"
+            + "\t\t\t\t\t\t\t\t\t\"refTableName\":\"mcsql_inner_02\",\n"
+            + "\t\t\t\t\t\t\t\t\t\"isDefault\":true\n"
+            + "\t\t\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t\t\t]\n"
+            + "\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t},\n"
+            + "\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\"recurrence\":\"Normal\",\n"
+            + "\t\t\t\t\t\t\"id\":\"5641599010392971076\",\n"
+            + "\t\t\t\t\t\t\"timeout\":0,\n"
+            + "\t\t\t\t\t\t\"instanceMode\":\"T+1\",\n"
+            + "\t\t\t\t\t\t\"rerunMode\":\"Allowed\",\n"
+            + "\t\t\t\t\t\t\"rerunTimes\":3,\n"
+            + "\t\t\t\t\t\t\"rerunInterval\":180000,\n"
+            + "\t\t\t\t\t\t\"datasource\":{\n"
+            + "\t\t\t\t\t\t\t\"name\":\"odps_first\",\n"
+            + "\t\t\t\t\t\t\t\"type\":\"\"\n"
+            + "\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\"script\":{\n"
+            + "\t\t\t\t\t\t\t\"path\":\"聿剑/testflow0730_deploy_01/mcsql_inner_01\",\n"
+            + "\t\t\t\t\t\t\t\"runtime\":{\n"
+            + "\t\t\t\t\t\t\t\t\"command\":\"ODPS_SQL\",\n"
+            + "\t\t\t\t\t\t\t\t\"commandTypeId\":10\n"
+            + "\t\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\t\"id\":\"7359544718446803942\"\n"
+            + "\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\"trigger\":{\n"
+            + "\t\t\t\t\t\t\t\"type\":\"Scheduler\",\n"
+            + "\t\t\t\t\t\t\t\"id\":\"5396511791028633183\",\n"
+            + "\t\t\t\t\t\t\t\"cron\":\"00 00 00 * * ?\",\n"
+            + "\t\t\t\t\t\t\t\"startTime\":\"1970-01-01 00:00:00\",\n"
+            + "\t\t\t\t\t\t\t\"endTime\":\"9999-01-01 00:00:00\",\n"
+            + "\t\t\t\t\t\t\t\"timezone\":\"Asia/Shanghai\",\n"
+            + "\t\t\t\t\t\t\t\"delaySeconds\":0\n"
+            + "\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\"runtimeResource\":{\n"
+            + "\t\t\t\t\t\t\t\"resourceGroup\":\"S_res_group_524257424564736_1681266742041\",\n"
+            + "\t\t\t\t\t\t\t\"id\":\"8099134362653965803\",\n"
+            + "\t\t\t\t\t\t\t\"resourceGroupId\":\"57214326\"\n"
+            + "\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\"name\":\"mcsql_inner_01\",\n"
+            + "\t\t\t\t\t\t\"owner\":\"1107550004253538\",\n"
+            + "\t\t\t\t\t\t\"metadata\":{\n"
+            + "\t\t\t\t\t\t\t\"container\":{\n"
+            + "\t\t\t\t\t\t\t\t\"type\":\"Flow\",\n"
+            + "\t\t\t\t\t\t\t\t\"uuid\":\"8620630926993095479\"\n"
+            + "\t\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\t\"tenantId\":\"524257424564736\",\n"
+            + "\t\t\t\t\t\t\t\"projectId\":\"295425\"\n"
+            + "\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\"inputs\":{\n"
+            + "\t\t\t\t\t\t\t\n"
+            + "\t\t\t\t\t\t},\n"
+            + "\t\t\t\t\t\t\"outputs\":{\n"
+            + "\t\t\t\t\t\t\t\"nodeOutputs\":[\n"
+            + "\t\t\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\t\t\"data\":\"5641599010392971076\",\n"
+            + "\t\t\t\t\t\t\t\t\t\"artifactType\":\"NodeOutput\",\n"
+            + "\t\t\t\t\t\t\t\t\t\"refTableName\":\"mcsql_inner_01\",\n"
+            + "\t\t\t\t\t\t\t\t\t\"isDefault\":true\n"
+            + "\t\t\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t\t\t]\n"
+            + "\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t}\n"
+            + "\t\t\t\t],\n"
+            + "\t\t\t\t\"dependencies\":[\n"
+            + "\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\"nodeId\":\"7751009343504221738\",\n"
+            + "\t\t\t\t\t\t\"depends\":[\n"
+            + "\t\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\t\"type\":\"Normal\",\n"
+            + "\t\t\t\t\t\t\t\t\"output\":\"5641599010392971076\",\n"
+            + "\t\t\t\t\t\t\t\t\"refTableName\":\"mcsql_inner_01\"\n"
+            + "\t\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t\t]\n"
+            + "\t\t\t\t\t},\n"
+            + "\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\"nodeId\":\"5641599010392971076\",\n"
+            + "\t\t\t\t\t\t\"depends\":[\n"
+            + "\t\t\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\t\t\"type\":\"Normal\",\n"
+            + "\t\t\t\t\t\t\t\t\"output\":\"lwt_test_dd.504470094_out\"\n"
+            + "\t\t\t\t\t\t\t}\n"
+            + "\t\t\t\t\t\t]\n"
+            + "\t\t\t\t\t}\n"
+            + "\t\t\t\t]\n"
+            + "\t\t\t}\n"
+            + "\t\t],\n"
+            + "\t\t\"flow\":[\n"
+            + "\t\t\t{\n"
+            + "\t\t\t\t\"nodeId\":\"8620630926993095479\",\n"
+            + "\t\t\t\t\"depends\":[\n"
+            + "\t\t\t\t\t{\n"
+            + "\t\t\t\t\t\t\"type\":\"Normal\",\n"
+            + "\t\t\t\t\t\t\"output\":\"lwt_test_dd_root\"\n"
+            + "\t\t\t\t\t}\n"
+            + "\t\t\t\t]\n"
+            + "\t\t\t}\n"
+            + "\t\t]\n"
+            + "\t},\n"
+            + "\t\"metadata\":{\n"
+            + "\t\t\"innerVersion\":{\n"
+            + "\t\t\t\"7751009343504221738\":1,\n"
+            + "\t\t\t\"5641599010392971076\":4\n"
+            + "\t\t},\n"
+            + "\t\t\"gmtModified\":1722320416000,\n"
+            + "\t\t\"tenantId\":\"524257424564736\",\n"
+            + "\t\t\"projectId\":\"295425\",\n"
+            + "\t\t\"uuid\":\"8620630926993095479\"\n"
+            + "\t}\n"
+            + "}";
+        Specification<DataWorksWorkflowSpec> specification = SpecUtil.parseToDomain(spec);
+        DataWorksNodeAdapter adapter = new DataWorksNodeAdapter(specification, specification.getSpec().getWorkflows().get(0));
+        log.info("workflow inputs: {}", adapter.getInputs());
+        Assert.assertTrue(CollectionUtils.isNotEmpty(adapter.getInputs()));
+
+        List<SpecNode> nodes = specification.getSpec().getWorkflows().get(0).getNodes();
+        for (SpecNode node : nodes) {
+            DataWorksNodeAdapter nodeAdapter = new DataWorksNodeAdapter(specification, node);
+            log.info("node: {}", nodeAdapter.getInputs());
+            Assert.assertTrue(CollectionUtils.isNotEmpty(nodeAdapter.getInputs()));
+        }
+    }
+
+    @Test
+    public void testInnerNodes() {
+        Specification<DataWorksWorkflowSpec> sp = new Specification<>();
+        sp.setKind(SpecKind.CYCLE_WORKFLOW.getLabel());
+        sp.setVersion(SpecVersion.V_1_2_0.getLabel());
+        DataWorksWorkflowSpec spec = new DataWorksWorkflowSpec();
+        SpecNode node = new SpecNode();
+        SpecSubFlow subflow = new SpecSubFlow();
+        SpecNode subnode = new SpecNode();
+        subnode.setId("subnode1");
+        subnode.setName("subnode1");
+        subflow.setNodes(Collections.singletonList(subnode));
+        node.setSubflow(subflow);
+        spec.setNodes(Collections.singletonList(node));
+        sp.setSpec(spec);
+        JSONObject json = JSONObject.parseObject(SpecUtil.writeToSpec(sp));
+        log.info("spec json: {}", json.toJSONString(Feature.PrettyFormat));
+        Assert.assertNotNull(json);
+        Assert.assertEquals(subnode.getId(), json.getByPath("$.spec.nodes[0].subflow.nodes[0].id"));
+        Assert.assertEquals(subnode.getName(), json.getByPath("$.spec.nodes[0].subflow.nodes[0].name"));
+
+        Specification<DataWorksWorkflowSpec> parsed = SpecUtil.parseToDomain(json.toJSONString());
+        Assert.assertNotNull(parsed);
+        Assert.assertNotNull(parsed.getSpec());
+        Assert.assertNotNull(parsed.getSpec().getNodes());
+        Assert.assertNotNull(parsed.getSpec().getNodes().get(0).getSubflow());
+        Assert.assertNotNull(parsed.getSpec().getNodes().get(0).getSubflow().getNodes());
+        Assert.assertEquals(subnode.getId(), parsed.getSpec().getNodes().get(0).getSubflow().getNodes().get(0).getId());
+        Assert.assertEquals(subnode.getName(), parsed.getSpec().getNodes().get(0).getSubflow().getNodes().get(0).getName());
     }
 }

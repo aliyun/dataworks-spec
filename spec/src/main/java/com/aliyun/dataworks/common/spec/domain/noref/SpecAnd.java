@@ -20,14 +20,16 @@ import java.util.List;
 import com.aliyun.dataworks.common.spec.domain.SpecNoRefEntity;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecNode;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
- * @deprecated
- * @see SpecJoin
- * @see SpecBranches
  * @author yiwei.qyw
  * @date 2023/7/4
+ * @see SpecJoin
+ * @see SpecBranches
+ * @deprecated
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 public class SpecAnd extends SpecNoRefEntity {
     private SpecNode nodeId;

@@ -56,7 +56,7 @@ public class GsonUtils {
 
     synchronized public static void initGson() {
         LOGGER.info("initialize GsonUtils ...");
-        gson = new GsonBuilder().setDateFormat(DATE_FORMAT).setPrettyPrinting().create();
+        gson = new GsonBuilder().setDateFormat(DATE_FORMAT).disableHtmlEscaping().setPrettyPrinting().create();
         gsonNoPrettyPrint = new GsonBuilder().setDateFormat(DATE_FORMAT).create();
         defaultGson = new GsonBuilder().setDateFormat(DATE_FORMAT).disableHtmlEscaping().create();
         longDateJson = new GsonBuilder().registerTypeAdapter(Date.class, new DateLongAdapter()).create();

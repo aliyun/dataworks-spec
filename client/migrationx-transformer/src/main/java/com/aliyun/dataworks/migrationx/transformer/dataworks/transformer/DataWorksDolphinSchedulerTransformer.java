@@ -15,22 +15,38 @@
 
 package com.aliyun.dataworks.migrationx.transformer.dataworks.transformer;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Properties;
+
+import com.aliyun.dataworks.common.spec.utils.JSONUtils;
+import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.DolphinSchedulerPackage;
+import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.DolphinSchedulerVersion;
+import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.service.DolphinSchedulerPackageFileService;
 import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.Asset;
 import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.DataWorksPackage;
 import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.DwProject;
 import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.DwWorkflow;
 import com.aliyun.dataworks.migrationx.domain.dataworks.objects.types.AssetType;
-import com.aliyun.dataworks.migrationx.domain.dataworks.service.DataWorksDwmaPackageFileService;
-import com.aliyun.dataworks.migrationx.domain.dataworks.service.DataWorksSpecPackageFileService;
-import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.DolphinSchedulerPackage;
-import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.service.DolphinSchedulerPackageFileService;
-import com.aliyun.dataworks.migrationx.transformer.dataworks.converter.dolphinscheduler.DolphinSchedulerV1Converter;
+import com.aliyun.dataworks.migrationx.domain.dataworks.service.impl.DataWorksDwmaPackageFileService;
+import com.aliyun.dataworks.migrationx.domain.dataworks.service.impl.DataWorksSpecPackageFileService;
 import com.aliyun.dataworks.migrationx.transformer.core.transformer.AbstractPackageTransformer;
+import com.aliyun.dataworks.migrationx.transformer.dataworks.converter.dolphinscheduler.AbstractDolphinSchedulerConverter;
+import com.aliyun.dataworks.migrationx.transformer.dataworks.converter.dolphinscheduler.v1.DolphinSchedulerV1Converter;
+import com.aliyun.dataworks.migrationx.transformer.dataworks.converter.dolphinscheduler.v2.DolphinSchedulerV2Converter;
+import com.aliyun.dataworks.migrationx.transformer.dataworks.converter.dolphinscheduler.v3.DolphinSchedulerV3Converter;
+import com.aliyun.migrationx.common.context.TransformerContext;
 import com.aliyun.migrationx.common.exception.BizException;
 import com.aliyun.migrationx.common.exception.ErrorCode;
+import com.aliyun.migrationx.common.utils.Config;
 import com.aliyun.migrationx.common.utils.GsonUtils;
-import com.aliyun.migrationx.common.utils.ZipUtils;
-import com.google.common.base.Preconditions;
+
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.google.common.reflect.TypeToken;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
@@ -38,14 +54,6 @@ import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Properties;
 
 /**
  * @author 聿剑
@@ -61,7 +69,7 @@ public class DataWorksDolphinSchedulerTransformer extends AbstractPackageTransfo
     private Properties converterProperties;
 
     public DataWorksDolphinSchedulerTransformer(File configFile, DolphinSchedulerPackage sourcePacakgeFile,
-        DataWorksPackage targetPackageFile) {
+            DataWorksPackage targetPackageFile) {
         super(configFile, sourcePacakgeFile, targetPackageFile);
     }
 
@@ -71,28 +79,36 @@ public class DataWorksDolphinSchedulerTransformer extends AbstractPackageTransfo
 
         initConfig(this.configFile);
         log.info("target package format: {}", this.dataWorksTransformerConfig.getFormat());
+
         switch (this.dataWorksTransformerConfig.getFormat()) {
             case DWMA:
                 this.targetPackageFileService = new DataWorksDwmaPackageFileService();
+                break;
             case SPEC:
                 this.targetPackageFileService = new DataWorksSpecPackageFileService();
+                break;
+            default:
+                throw new RuntimeException(String.format("format % error", this.dataWorksTransformerConfig.getFormat()));
         }
+        TransformerContext.getCollector().setTransformerType(dataWorksTransformerConfig.getFormat().name());
         this.targetPackageFileService.setLocale(this.dataWorksTransformerConfig.getLocale());
     }
 
     private void initConfig(File configFile) throws IOException {
         if (!configFile.exists()) {
             log.error("config file not exists: {}", configFile);
-            new BizException(ErrorCode.FILE_NOT_FOUND).with(configFile);
+            throw new BizException(ErrorCode.FILE_NOT_FOUND).with(configFile);
         }
 
         String config = FileUtils.readFileToString(configFile, StandardCharsets.UTF_8);
         this.dataWorksTransformerConfig
-            = GsonUtils.fromJsonString(config, new TypeToken<DataWorksTransformerConfig>() {}.getType());
+                = JSONUtils.parseObject(config, new TypeReference<DataWorksTransformerConfig>() {});
         if (this.dataWorksTransformerConfig == null) {
             log.error("config file: {}, config class: {}", configFile, DataWorksTransformerConfig.class);
             throw new BizException(ErrorCode.PARSE_CONFIG_FILE_FAILED).with(configFile);
         }
+        Config dwConfig = GsonUtils.fromJsonString(config, new TypeToken<Config>() {}.getType());
+        Config.init(dwConfig);
 
         this.dwProject = Optional.ofNullable(this.dataWorksTransformerConfig.getProject()).orElseGet(() -> {
             DwProject p = new DwProject();
@@ -106,12 +122,10 @@ public class DataWorksDolphinSchedulerTransformer extends AbstractPackageTransfo
         this.converterProperties = new Properties();
         Optional.ofNullable(this.dataWorksTransformerConfig).map(DataWorksTransformerConfig::getSettings).ifPresent(settings -> {
             settings.entrySet().stream().forEach(ent -> {
-                if (ent.getValue().isJsonPrimitive()) {
-                    log.info("key: {}, value: {}", ent.getKey(), ent.getValue().getAsString());
-                    this.converterProperties.put(ent.getKey(), ent.getValue().getAsString());
+                if (ent.getValue() instanceof Map) {
+                    this.converterProperties.put(ent.getKey(), JSONUtils.toJsonString(ent.getValue()));
                 } else {
-                    log.info("key: {}, value: {}", ent.getKey(), GsonUtils.toJsonString(ent.getValue()));
-                    this.converterProperties.put(ent.getKey(), GsonUtils.toJsonString(ent.getValue()));
+                    this.converterProperties.put(ent.getKey(), ent.getValue());
                 }
             });
         });
@@ -128,21 +142,26 @@ public class DataWorksDolphinSchedulerTransformer extends AbstractPackageTransfo
         this.targetPackage.setDwProject(this.dwProject);
         this.packageFile = this.sourcePackage.getPackageFile();
 
-        File unzippedDir = ZipUtils.decompress(this.packageFile);
-        Preconditions.checkArgument(unzippedDir != null,
-            BizException.of(ErrorCode.PACKAGE_ANALYZE_FAILED).with("unzip package failed"));
-
-        sourcePackageFileService.load(sourcePackage);
-
-        LOGGER.info("package dir root: {}", unzippedDir);
+        DolphinSchedulerVersion version = sourcePackageFileService.getPackage().getPackageInfo().getDolphinSchedulerVersion();
+        AbstractDolphinSchedulerConverter schedulerConverter;
+        switch (version) {
+            case V1:
+                schedulerConverter = new DolphinSchedulerV1Converter(sourcePackageFileService.getPackage());
+                break;
+            case V2:
+                schedulerConverter = new DolphinSchedulerV2Converter(sourcePackageFileService.getPackage());
+                break;
+            case V3:
+                schedulerConverter = new DolphinSchedulerV3Converter(sourcePackageFileService.getPackage());
+                break;
+            default:
+                throw new RuntimeException("Unsupport version");
+        }
         Asset asset = new Asset();
         asset.setType(AssetType.DW_EXPORT);
-        asset.setPath(unzippedDir);
-
-        DolphinSchedulerV1Converter converter = new DolphinSchedulerV1Converter();
-        converter.setProject(this.dwProject);
-        converter.setProperties(this.converterProperties);
-        List<DwWorkflow> workflowList = converter.convert(asset);
+        schedulerConverter.setProject(this.dwProject);
+        schedulerConverter.setProperties(this.converterProperties);
+        List<DwWorkflow> workflowList = schedulerConverter.convert(asset);
         ListUtils.emptyIfNull(workflowList).stream().forEach(wf -> {
             wf.setProjectRef(this.dwProject);
         });

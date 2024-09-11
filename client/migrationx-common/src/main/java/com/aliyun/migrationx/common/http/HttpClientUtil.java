@@ -15,7 +15,11 @@
 
 package com.aliyun.migrationx.common.http;
 
+import java.net.SocketException;
+
 import com.aliyun.migrationx.common.utils.ExecuteUtils;
+
+import lombok.extern.slf4j.Slf4j;
 import org.apache.http.Consts;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -34,11 +38,9 @@ import java.net.SocketException;
  * @author 聿剑
  * @date 2022/10/19
  */
+@Slf4j
 public class HttpClientUtil {
-    private static final Logger LOGGER = LoggerFactory.getLogger(HttpClientUtil.class);
-
     private static final int TIMEOUT_SECONDS = 60;
-
     private HttpClient httpClient;
 
     public HttpClientUtil() {
@@ -64,7 +66,7 @@ public class HttpClientUtil {
     }
 
     public String executeAndGet(HttpRequestBase httpRequestBase) throws Exception {
-        return executeAndGet(httpRequestBase, false);
+        return executeAndGet(httpRequestBase, 3, 1000);
     }
 
     public String executeAndGet(HttpRequestBase httpRequestBase, boolean retry) throws Exception {
@@ -72,53 +74,54 @@ public class HttpClientUtil {
             throw new IllegalArgumentException("'http Request' can't be null");
         }
         HttpResponse response;
-        String entiStr;
+        String responseString;
         Long start = System.currentTimeMillis();
 
         try {
             // timeout setting
             RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(TIMEOUT_SECONDS * 1000)
-                .setConnectTimeout(TIMEOUT_SECONDS * 1000)
-                .setConnectionRequestTimeout(TIMEOUT_SECONDS * 1000)
-                .build();
+                    .setConnectTimeout(TIMEOUT_SECONDS * 1000)
+                    .setConnectionRequestTimeout(TIMEOUT_SECONDS * 1000)
+                    .build();
             httpRequestBase.setConfig(requestConfig);
 
+            log.info("request url: {}, method: {}", httpRequestBase.getURI(), httpRequestBase.getMethod());
             response = httpClient.execute(httpRequestBase);
 
             if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
-                LOGGER.warn("request url: " + httpRequestBase.getURI() + ", method: " + httpRequestBase.getMethod()
-                    + ", STATUS CODE = " + response.getStatusLine().getStatusCode());
+                log.info("request url: {}, method: {}, status code: {}",
+                        httpRequestBase.getURI(), httpRequestBase.getMethod(), response.getStatusLine().getStatusCode());
+
                 if (response.getStatusLine().getStatusCode() == HttpStatus.SC_INTERNAL_SERVER_ERROR) {
                     HttpEntity entity = response.getEntity();
                     if (entity != null) {
-                        entiStr = EntityUtils.toString(entity, Consts.UTF_8);
+                        responseString = EntityUtils.toString(entity, Consts.UTF_8);
                     } else {
                         throw new Exception("Response Code Is 500, Response Entity Is Null");
                     }
                 } else {
                     throw new Exception("Response Status Code : " + response.getStatusLine().getStatusCode());
                 }
-
             } else {
                 HttpEntity entity = response.getEntity();
                 if (entity != null) {
-                    entiStr = EntityUtils.toString(entity, Consts.UTF_8);
+                    responseString = EntityUtils.toString(entity, Consts.UTF_8);
                 } else {
                     throw new Exception("Response Code Is 200, Response Entity Is Null");
                 }
             }
         } catch (Throwable e) {
-            LOGGER.warn("HttpClientUtil executeAndGet error : ", e);
+            log.warn("HttpClientUtil executeAndGet error : ", e);
             throw e;
         } finally {
             Long end = System.currentTimeMillis();
-            LOGGER.info("url: " + httpRequestBase.getURI().toString() + ", cost time: " + (end - start) / 1000 + "s");
+            log.info("url: {}, time costed: {} seconds", httpRequestBase.getURI(), (end - start) / 1000);
             if (!retry) {
                 httpRequestBase.releaseConnection();
                 httpClient = null;
             }
         }
-        return entiStr;
+        return responseString;
     }
 
     public HttpResponse executeAndGetHttpResponse(HttpRequestBase httpRequestBase) throws Exception {
@@ -129,9 +132,9 @@ public class HttpClientUtil {
         HttpResponse response;
         // timeout
         RequestConfig requestConfig = RequestConfig.custom().setSocketTimeout(TIMEOUT_SECONDS * 1000)
-            .setConnectTimeout(TIMEOUT_SECONDS * 1000)
-            .setConnectionRequestTimeout(TIMEOUT_SECONDS * 1000).setStaleConnectionCheckEnabled(true)
-            .build();
+                .setConnectTimeout(TIMEOUT_SECONDS * 1000)
+                .setConnectionRequestTimeout(TIMEOUT_SECONDS * 1000)
+                .build();
         httpRequestBase.setConfig(requestConfig);
         response = httpClient.execute(httpRequestBase);
         return response;

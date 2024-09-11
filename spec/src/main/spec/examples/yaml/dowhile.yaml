@@ -1,60 +1,179 @@
+---
 version: 1.1.0
 kind: CycleWorkflow
 spec:
+  name: flow240514_01
+  id: '8713280350510274174'
+  type: CycleWorkflow
+  owner: '064152'
   nodes:
-    - id: c6a3bbe198fd4031bbe71ad3e66ceb91
-      recurrence: Normal
-      timeout: 3
+    - recurrence: Normal
+      id: '8745734768222459575'
+      timeout: 0
       instanceMode: T+1
       rerunMode: Allowed
       rerunTimes: 3
       rerunInterval: 180000
       script:
-        path: 测试/EMR/emr_hive
-        language: hive # 赋值节点代码语言
-        content: select 1 # 赋值节点代码
+        path: 聿剑/线上回归/flow/flow240514_01/dowhile0514_01
         runtime:
-          engine: MaxCompute
-          command: CONTROLLER_ASSIGNMENT # 赋值节点类型
+          command: CONTROLLER_CYCLE
+        id: '5566759722366247880'
+        parameters:
+          - name: flow_p1
+            artifactType: Variable
+            scope: Workflow
+            type: System
+            value: "$[yyyymmdd]"
       trigger:
         type: Scheduler
+        id: '6667939609614101868'
         cron: 00 00 00 * * ?
         startTime: '1970-01-01 00:00:00'
         endTime: '9999-01-01 00:00:00'
         timezone: Asia/Shanghai
       runtimeResource:
-        resourceGroup: group_2
-        resourceGroupId: '2'
-      name: sql_assign_1
+        resourceGroup: autotest_new_group
+        id: '8395766798536930932'
+        resourceGroupId: '1121'
+      name: dowhile0514_01
       owner: '064152'
+      metadata:
+        container:
+          type: Flow
+          uuid: '8713280350510274174'
+        tenantId: '1'
+        projectId: '14255'
       inputs:
-        variables:
-          - artifactType: Variable
-            name: sql_assign_0
-            scope: NodeContext
-            type: NodeOutput
-            value: ${outputs}
-            node:
-              output: cd0a7f7e21ef49e6bebeb98438c9ebe9
+        nodeOutputs:
+          - data: autotest_root
+            artifactType: NodeOutput
+            isDefault: false
       outputs:
-        variables:
-          - artifactType: Variable
-            name: sql_assign_1
-            scope: NodeContext
-            type: NodeOutput
-            value: ${outputs}
-            node:
-              output: c6a3bbe198fd4031bbe71ad3e66ceb91
-        outputs:
-          - artifactType: Output
-            data: c6a3bbe198fd4031bbe71ad3e66ceb91
-            refTableName: sql_assign_1
-      functions: [ ]
-      fileResources: [ ]
+        nodeOutputs:
+          - data: '8745734768222459575'
+            artifactType: NodeOutput
+            refTableName: dowhile0514_01
+            isDefault: true
+      do-while:
+        maxIteration: 3
+        nodes:
+          - recurrence: Normal
+            id: '6204101518796064244'
+            timeout: 0
+            instanceMode: T+1
+            rerunMode: Allowed
+            rerunTimes: 3
+            rerunInterval: 180000
+            datasource:
+              name: odps_first
+              type: odps
+            script:
+              path: 聿剑/线上回归/flow/flow240514_01/dowhile0514_01/sql_dowhile_01
+              runtime:
+                command: ODPS_SQL
+              id: '7484164339108776624'
+            runtimeResource:
+              resourceGroup: autotest_new_group
+              id: '8395766798536930932'
+              resourceGroupId: '1121'
+            name: sql_dowhile_01
+            owner: '064152'
+            metadata:
+              tenantId: '1'
+              projectId: '14255'
+            inputs: { }
+            outputs:
+              nodeOutputs:
+                - data: '6204101518796064244'
+                  artifactType: NodeOutput
+                  refTableName: sql_dowhile_01
+                  isDefault: true
+          - recurrence: Normal
+            id: '8671657775518687198'
+            timeout: 0
+            instanceMode: T+1
+            rerunMode: Allowed
+            rerunTimes: 3
+            rerunInterval: 180000
+            script:
+              path: 聿剑/线上回归/flow/flow240514_01/dowhile0514_01/cycle_start
+              runtime:
+                engine: General
+                command: CONTROLLER_CYCLE_START
+              id: '7332714330957052802'
+            runtimeResource:
+              resourceGroup: autotest_new_group
+              id: '8395766798536930932'
+              resourceGroupId: '1121'
+            name: cycle_start
+            owner: '064152'
+            metadata:
+              tenantId: '1'
+              projectId: '14255'
+            inputs: { }
+            outputs:
+              nodeOutputs:
+                - data: '8671657775518687198'
+                  artifactType: NodeOutput
+                  refTableName: cycle_start
+                  isDefault: true
+        flow:
+          - nodeId: '4667598400501549065'
+            depends:
+              - type: Normal
+                output: '6204101518796064244'
+                refTableName: sql_dowhile_01
+          - nodeId: '6204101518796064244'
+            depends:
+              - type: Normal
+                output: '8671657775518687198'
+                refTableName: cycle_start
+        while:
+          recurrence: Normal
+          id: '4667598400501549065'
+          timeout: 0
+          instanceMode: T+1
+          rerunMode: Allowed
+          rerunTimes: 3
+          rerunInterval: 180000
+          script:
+            language: odps-sql
+            path: 聿剑/线上回归/flow/flow240514_01/dowhile0514_01/cycle_end
+            runtime:
+              engine: General
+              command: CONTROLLER_CYCLE_END
+            id: '8889784976622936158'
+          runtimeResource:
+            resourceGroup: autotest_new_group
+            id: '8395766798536930932'
+            resourceGroupId: '1121'
+          name: cycle_end
+          owner: '064152'
+          metadata:
+            tenantId: '1'
+            projectId: '14255'
+          inputs: { }
+          outputs:
+            nodeOutputs:
+              - data: '4667598400501549065'
+                artifactType: NodeOutput
+                refTableName: cycle_end
+                isDefault: true
   flow:
-    - nodeId: c6a3bbe198fd4031bbe71ad3e66ceb91
+    - nodeId: '8745734768222459575'
       depends:
         - type: Normal
-          output: f6cbb79aa27540dc9d3f055a639436b1
+          output: '7357222347128571852'
+          refTableName: vt0514_001
         - type: Normal
-          output: cd0a7f7e21ef49e6bebeb98438c9ebe9
+          output: autotest_root
+  variables:
+    - name: flow_p1
+      artifactType: Variable
+      scope: Workflow
+      type: System
+      value: "$[yyyymmdd]"
+      id: '5969029414080295745'
+metadata:
+  uuid: '8745734768222459575'

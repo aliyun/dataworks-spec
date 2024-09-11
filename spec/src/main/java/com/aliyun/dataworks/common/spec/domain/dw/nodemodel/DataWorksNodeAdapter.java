@@ -24,11 +24,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson2.JSON;
-import com.alibaba.fastjson2.JSONObject;
 
 import com.aliyun.dataworks.common.spec.domain.DataWorksWorkflowSpec;
+import com.aliyun.dataworks.common.spec.domain.SpecRefEntity;
 import com.aliyun.dataworks.common.spec.domain.Specification;
-import com.aliyun.dataworks.common.spec.domain.adapter.SpecNodeAdapter;
 import com.aliyun.dataworks.common.spec.domain.dw.types.CodeProgramType;
 import com.aliyun.dataworks.common.spec.domain.enums.DependencyType;
 import com.aliyun.dataworks.common.spec.domain.enums.TriggerType;
@@ -36,13 +35,20 @@ import com.aliyun.dataworks.common.spec.domain.enums.VariableType;
 import com.aliyun.dataworks.common.spec.domain.interfaces.Input;
 import com.aliyun.dataworks.common.spec.domain.interfaces.Output;
 import com.aliyun.dataworks.common.spec.domain.noref.SpecDepend;
+import com.aliyun.dataworks.common.spec.domain.noref.SpecDoWhile;
 import com.aliyun.dataworks.common.spec.domain.noref.SpecFlowDepend;
+import com.aliyun.dataworks.common.spec.domain.noref.SpecForEach;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecNode;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecNodeOutput;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecScript;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecTrigger;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecVariable;
+import com.aliyun.dataworks.common.spec.domain.ref.SpecWorkflow;
 import com.aliyun.dataworks.common.spec.domain.ref.runtime.SpecScriptRuntime;
+import com.aliyun.dataworks.common.spec.exception.SpecException;
+import lombok.Builder;
+import lombok.Data;
+import lombok.ToString;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.lang3.BooleanUtils;
@@ -54,35 +60,66 @@ import org.slf4j.LoggerFactory;
  * @author 聿剑
  * @date 2023/11/9
  */
-public class DataWorksNodeAdapter implements SpecNodeAdapter, DataWorksNode {
+public class DataWorksNodeAdapter implements DataWorksNode, DataWorksNodeAdapterContextAware {
     public static final String TIMEOUT = "alisaTaskKillTimeout";
     public static final String IGNORE_BRANCH_CONDITION_SKIP = "ignoreBranchConditionSkip";
+    public static final String LOOP_COUNT = "loopCount";
+    public static final String STREAM_LAUNCH_MODE = "streamLaunchMode";
     public static final Integer NODE_TYPE_NORMAL = 0;
     public static final Integer NODE_TYPE_MANUAL = 1;
     public static final Integer NODE_TYPE_PAUSE = 2;
     public static final Integer NODE_TYPE_SKIP = 3;
 
     private static final Logger logger = LoggerFactory.getLogger(DataWorksNodeAdapter.class);
+    private static final String DELAY_SECONDS = "delaySeconds";
+
+    /**
+     * @author 聿剑
+     * @date 2024/6/19
+     */
+    @Data
+    @ToString
+    @Builder
+    public static class Context {
+        private boolean deployToScheduler;
+    }
 
     protected final DataWorksWorkflowSpec specification;
     protected final Specification<DataWorksWorkflowSpec> spec;
-    protected final SpecNode specNode;
+    protected final SpecEntityDelegate<? extends SpecRefEntity> delegate;
+    protected Context context;
 
-    public DataWorksNodeAdapter(Specification<DataWorksWorkflowSpec> specification, SpecNode specNode) {
+    public DataWorksNodeAdapter(Specification<DataWorksWorkflowSpec> specification, SpecRefEntity specEntity) {
         this.spec = specification;
         this.specification = this.spec.getSpec();
-        this.specNode = specNode;
+        this.delegate = new SpecEntityDelegate<>(specEntity);
+        this.context = Context.builder().build();
     }
 
-    @Override
-    public SpecNode getSpecNode() {
-        return specNode;
+    public DataWorksNodeAdapter(Specification<DataWorksWorkflowSpec> specification, SpecRefEntity specEntity, Context context) {
+        this.spec = specification;
+        this.specification = this.spec.getSpec();
+        this.delegate = new SpecEntityDelegate<>(specEntity);
+        this.context = context;
     }
 
     @Override
     public DwNodeDependentTypeInfo getDependentType(Function<List<SpecNodeOutput>, List<Long>> getNodeIdsByOutputs) {
-        SpecFlowDepend specNodeFlowDepend = ListUtils.emptyIfNull(specification.getFlow()).stream()
-            .filter(fd -> StringUtils.equalsIgnoreCase(specNode.getId(), fd.getNodeId().getId()))
+        List<SpecFlowDepend> flows = ListUtils.emptyIfNull(specification.getFlow());
+        // if the current node is inner node of a workflow, use the workflow's dependency list to get dependency type
+        SpecWorkflow outerWorkflow = Optional.ofNullable(spec)
+            .map(Specification::getSpec)
+            .map(DataWorksWorkflowSpec::getWorkflows).flatMap(wfs ->
+                wfs.stream().filter(wf ->
+                    ListUtils.emptyIfNull(wf.getNodes()).stream().anyMatch(n ->
+                        StringUtils.equalsIgnoreCase(n.getId(), delegate.getId()))).findFirst())
+            .orElse(null);
+        if (outerWorkflow != null) {
+            flows = outerWorkflow.getDependencies();
+        }
+
+        SpecFlowDepend specNodeFlowDepend = ListUtils.emptyIfNull(flows).stream()
+            .filter(fd -> StringUtils.equalsIgnoreCase(delegate.getId(), fd.getNodeId().getId()))
             .peek(fd -> logger.info("node flow depends source nodeId: {}, depends: {}",
                 JSON.toJSONString(fd.getNodeId()), JSON.toJSONString(fd.getDepends())))
             .findFirst().orElse(null);
@@ -147,42 +184,44 @@ public class DataWorksNodeAdapter implements SpecNodeAdapter, DataWorksNode {
 
     @Override
     public String getCode() {
-        DataWorksNodeCodeAdapter codeAdapter = new DataWorksNodeCodeAdapter(specNode);
+        DataWorksNodeCodeAdapter codeAdapter = new DataWorksNodeCodeAdapter(delegate.getObject());
+        codeAdapter.setContext(context);
         return codeAdapter.getCode();
     }
 
     @Override
     public List<Input> getInputs() {
-        return new DataWorksNodeInputOutputAdapter(this.spec, specNode).getInputs();
+        return new DataWorksNodeInputOutputAdapter(this.spec, delegate.getObject()).getInputs();
     }
 
     @Override
     public List<Output> getOutputs() {
-        return new DataWorksNodeInputOutputAdapter(this.spec, specNode).getOutputs();
+        return new DataWorksNodeInputOutputAdapter(this.spec, delegate.getObject()).getOutputs();
     }
 
     @Override
     public List<InputContext> getInputContexts() {
-        return new DataWorksNodeInputOutputAdapter(this.spec, specNode).getInputContexts();
+        return new DataWorksNodeInputOutputAdapter(this.spec, delegate.getObject()).getInputContexts();
     }
 
     @Override
     public List<OutputContext> getOutputContexts() {
-        return new DataWorksNodeInputOutputAdapter(this.spec, specNode).getOutputContexts();
+        return new DataWorksNodeInputOutputAdapter(this.spec, delegate.getObject()).getOutputContexts();
     }
 
     @Override
     public String getParaValue() {
-        return Optional.ofNullable(specNode).map(SpecNode::getScript).map(SpecScript::getRuntime)
+        return Optional.ofNullable(delegate.getScript()).map(SpecScript::getRuntime)
             .map(SpecScriptRuntime::getCommand)
             .map(cmd -> {
-                if (StringUtils.equalsIgnoreCase(CodeProgramType.DIDE_SHELL.name(), cmd)) {
+                if (StringUtils.equalsIgnoreCase(CodeProgramType.DIDE_SHELL.name(), cmd)
+                    || StringUtils.equalsIgnoreCase(CodeProgramType.PYTHON.name(), cmd)) {
                     return getShellParaValue();
                 }
 
-                if (ListUtils.emptyIfNull(specNode.getScript().getParameters()).stream()
+                if (ListUtils.emptyIfNull(delegate.getScript().getParameters()).stream()
                     .anyMatch(v -> VariableType.NO_KV_PAIR_EXPRESSION.equals(v.getType()))) {
-                    return ListUtils.emptyIfNull(specNode.getScript().getParameters()).stream()
+                    return ListUtils.emptyIfNull(delegate.getScript().getParameters()).stream()
                         .filter(v -> VariableType.NO_KV_PAIR_EXPRESSION.equals(v.getType()))
                         .findAny()
                         .map(SpecVariable::getValue).orElse(null);
@@ -193,7 +232,7 @@ public class DataWorksNodeAdapter implements SpecNodeAdapter, DataWorksNode {
     }
 
     private String getKvParaValue() {
-        return Optional.ofNullable(specNode).map(SpecNode::getScript).map(SpecScript::getParameters)
+        return Optional.ofNullable(delegate.getScript()).map(SpecScript::getParameters)
             .map(parameters -> parameters.stream()
                 .filter(v -> v.getReferenceVariable() == null)
                 .map(p -> p.getName() + "=" + p.getValue()).collect(Collectors.joining(" ")))
@@ -201,26 +240,43 @@ public class DataWorksNodeAdapter implements SpecNodeAdapter, DataWorksNode {
     }
 
     private String getShellParaValue() {
-        return ListUtils.emptyIfNull(specNode.getScript().getParameters()).stream()
+        return ListUtils.emptyIfNull(delegate.getScript().getParameters()).stream()
             .sorted(Comparator.comparing(SpecVariable::getName))
             .filter(v -> v.getReferenceVariable() == null && v.getValue() != null)
             .map(SpecVariable::getValue).collect(Collectors.joining(" "));
     }
 
     @Override
-    public String getExtConfig() {
+    public Map<String, Object> getExtConfig() {
         final Map<String, Object> extConfig = new HashMap<>();
+        SpecNode specNode = (SpecNode)delegate.getObject();
         Optional.ofNullable(specNode.getTimeout()).filter(timeout -> timeout > 0).ifPresent(timeout ->
             extConfig.put(TIMEOUT, specNode.getTimeout()));
 
         Optional.ofNullable(specNode.getIgnoreBranchConditionSkip()).ifPresent(ignoreBranchConditionSkip ->
             extConfig.put(IGNORE_BRANCH_CONDITION_SKIP, BooleanUtils.isTrue(ignoreBranchConditionSkip)));
 
-        return extConfig.isEmpty() ? null : JSONObject.toJSONString(extConfig);
+        Optional.ofNullable(specNode.getDoWhile()).map(SpecDoWhile::getMaxIterations).ifPresent(maxIterations ->
+            extConfig.put(LOOP_COUNT, maxIterations));
+
+        Optional.ofNullable(specNode.getForeach()).map(SpecForEach::getMaxIterations).ifPresent(maxIterations ->
+            extConfig.put(LOOP_COUNT, maxIterations));
+
+        Optional.ofNullable(specNode.getTrigger()).map(SpecTrigger::getDelaySeconds).ifPresent(delaySeconds ->
+            extConfig.put(DELAY_SECONDS, delaySeconds));
+
+        Optional.ofNullable(specNode.getScript()).map(SpecScript::getRuntime)
+            .map(SpecScriptRuntime::getStreamJobConfig)
+            .map(emrJobConfig -> emrJobConfig.get(STREAM_LAUNCH_MODE))
+            .map(String::valueOf).filter(StringUtils::isNumeric)
+            .map(Integer::valueOf)
+            .ifPresent(i -> extConfig.put(STREAM_LAUNCH_MODE, i));
+        return extConfig;
     }
 
     @Override
     public Integer getNodeType() {
+        SpecNode specNode = (SpecNode)delegate.getObject();
         if (Optional.ofNullable(specNode.getTrigger()).map(SpecTrigger::getType).map(TriggerType.MANUAL::equals).orElse(false)) {
             return NODE_TYPE_MANUAL;
         }
@@ -236,5 +292,26 @@ public class DataWorksNodeAdapter implements SpecNodeAdapter, DataWorksNode {
             }
             return null;
         }).orElseThrow(() -> new RuntimeException("not support node type: " + specNode));
+    }
+
+    @Override
+    public Integer getPrgType(Function<String, Integer> getNodeTypeByName) {
+        SpecScriptRuntime runtime = Optional.ofNullable(delegate.getScript()).map(SpecScript::getRuntime)
+            .orElseThrow(() -> new SpecException("node runtime info not found: " + delegate.getScript()));
+
+        return Optional.ofNullable(runtime.getCommandTypeId())
+            .orElseGet(() -> Optional.ofNullable(runtime.getCommand())
+                .map(getNodeTypeByName)
+                .orElseThrow(() -> new SpecException("unknown node command runtime: " + runtime)));
+    }
+
+    @Override
+    public void setContext(Context context) {
+        this.context = context;
+    }
+
+    @Override
+    public Context getContext() {
+        return this.context;
     }
 }

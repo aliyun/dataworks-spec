@@ -23,8 +23,7 @@ import java.util.stream.Collectors;
 
 import com.aliyun.dataworks.common.spec.domain.dw.types.CalcEngineType;
 import com.aliyun.dataworks.common.spec.domain.dw.types.CodeProgramType;
-import com.aliyun.dataworks.common.spec.utils.GsonUtils;
-import com.google.gson.reflect.TypeToken;
+import com.aliyun.dataworks.common.spec.utils.JSONUtils;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -52,7 +51,7 @@ public class EmrCode extends AbstractBaseCode {
 
     @Override
     public EmrCode parse(String code) {
-        EmrCode m = GsonUtils.fromJsonString(code, new TypeToken<EmrCode>() {}.getType());
+        EmrCode m = JSONUtils.parseObject(code, EmrCode.class);
         Optional.ofNullable(m).ifPresent(mm -> {
             this.setName(mm.getName());
             this.setType(mm.getType());
@@ -60,7 +59,46 @@ public class EmrCode extends AbstractBaseCode {
             this.setProperties(mm.getProperties());
             this.setDescription(mm.getDescription());
         });
+        this.setType(Optional.ofNullable(getType()).orElse(getEmrJobType(programType)));
         return this;
+    }
+
+    public static EmrJobType getEmrJobType(String defaultNodeType) {
+        CodeProgramType codeProgramType = CodeProgramType.getNodeTypeByName(defaultNodeType);
+        if (defaultNodeType == null) {
+            return null;
+        }
+
+        switch (codeProgramType) {
+            case HIVE:
+            case EMR_HIVE_CLI:
+                return EmrJobType.HIVE;
+            case EMR_HIVE:
+                return EmrJobType.HIVE_SQL;
+            case EMR_SPARK_SQL:
+                return EmrJobType.SPARK_SQL;
+            case EMR_SPARK_SHELL:
+                return EmrJobType.SPARK_SHELL;
+            case EMR_SPARK_STREAMING:
+                return EmrJobType.SPARK_STREAMING;
+            case EMR_SPARK:
+                return EmrJobType.SPARK;
+            case EMR_IMPALA:
+                return EmrJobType.IMPALA_SQL;
+            case EMR_PRESTO:
+                return EmrJobType.PRESTO_SQL;
+            case EMR_TRINO:
+                return EmrJobType.TRINO_SQL;
+            case EMR_MR:
+                return EmrJobType.MR;
+            case EMR_SCOOP:
+                return EmrJobType.SQOOP;
+            case EMR_SHELL:
+                return EmrJobType.SHELL;
+            case EMR_KYUUBI:
+                return EmrJobType.KYUUBI;
+        }
+        return null;
     }
 
     @Override

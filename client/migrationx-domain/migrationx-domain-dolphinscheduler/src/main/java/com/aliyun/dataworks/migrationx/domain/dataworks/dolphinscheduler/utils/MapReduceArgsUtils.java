@@ -15,13 +15,14 @@
 
 package com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.utils;
 
-import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.v139.task.mr.MapReduceParameters;
-import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.ProgramType;
-import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.ResourceInfo;
-import org.apache.commons.lang3.StringUtils;
-
 import java.util.ArrayList;
 import java.util.List;
+
+import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.v1.v139.entity.ResourceInfo;
+import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.v1.v139.enums.ProgramType;
+import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.v1.v139.task.mr.MapReduceParameters;
+
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * mapreduce args utils
@@ -65,5 +66,4 @@ public class MapReduceArgsUtils {
 
         return args;
     }
-
 }

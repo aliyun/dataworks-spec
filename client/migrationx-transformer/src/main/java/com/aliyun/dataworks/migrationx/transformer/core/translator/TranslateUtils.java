@@ -15,23 +15,24 @@
 
 package com.aliyun.dataworks.migrationx.transformer.core.translator;
 
-import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.DwNode;
-import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.DwWorkflow;
-import com.aliyun.dataworks.common.spec.domain.dw.types.CodeProgramType;
-import com.aliyun.dataworks.migrationx.transformer.core.common.Constants;
-import com.aliyun.migrationx.common.exception.BizException;
-import com.aliyun.migrationx.common.exception.ErrorCode;
-import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.collections4.ListUtils;
-import org.apache.commons.collections4.SetUtils;
-import org.reflections.Reflections;
-
 import java.util.List;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
+
+import com.aliyun.dataworks.common.spec.domain.dw.types.CodeProgramType;
+import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.DwNode;
+import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.DwWorkflow;
+import com.aliyun.dataworks.migrationx.transformer.core.common.Constants;
+import com.aliyun.migrationx.common.exception.BizException;
+import com.aliyun.migrationx.common.exception.ErrorCode;
+
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.collections4.SetUtils;
+import org.reflections.Reflections;
 
 /**
  * @author 聿剑
@@ -48,49 +49,49 @@ public class TranslateUtils {
     }
 
     public static boolean translate(DwWorkflow workflow, DwNode node,
-        List<Class<? extends NodePropertyTranslator>> translatorClasses,
-        Supplier<CodeProgramType> nodeTypeSupplier) {
+            List<Class<? extends NodePropertyTranslator>> translatorClasses,
+            Supplier<CodeProgramType> nodeTypeSupplier) {
         AtomicBoolean changed = new AtomicBoolean(false);
         SetUtils.emptyIfNull(TRANSLATORS).stream()
-            .filter(clz -> ListUtils.emptyIfNull(translatorClasses).stream().anyMatch(clz::equals))
-            .map(clz -> {
-                try {
-                    return clz.newInstance();
-                } catch (InstantiationException | IllegalAccessException e) {
-                    log.warn("{}", e.getMessage());
-                }
-                return null;
-            })
-            .filter(Objects::nonNull)
-            .filter(translator -> translator.match(workflow, node))
-            .forEach(translator -> {
-                try {
-                    log.debug("translator: {}, rawType: {}, targetType: {}",
-                        translator.getClass(), node.getType(), nodeTypeSupplier.get());
-                    String rawType = node.getType();
-                    node.setType(nodeTypeSupplier.get().name());
-                    if (!translator.translate(workflow, node)) {
-                        node.setType(rawType);
-                    } else {
-                        changed.set(true);
+                .filter(clz -> ListUtils.emptyIfNull(translatorClasses).stream().anyMatch(clz::equals))
+                .map(clz -> {
+                    try {
+                        return clz.newInstance();
+                    } catch (InstantiationException | IllegalAccessException e) {
+                        log.warn("{}", e.getMessage());
                     }
-                } catch (org.apache.commons.cli.ParseException e) {
-                    throw new BizException(ErrorCode.TRANSLATE_NODE_ERROR).with(e);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            });
+                    return null;
+                })
+                .filter(Objects::nonNull)
+                .filter(translator -> translator.match(workflow, node))
+                .forEach(translator -> {
+                    try {
+                        log.debug("translator: {}, rawType: {}, targetType: {}",
+                                translator.getClass(), node.getType(), nodeTypeSupplier.get());
+                        String rawType = node.getType();
+                        node.setType(nodeTypeSupplier.get().name());
+                        if (!translator.translate(workflow, node)) {
+                            node.setType(rawType);
+                        } else {
+                            changed.set(true);
+                        }
+                    } catch (org.apache.commons.cli.ParseException e) {
+                        throw new BizException(ErrorCode.TRANSLATE_NODE_ERROR).with(e);
+                    } catch (Exception e) {
+                        throw new RuntimeException(e);
+                    }
+                });
         return changed.get();
     }
 
     public static boolean translateSparkSubmit(DwNode node, Properties properties) {
         String sparkSubmitAs = properties.getProperty(Constants.CONVERTER_SPARK_SUBMIT_TYPE_AS,
-            CodeProgramType.DIDE_SHELL.name());
+                CodeProgramType.DIDE_SHELL.name());
         log.debug("sparkSubmitAs: {}", sparkSubmitAs);
         SparkSubmitTranslator translator = new SparkSubmitTranslator();
-        if (translator.match((DwWorkflow)node.getWorkflowRef(), node)) {
+        if (translator.match((DwWorkflow) node.getWorkflowRef(), node)) {
             node.setType(sparkSubmitAs);
-            return translator.translate((DwWorkflow)node.getWorkflowRef(), node);
+            return translator.translate((DwWorkflow) node.getWorkflowRef(), node);
         }
         return false;
     }
@@ -99,10 +100,41 @@ public class TranslateUtils {
         AtomicBoolean changed = new AtomicBoolean(false);
         Reflections reflections = new Reflections(AbstractCommandSqlTranslator.class.getPackage().getName());
         Set<Class<? extends AbstractCommandSqlTranslator>> sqlTranslatorTypes =
-            reflections.getSubTypesOf(AbstractCommandSqlTranslator.class);
+                reflections.getSubTypesOf(AbstractCommandSqlTranslator.class);
 
         properties = properties == null ? new Properties() : properties;
         String targetType = properties.getProperty(Constants.CONVERTER_TARGET_COMMAND_SQL_TYPE_AS, node.getType());
+        log.debug("nodeType: {}, targetType: {}", node.getType(), targetType);
+        SetUtils.emptyIfNull(sqlTranslatorTypes).stream().map(clz -> {
+            try {
+                return clz.newInstance();
+            } catch (InstantiationException | IllegalAccessException e) {
+                log.warn("{}", e.getMessage());
+            }
+            return null;
+        }).filter(Objects::nonNull).filter(translator -> translator.match(workflow, node)).forEach(translator -> {
+            try {
+                log.debug("translator: {}, rawType: {}, targetType: {}", translator.getClass(), node.getType(), targetType);
+                String rawType = node.getType();
+                node.setType(targetType);
+                if (!translator.translate(workflow, node)) {
+                    node.setType(rawType);
+                } else {
+                    changed.set(true);
+                }
+            } catch (org.apache.commons.cli.ParseException e) {
+                throw new BizException(ErrorCode.TRANSLATE_NODE_ERROR).with(e);
+            }
+        });
+        return changed.get();
+    }
+
+    public static boolean translateCommandSql(DwWorkflow workflow, DwNode node, String targetType) {
+        AtomicBoolean changed = new AtomicBoolean(false);
+        Reflections reflections = new Reflections(AbstractCommandSqlTranslator.class.getPackage().getName());
+        Set<Class<? extends AbstractCommandSqlTranslator>> sqlTranslatorTypes =
+                reflections.getSubTypesOf(AbstractCommandSqlTranslator.class);
+        
         log.debug("nodeType: {}, targetType: {}", node.getType(), targetType);
         SetUtils.emptyIfNull(sqlTranslatorTypes).stream().map(clz -> {
             try {

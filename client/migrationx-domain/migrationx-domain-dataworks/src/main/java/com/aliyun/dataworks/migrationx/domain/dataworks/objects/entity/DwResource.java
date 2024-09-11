@@ -15,10 +15,10 @@
 
 package com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity;
 
+import java.util.UUID;
+
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.ToString;
-
-import java.util.UUID;
 
 /**
  * @author sam.liux
@@ -29,6 +29,7 @@ public class DwResource extends Resource {
     private String localPath;
     private Long cloudUuid;
     private Long fileId;
+    private String content;
     @JsonIgnore
     private transient DwWorkflow workflowRef;
     private Boolean autoCommit = false;
@@ -80,6 +81,15 @@ public class DwResource extends Resource {
 
     public void setLocalPath(String localPath) {
         this.localPath = localPath;
+    }
+
+    public String getContent() {
+        return content;
+    }
+
+    public DwResource setContent(String content) {
+        this.content = content;
+        return this;
     }
 
     @Override

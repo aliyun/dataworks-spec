@@ -25,6 +25,7 @@ import java.util.stream.Stream;
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
 
+import com.aliyun.dataworks.common.spec.annotation.SpecWriter;
 import com.aliyun.dataworks.common.spec.domain.SpecContext;
 import com.aliyun.dataworks.common.spec.domain.enums.SpecVersion;
 import com.aliyun.dataworks.common.spec.domain.interfaces.NodeIO;
@@ -32,12 +33,12 @@ import com.aliyun.dataworks.common.spec.domain.ref.SpecNode;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecNodeOutput;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecTable;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecVariable;
-import com.aliyun.dataworks.common.spec.parser.impl.CombinedParser;
 import com.aliyun.dataworks.common.spec.parser.impl.DoWhileParser;
 import com.aliyun.dataworks.common.spec.parser.impl.SpecBranchParser;
 import com.aliyun.dataworks.common.spec.parser.impl.SpecForEachParser;
 import com.aliyun.dataworks.common.spec.parser.impl.SpecJoinParser;
 import com.aliyun.dataworks.common.spec.parser.impl.SpecParamHubParser;
+import com.aliyun.dataworks.common.spec.parser.impl.SubFlowParser;
 import com.aliyun.dataworks.common.spec.writer.SpecWriterContext;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
@@ -49,6 +50,7 @@ import org.apache.commons.lang3.StringUtils;
  * @author 聿剑
  * @date 2023/8/27
  */
+@SpecWriter
 public class SpecNodeWriter extends DefaultJsonObjectWriter<SpecNode> {
     public SpecNodeWriter(SpecWriterContext context) {
         super(context);
@@ -85,7 +87,8 @@ public class SpecNodeWriter extends DefaultJsonObjectWriter<SpecNode> {
         json.put(SpecForEachParser.FOREACH, writeByWriter(specObj.getForeach()));
         json.put(SpecBranchParser.BRANCH, writeByWriter(specObj.getBranch()));
         json.put(SpecJoinParser.KEY_JOIN, writeByWriter(specObj.getJoin()));
-        json.put(CombinedParser.KEY_TYPE, writeByWriter(specObj.getCombined()));
+        json.put(SubFlowParser.KEY_TYPE_COMBINED, writeByWriter(specObj.getCombined()));
+        json.put(SubFlowParser.KEY_TYPE_SUBFLOW, writeByWriter(specObj.getSubflow()));
         return json;
     }
 

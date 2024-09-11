@@ -15,30 +15,47 @@
 
 package com.aliyun.dataworks.migrationx.domain.dataworks.utils;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.stream.Collectors;
+
+import com.aliyun.dataworks.common.spec.domain.dw.types.ModelTreeRoot;
 import com.aliyun.dataworks.migrationx.domain.dataworks.constants.DataWorksConstants;
 import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.Workflow;
+import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.nodemarket.AppConfigPack;
+import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.nodemarket.BusinessFolder;
+import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.nodemarket.BusinessFolderConfig;
 import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.v2.IdeBizInfo;
 import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.v2.IdeFolder;
 import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.v2.IdeFolderItemType;
 import com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity.v2.IdeFolderSubType;
 import com.aliyun.dataworks.migrationx.domain.dataworks.objects.types.FolderType;
-import com.aliyun.dataworks.common.spec.domain.dw.types.ModelTreeRoot;
 import com.aliyun.dataworks.migrationx.domain.dataworks.objects.types.NodeUseType;
 import com.aliyun.migrationx.common.utils.GsonUtils;
 import com.google.common.base.Joiner;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang3.BooleanUtils;
 import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
-
-import java.io.File;
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author sam.liux
  * @date 2020/11/17
  */
+@Slf4j
 public class FolderUtils {
     private static final Map<String, String> folderItemEngineType = new HashMap<>();
 
@@ -102,16 +119,16 @@ public class FolderUtils {
         bizFolder.setFolderItemName(bizFolder.getBizId());
         bizFolder.setFolderItemType(IdeFolderItemType.CODE.getCode());
         bizFolder.setFolderItemPath(Joiner.on(File.separator).join(
-            Integer.valueOf(NodeUseType.SCHEDULED.getValue()).equals(ideBizInfo.getUseType()) ?
-                ModelTreeRoot.BIZ_ROOT.getRootKey() : ModelTreeRoot.MANUAL_BIZ_ROOT.getRootKey(),
-            ideBizInfo.getBizName()));
+                Integer.valueOf(NodeUseType.SCHEDULED.getValue()).equals(ideBizInfo.getUseType()) ?
+                        ModelTreeRoot.BIZ_ROOT.getRootKey() : ModelTreeRoot.MANUAL_BIZ_ROOT.getRootKey(),
+                ideBizInfo.getBizName()));
 
         List<IdeFolder> list = folderItemNames.stream().map(folderItemName -> {
             IdeFolder ideFolder = new IdeFolder();
             ideFolder.setFolderItemType(IdeFolderItemType.CODE.getCode());
             ideFolder.setFolderItemName(folderItemName);
             ideFolder.setFolderItemPath(Joiner.on(File.separator).join(
-                ModelTreeRoot.BIZ_ROOT.getRootKey(), ideBizInfo.getBizName(), folderItemName));
+                    ModelTreeRoot.BIZ_ROOT.getRootKey(), ideBizInfo.getBizName(), folderItemName));
             ideFolder.setBizId(ideBizInfo.getBizName());
             ideFolder.setBizUseType(ideBizInfo.getUseType());
             ideFolder.setType(FolderType.ENGINE_TYPE.getCode());
@@ -214,9 +231,9 @@ public class FolderUtils {
         }
 
         return Arrays.stream(StringUtils.split(folder, "/"))
-            .map(StringUtils::trimToEmpty)
-            .filter(StringUtils::isNotBlank)
-            .collect(Collectors.joining("/"));
+                .map(StringUtils::trimToEmpty)
+                .filter(StringUtils::isNotBlank)
+                .collect(Collectors.joining("/"));
     }
 
     public static boolean isUnderFolder(String childFolder, String parentFolder) {
@@ -244,5 +261,133 @@ public class FolderUtils {
         }
 
         return false;
+    }
+
+    /**
+     * 规范化配置包路径，将其转换为规范的spec路径
+     * 例如：
+     * 1. 业务流程/test_biz/MaxCompute => 业务流程/test_biz/MaxCompute/数据开发
+     * 2. 业务流程/test_biz/MaxCompute/test => 业务流程/test_biz/MaxCompute/数据开发/test
+     *
+     * @param nodeTypeId 节点类型
+     * @param folderPath 文件夹路径
+     * @param configPack 配置包
+     * @param locale     语言
+     * @return 规范化后的路径
+     */
+    public static String normalizeConfigPackPathToSpec(Integer nodeTypeId, String folderPath, Map<String, AppConfigPack> configPack, Locale locale) {
+        if (StringUtils.isBlank(folderPath) || nodeTypeId == null || configPack == null || locale == null) {
+            log.warn("invalid input parameters, folderPath: {}, nodeTypeId: {},  locale: {}",
+                    folderPath, nodeTypeId, locale);
+            return folderPath;
+        }
+
+        List<String> path = new ArrayList<>(Arrays.asList(StringUtils.split(folderPath, File.separator)));
+        List<String> relativePath = addFolderLabels(nodeTypeId, path, configPack, locale);
+        return Joiner.on("/").join(relativePath);
+    }
+
+    private static List<String> addFolderLabels(Integer nodeTypeId, List<String> paths, Map<String, AppConfigPack> configPack, Locale locale) {
+        if (CollectionUtils.isEmpty(paths)) {
+            return paths;
+        }
+
+        // 业务流程/Workflow/...
+        String modelRoot = paths.get(0);
+        Arrays.stream(com.aliyun.dataworks.common.spec.domain.dw.types.ModelTreeRoot.values()).filter(v -> v.matches(modelRoot)).findAny()
+                .ifPresent(root -> paths.set(0, root.getDisplayName(locale)));
+
+        // 例如: 业务流程/test_biz/MaxCompute
+        if (CollectionUtils.size(paths) >= 3) {
+            // MaxCompute
+            String engineFolderName = paths.get(2);
+            Optional.ofNullable(configPack)
+                    .map(Map::values).flatMap(values -> values.stream()
+                            .map(AppConfigPack::getConfigValue)
+                            .map(value -> (BusinessFolderConfig) GsonUtils.fromJsonString(value, BusinessFolderConfig.class))
+                            .filter(Objects::nonNull)
+                            .filter(conf -> {
+                                boolean displayNameMatches = MapUtils.emptyIfNull(conf.getDisplayName()).values().stream()
+                                        .anyMatch(displayName -> StringUtils.equalsIgnoreCase(engineFolderName, displayName));
+                                boolean folderMatches = Optional.ofNullable(conf.getFolders()).map(BusinessFolder::getName)
+                                        .map(folderName -> StringUtils.equalsIgnoreCase(folderName, engineFolderName)).orElse(false);
+                                return displayNameMatches || folderMatches;
+                            })
+                            .findAny())
+                    .ifPresent(businessFolderConfig -> {
+                        // 例如: 业务流程/test_biz/MaxCompute/数据开发/test, 添加匹配"数据开发"这一级Label
+                        if (CollectionUtils.size(paths) >= 3) {
+                            AtomicInteger indexAt = new AtomicInteger(3);
+                            AtomicBoolean replace = new AtomicBoolean(false);
+                            BusinessFolder folderConf = Optional.ofNullable(businessFolderConfig.getFolders())
+                                    .map(BusinessFolder::getChildrens)
+                                    .orElse(ListUtils.emptyIfNull(null)).stream()
+                                    .map(label -> ListUtils.emptyIfNull(label.getChildrens()).stream().filter(lc ->
+                                            ListUtils.emptyIfNull(lc.getNodes()).stream().anyMatch(node -> Objects.equals(node.getId(), nodeTypeId))).findAny())
+                                    .findAny().flatMap(label -> label)
+                                    .orElseGet(() -> {
+                                        BusinessFolder r = Optional.ofNullable(businessFolderConfig.getFolders())
+                                                .filter(folder -> ListUtils.emptyIfNull(folder.getNodes()).stream()
+                                                        .anyMatch(node -> Objects.equals(node.getId(), nodeTypeId))).orElse(null);
+                                        indexAt.set(2);
+                                        replace.set(true);
+                                        return r;
+                                    });
+
+                            if (folderConf != null) {
+                                MapUtils.emptyIfNull(folderConf.getDisplayName()).entrySet().stream()
+                                        .filter(ent -> StringUtils.containsIgnoreCase(locale.toString(), ent.getKey())).map(Entry::getValue).findAny()
+                                        .ifPresent(label -> {
+                                            if (replace.get()) {
+                                                paths.set(indexAt.get(), label);
+                                            } else {
+                                                paths.add(indexAt.get(), label);
+                                            }
+                                        });
+                            }
+                            MapUtils.emptyIfNull(businessFolderConfig.getDisplayName()).entrySet().stream()
+                                    .filter(ent -> StringUtils.containsIgnoreCase(locale.toString(), ent.getKey())).map(Entry::getValue).findAny()
+                                    .ifPresent(label -> paths.set(2, label));
+                        }
+                    });
+        }
+        return paths;
+    }
+
+    /**
+     * 规范化spec路径，将其转换为满足config pack规范的路径
+     *
+     * @param folderPath 待规范化的路径
+     * @param configPack 配置包
+     * @return 规范化后的路径
+     */
+    public static String normalizeSpecPathToConfigPack(String folderPath, Map<String, AppConfigPack> configPack) {
+        List<String> path = Arrays.asList(StringUtils.split(folderPath, File.separator));
+        String modelTreeRootDir = path.stream().filter(p -> ModelTreeRoot.searchModelTreeRoot(p) != null).findFirst().orElseThrow(
+                () -> new RuntimeException("model tree root not found at path: " + folderPath));
+        int modelTreeRootDirIdx = path.indexOf(modelTreeRootDir);
+        List<String> relativePath = removeFolderLabels(new ArrayList<>(path.subList(modelTreeRootDirIdx, path.size() - 1)), configPack);
+        return Joiner.on("/").join(relativePath);
+    }
+
+    private static List<String> removeFolderLabels(List<String> paths, Map<String, AppConfigPack> configPack) {
+        // 例如: 业务流程/test_biz/MaxCompute
+        if (CollectionUtils.size(paths) >= 3) {
+            String engineFolderName = paths.get(2);
+            Boolean isEngineFolder = Optional.ofNullable(configPack)
+                    .map(Map::values)
+                    .map(values -> values.stream()
+                            .map(AppConfigPack::getConfigValue)
+                            .map(value -> (BusinessFolderConfig) GsonUtils.fromJsonString(value, BusinessFolderConfig.class))
+                            .filter(Objects::nonNull)
+                            .anyMatch(conf -> MapUtils.emptyIfNull(conf.getDisplayName()).values().stream()
+                                    .anyMatch(displayName -> StringUtils.equalsIgnoreCase(engineFolderName, displayName))))
+                    .orElse(false);
+            // 例如: 业务流程/test_biz/MaxCompute/数据开发/test, 删除"数据开发"这一级叫Label
+            if (isEngineFolder && CollectionUtils.size(paths) > 3) {
+                paths.remove(3);
+            }
+        }
+        return paths;
     }
 }

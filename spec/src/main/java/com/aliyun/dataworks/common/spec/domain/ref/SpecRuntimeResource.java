@@ -17,13 +17,20 @@ package com.aliyun.dataworks.common.spec.domain.ref;
 
 import com.aliyun.dataworks.common.spec.domain.SpecRefEntity;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * @author yiwei.qyw
  * @date 2023/7/4
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 public class SpecRuntimeResource extends SpecRefEntity {
     private String resourceGroup;
     private String resourceGroupId;
+    /**
+     * 运行时资源，指定cu数
+     */
+    @Deprecated
+    private String cu;
 }

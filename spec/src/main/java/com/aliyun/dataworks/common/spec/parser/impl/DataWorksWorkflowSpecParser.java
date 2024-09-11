@@ -15,12 +15,10 @@
 
 package com.aliyun.dataworks.common.spec.parser.impl;
 
-import java.util.Arrays;
 import java.util.Map;
 
 import com.aliyun.dataworks.common.spec.domain.DataWorksWorkflowSpec;
 import com.aliyun.dataworks.common.spec.domain.SpecConstants;
-import com.aliyun.dataworks.common.spec.domain.enums.SpecKind;
 import com.aliyun.dataworks.common.spec.parser.Parser;
 import com.aliyun.dataworks.common.spec.parser.SpecParserContext;
 import com.aliyun.dataworks.common.spec.parser.SpecParserFactory;
@@ -31,11 +29,6 @@ import com.aliyun.dataworks.common.spec.utils.SpecDevUtil;
  * @date 2023/11/16
  */
 public class DataWorksWorkflowSpecParser extends SpecParser<DataWorksWorkflowSpec> {
-    @Override
-    public boolean support(String kind) {
-        return Arrays.stream(SpecKind.values()).map(SpecKind::getLabel).anyMatch(k -> k.equalsIgnoreCase(kind));
-    }
-
     @Override
     public DataWorksWorkflowSpec parse(Map<String, Object> rawContext, SpecParserContext specParserContext) {
         DataWorksWorkflowSpec specObj = instantiateSpecObject();

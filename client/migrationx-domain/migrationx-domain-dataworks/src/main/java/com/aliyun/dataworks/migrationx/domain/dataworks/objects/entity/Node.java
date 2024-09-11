@@ -15,23 +15,28 @@
 
 package com.aliyun.dataworks.migrationx.domain.dataworks.objects.entity;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
+import java.util.List;
+
 import com.aliyun.dataworks.migrationx.domain.dataworks.objects.serialize.CodeControlCharEscapeConverter;
 import com.aliyun.dataworks.migrationx.domain.dataworks.objects.serialize.CodeControlCharUnEscapeConverter;
 import com.aliyun.dataworks.migrationx.domain.dataworks.objects.types.CodeModeType;
 import com.aliyun.dataworks.migrationx.domain.dataworks.objects.types.DmObjectType;
 import com.aliyun.dataworks.migrationx.domain.dataworks.objects.types.NodeUseType;
 import com.aliyun.dataworks.migrationx.domain.dataworks.objects.types.RerunMode;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlCData;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlElementWrapper;
 import com.fasterxml.jackson.dataformat.xml.annotation.JacksonXmlProperty;
 import lombok.ToString;
-
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author sam.liux
@@ -39,6 +44,9 @@ import java.util.List;
  */
 @JsonInclude(JsonInclude.Include.NON_EMPTY)
 @ToString(callSuper = true, exclude = {"code"})
+@JsonTypeInfo(
+        use = Id.MINIMAL_CLASS,
+        property = "@class")
 public class Node extends DmObject {
     @JacksonXmlProperty(isAttribute = true, localName = "name")
     private String name;
@@ -98,7 +106,7 @@ public class Node extends DmObject {
      * code mode: wizard/code
      */
     @JacksonXmlProperty(localName = "codeMode", isAttribute = true)
-    private CodeModeType codeMode;
+    private String codeMode;
 
     /**
      * 实时转实例
@@ -264,6 +272,11 @@ public class Node extends DmObject {
     private String ttContent;
 
     @JacksonXmlCData
+    @JacksonXmlElementWrapper(localName = "advanceSettings")
+    @JacksonXmlProperty(localName = "advanceSettings")
+    private String advanceSettings;
+
+    @JacksonXmlCData
     @JacksonXmlElementWrapper(localName = "Extend")
     @JacksonXmlProperty(localName = "Extend")
     private transient String extend;
@@ -344,11 +357,14 @@ public class Node extends DmObject {
         this.diResourceGroupName = diResourceGroupName;
     }
 
-    public CodeModeType getCodeMode() {
-        return codeMode;
+    public String getCodeMode() {
+        return Arrays.stream(CodeModeType.values())
+                .filter(t -> t.name().equals(codeMode) || StringUtils.equals(t.getValue(), codeMode))
+                .map(CodeModeType::getValue)
+                .findFirst().orElse(codeMode);
     }
 
-    public void setCodeMode(CodeModeType codeMode) {
+    public void setCodeMode(String codeMode) {
         this.codeMode = codeMode;
     }
 
@@ -616,5 +632,14 @@ public class Node extends DmObject {
 
     public void setExtend(String extend) {
         this.extend = extend;
+    }
+
+    public String getAdvanceSettings() {
+        return advanceSettings;
+    }
+
+    public Node setAdvanceSettings(String advanceSettings) {
+        this.advanceSettings = advanceSettings;
+        return this;
     }
 }

@@ -23,15 +23,11 @@
     <parent>
         <artifactId>migrationx</artifactId>
         <groupId>com.aliyun.dataworks</groupId>
-        <version>1.1.5</version>
+        <version>1.1.7-workflow-preview3</version>
+        <relativePath>../pom.xml</relativePath>
     </parent>
 
     <artifactId>migrationx-domain</artifactId>
-
-    <properties>
-        <maven.compiler.source>8</maven.compiler.source>
-        <maven.compiler.target>8</maven.compiler.target>
-    </properties>
 
     <modules>
         <module>migrationx-domain-core</module>
@@ -54,7 +50,7 @@
     <dependencies>
         <dependency>
             <groupId>org.springframework</groupId>
-            <artifactId>spring-context</artifactId>
+            <artifactId>spring-beans</artifactId>
         </dependency>
         <dependency>
             <groupId>com.google.guava</groupId>
@@ -63,7 +59,6 @@
         <dependency>
             <groupId>com.aliyun.dataworks</groupId>
             <artifactId>migrationx-common</artifactId>
-            <version>1.1.5</version>
         </dependency>
         <dependency>
             <groupId>commons-io</groupId>

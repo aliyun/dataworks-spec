@@ -15,6 +15,14 @@
 
 package com.aliyun.migrationx.common.utils;
 
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+
 import com.google.common.io.ByteStreams;
 import org.apache.commons.compress.archivers.ArchiveEntry;
 import org.apache.commons.compress.archivers.ArchiveException;
@@ -27,14 +35,6 @@ import org.apache.commons.compress.compressors.CompressorStreamFactory;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.BufferedInputStream;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 
 /**
  * @author sam.liux
@@ -64,7 +64,7 @@ public class ZipUtils {
             FileUtils.forceDelete(zipFile);
         }
 
-        try(ZipArchiveOutputStream zipArchiveOutputStream = new ZipArchiveOutputStream(Files.newOutputStream(zipFile.toPath()))) {
+        try (ZipArchiveOutputStream zipArchiveOutputStream = new ZipArchiveOutputStream(Files.newOutputStream(zipFile.toPath()))) {
             zipDirectory(zipPath, zipArchiveOutputStream, "");
         } catch (Exception e) {
             LOGGER.error("zip directory error: {}, exception: ", zipPath, e);
@@ -78,7 +78,7 @@ public class ZipUtils {
     }
 
     private static void zipDirectory(File zipPath, ZipArchiveOutputStream zipArchiveOutputStream, String parentDir)
-        throws IOException {
+            throws IOException {
         if (zipPath == null || !zipPath.isDirectory()) {
             return;
         }
@@ -96,7 +96,7 @@ public class ZipUtils {
             } else {
                 try (InputStream fileIns = new BufferedInputStream(Files.newInputStream(subFile.toPath()))) {
                     zipArchiveOutputStream.putArchiveEntry(new ZipArchiveEntry(parentDir + subFile.getName()));
-                    byte [] bytes = new byte[4096];
+                    byte[] bytes = new byte[4096];
                     int readBytes;
                     while ((readBytes = fileIns.read(bytes)) > 0) {
                         zipArchiveOutputStream.write(bytes, 0, readBytes);
@@ -135,7 +135,7 @@ public class ZipUtils {
         ArchiveInputStream archiveInput = null;
         try {
             archiveInput = createArchiveInputByType(packageFile.getAbsolutePath(),
-                inferType(packageFile.getName(), defaultType));
+                    inferType(packageFile.getName(), defaultType));
             ArchiveEntry entry = archiveInput == null ? null : archiveInput.getNextEntry();
             while (entry != null) {
                 File file = new File(dirPath, entry.getName());
@@ -149,6 +149,7 @@ public class ZipUtils {
             }
         } catch (ArchiveException | CompressorException | IOException e) {
             LOGGER.error("decompress file " + packageFile + " failed:", e);
+            throw new RuntimeException(e);
         } finally {
             if (archiveInput != null) {
                 try {
@@ -162,40 +163,40 @@ public class ZipUtils {
     }
 
     private static ArchiveInputStream createArchiveInputByType(String packageFile, String type)
-        throws IOException, CompressorException, ArchiveException {
+            throws IOException, CompressorException, ArchiveException {
         ArchiveInputStream archiveInput;
 
         Path path = Paths.get(packageFile);
         if (TYPE_TGZ.equals(type)) {
             archiveInput = new ArchiveStreamFactory().createArchiveInputStream(
-                ArchiveStreamFactory.TAR,
-                new CompressorStreamFactory().createCompressorInputStream(
-                    CompressorStreamFactory.GZIP,
-                    Files.newInputStream(path)));
+                    ArchiveStreamFactory.TAR,
+                    new CompressorStreamFactory().createCompressorInputStream(
+                            CompressorStreamFactory.GZIP,
+                            Files.newInputStream(path)));
             return archiveInput;
         }
 
         if (TYPE_ZIP.equals(type)) {
             archiveInput = new ArchiveStreamFactory().createArchiveInputStream(
-                ArchiveStreamFactory.ZIP,
-                Files.newInputStream(path));
+                    ArchiveStreamFactory.ZIP,
+                    Files.newInputStream(path));
             return archiveInput;
         }
 
         if (TYPE_GZIP.equals(type)) {
             archiveInput = new ArchiveStreamFactory().createArchiveInputStream(
-                ArchiveStreamFactory.ZIP,
-                new CompressorStreamFactory().createCompressorInputStream(
-                    CompressorStreamFactory.GZIP,
-                    Files.newInputStream(path)
-                ));
+                    ArchiveStreamFactory.ZIP,
+                    new CompressorStreamFactory().createCompressorInputStream(
+                            CompressorStreamFactory.GZIP,
+                            Files.newInputStream(path)
+                    ));
             return archiveInput;
         }
 
         if (TYPE_TAR.equals(type)) {
             archiveInput = new ArchiveStreamFactory().createArchiveInputStream(
-                ArchiveStreamFactory.TAR,
-                Files.newInputStream(path)
+                    ArchiveStreamFactory.TAR,
+                    Files.newInputStream(path)
             );
             return archiveInput;
         }
@@ -230,5 +231,4 @@ public class ZipUtils {
 
         return defaultType;
     }
-
 }

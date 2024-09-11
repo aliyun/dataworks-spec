@@ -22,7 +22,6 @@ import com.aliyun.dataworks.common.spec.domain.interfaces.LabelEnum;
  * @date 2023/7/4
  */
 public enum SpecKind implements LabelEnum {
-
     /**
      * Cycle scheduling workflow
      */
@@ -68,7 +67,27 @@ public enum SpecKind implements LabelEnum {
     /**
      * Table
      */
-    TABLE("Table");
+    TABLE("Table"),
+    /**
+     * spec kind for single Node
+     */
+    NODE("Node"),
+    /**
+     * Component
+     */
+    COMPONENT("Component"),
+    /**
+     * Resource
+     */
+    RESOURCE("Resource"),
+    /**
+     * Function
+     */
+    FUNCTION("Function"),
+    /**
+     * Workflow，新Workflow
+     */
+    WORKFLOW("Workflow");
 
     private final String label;
 
@@ -80,5 +99,4 @@ public enum SpecKind implements LabelEnum {
     public String getLabel() {
         return label;
     }
-
 }

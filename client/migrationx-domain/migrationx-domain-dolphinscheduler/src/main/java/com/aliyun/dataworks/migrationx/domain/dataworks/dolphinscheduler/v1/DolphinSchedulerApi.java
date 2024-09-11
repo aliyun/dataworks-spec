@@ -31,8 +31,8 @@ public interface DolphinSchedulerApi {
      * @param request QueryProcessDefinitionByPaginateRequest
      * @return PaginateResponse<JsonObject>
      */
-    PaginateResponse<JsonObject> queryProcessDefinitionByPaging(QueryProcessDefinitionByPaginateRequest request)
-        throws Exception;
+    <T> PaginateResponse<T> queryProcessDefinitionByPaging(QueryProcessDefinitionByPaginateRequest request)
+            throws Exception;
 
     /**
      * batch export process definition by ids, will get a plan text response of json array
@@ -68,7 +68,7 @@ public interface DolphinSchedulerApi {
      * @throws Exception ex
      */
     PaginateResponse<JsonObject> queryUdfFuncListByPaging(QueryUdfFuncListByPaginateRequest request)
-        throws Exception;
+            throws Exception;
 
     /**
      * query datasource list by paging
@@ -78,7 +78,7 @@ public interface DolphinSchedulerApi {
      * @throws Exception ex
      */
     PaginateResponse<JsonObject> queryDataSourceListByPaging(QueryDataSourceListByPaginateRequest request)
-        throws Exception;
+            throws Exception;
 
     /**
      * query project list by paging

@@ -17,6 +17,7 @@ package com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.servic
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
@@ -28,6 +29,7 @@ import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.Dolphin
 import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.DolphinSchedulerVersion;
 import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.PackageInfo;
 import com.aliyun.migrationx.common.utils.GsonUtils;
+
 import com.google.gson.reflect.TypeToken;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.ListUtils;
@@ -40,7 +42,7 @@ import org.apache.commons.lang3.StringUtils;
  */
 @Slf4j
 public abstract class DolphinSchedulerPackageLoader<Project, ProcessDefinitionType, DataSource, ResourceInfo,
-    UdfFunction> {
+        UdfFunction> {
     protected static final String PACKAGE_INFO_JSON = "package_info.json";
     protected static final String PROJECTS = "projects";
     protected static final String PROCESS_DEFINITION = "processDefinition";
@@ -80,6 +82,13 @@ public abstract class DolphinSchedulerPackageLoader<Project, ProcessDefinitionTy
         return Optional.ofNullable(projectList).orElse(ListUtils.emptyIfNull(null));
     }
 
+    protected List<Project> readProjects(File packageRoot, Type type) throws IOException {
+        File projectsJson = new File(packageRoot, PROJECTS_JSON);
+        String projects = FileUtils.readFileToString(projectsJson, StandardCharsets.UTF_8);
+        List<Project> projectList = GsonUtils.fromJsonString(projects, type);
+        return Optional.ofNullable(projectList).orElse(ListUtils.emptyIfNull(null));
+    }
+
     protected static PackageInfo readPackageInfo(File rootDir) throws IOException {
         File packageInfoJson = new File(rootDir, PACKAGE_INFO_JSON);
         String jsonContent = FileUtils.readFileToString(packageInfoJson, StandardCharsets.UTF_8);
@@ -98,33 +107,40 @@ public abstract class DolphinSchedulerPackageLoader<Project, ProcessDefinitionTy
         }
 
         File[] subJsons = Optional.ofNullable(dir.listFiles(f ->
-            StringUtils.endsWithIgnoreCase(f.getName(), ".json"))).orElse(new File[] {});
+                StringUtils.endsWithIgnoreCase(f.getName(), ".json"))).orElse(new File[]{});
         return Arrays.stream(subJsons)
-            .map(jsonFile -> {
-                try {
-                    return FileUtils.readFileToString(jsonFile, StandardCharsets.UTF_8);
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
-            })
-            .map(json -> (List<T>)GsonUtils.fromJsonString(json, typeToken.getType()))
-            .filter(Objects::nonNull)
-            .flatMap(List::stream)
-            .collect(Collectors.toList());
+                .map(jsonFile -> {
+                    try {
+                        return FileUtils.readFileToString(jsonFile, StandardCharsets.UTF_8);
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                })
+                .map(json -> (List<T>) GsonUtils.fromJsonString(json, typeToken.getType()))
+                .filter(Objects::nonNull)
+                .flatMap(List::stream)
+                .collect(Collectors.toList());
     }
 
     @SuppressWarnings("unchecked")
     public static <Project, ProcessDefinitionType, DataSource, ResourceInfo, UdfFunction> DolphinSchedulerPackageLoader<Project,
-        ProcessDefinitionType, DataSource, ResourceInfo, UdfFunction> create(
-        File packageDir) throws IOException {
+            ProcessDefinitionType, DataSource, ResourceInfo, UdfFunction> create(
+            File packageDir) throws IOException {
         PackageInfo pacakgeInfo = readPackageInfo(packageDir);
         DolphinSchedulerVersion version = pacakgeInfo.getDolphinSchedulerVersion();
         switch (version) {
             case V1:
                 return (DolphinSchedulerPackageLoader<Project, ProcessDefinitionType, DataSource, ResourceInfo,
-                    UdfFunction>)new DolphinSchedulerV1PackageLoader(
-                    packageDir);
+                        UdfFunction>) new DolphinSchedulerV1PackageLoader(
+                        packageDir);
             case V2:
+                return (DolphinSchedulerPackageLoader<Project, ProcessDefinitionType, DataSource, ResourceInfo,
+                        UdfFunction>) new DolphinSchedulerV2PackageLoader(
+                        packageDir);
+            case V3:
+                return (DolphinSchedulerPackageLoader<Project, ProcessDefinitionType, DataSource, ResourceInfo,
+                        UdfFunction>) new DolphinSchedulerV3PackageLoader(
+                        packageDir);
             default:
                 throw new RuntimeException("unsupported dolphinscheduler version: " + version);
         }

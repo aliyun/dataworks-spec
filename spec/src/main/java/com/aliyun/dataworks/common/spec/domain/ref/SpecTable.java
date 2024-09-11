@@ -39,5 +39,6 @@ public class SpecTable extends SpecArtifact {
     private String ddl;
     private Boolean hasPartition;
     private Boolean isVisible;
+    @EqualsAndHashCode.Include
     private SpecCalcEngine calcEngine;
 }

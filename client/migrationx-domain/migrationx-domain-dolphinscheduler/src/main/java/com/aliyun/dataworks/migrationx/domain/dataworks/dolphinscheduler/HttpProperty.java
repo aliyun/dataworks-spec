@@ -16,6 +16,8 @@ package com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler;
 
 import java.util.Objects;
 
+import com.aliyun.dataworks.migrationx.domain.dataworks.dolphinscheduler.v1.v139.enums.HttpParametersType;
+
 public class HttpProperty {
     /**
      * key
@@ -97,9 +99,9 @@ public class HttpProperty {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
-        HttpProperty property = (HttpProperty)o;
+        HttpProperty property = (HttpProperty) o;
         return Objects.equals(prop, property.prop) &&
-            Objects.equals(value, property.value);
+                Objects.equals(value, property.value);
     }
 
     @Override
@@ -110,10 +112,9 @@ public class HttpProperty {
     @Override
     public String toString() {
         return "HttpProperty{" +
-            "prop='" + prop + '\'' +
-            ", httpParametersType=" + httpParametersType +
-            ", value='" + value + '\'' +
-            '}';
+                "prop='" + prop + '\'' +
+                ", httpParametersType=" + httpParametersType +
+                ", value='" + value + '\'' +
+                '}';
     }
-
 }

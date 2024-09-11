@@ -28,5 +28,7 @@ public enum DolphinSchedulerVersion {
     /**
      * 2.x ~ later
      */
-    V2
+    V2,
+
+    V3
 }
