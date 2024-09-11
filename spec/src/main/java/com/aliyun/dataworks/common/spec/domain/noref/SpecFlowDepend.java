@@ -29,6 +29,8 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class SpecFlowDepend extends SpecNoRefEntity {
+    @EqualsAndHashCode.Include
     private SpecNode nodeId;
+    @EqualsAndHashCode.Include
     private List<SpecDepend> depends;
 }

@@ -17,27 +17,15 @@ package com.aliyun.dataworks.common.spec.domain.ref;
 
 import java.util.List;
 
-import com.aliyun.dataworks.common.spec.domain.noref.SpecFlowDepend;
+import com.aliyun.dataworks.common.spec.domain.interfaces.Input;
+import com.aliyun.dataworks.common.spec.domain.interfaces.Output;
 
 /**
- * container node interface
- *
  * @author 聿剑
- * @date 2024/5/2
+ * @date 2024/7/2
  */
-public interface ContainerNode {
+public interface InputOutputWired {
+    List<Input> getInputs();
 
-    /**
-     * get inner nodes
-     *
-     * @return list of inner nodes
-     */
-    List<SpecNode> getInnerNodes();
-
-    /**
-     * get inner flow depends of inner nodes
-     *
-     * @return List of spec flow depend
-     */
-    List<SpecFlowDepend> getInnerFlow();
+    List<Output> getOutputs();
 }

@@ -16,30 +16,38 @@
 package com.aliyun.dataworks.common.spec.parser.impl;
 
 import java.util.Map;
+import java.util.Set;
 
 import com.aliyun.dataworks.common.spec.annotation.SpecParser;
-import com.aliyun.dataworks.common.spec.domain.noref.SpecCombined;
+import com.aliyun.dataworks.common.spec.domain.noref.SpecSubFlow;
 import com.aliyun.dataworks.common.spec.parser.Parser;
 import com.aliyun.dataworks.common.spec.parser.SpecParserContext;
 import com.aliyun.dataworks.common.spec.utils.SpecDevUtil;
+import com.google.common.collect.Sets;
 
 /**
  * @author 聿剑
  * @date 2023/10/25
  */
 @SpecParser
-public class CombinedParser implements Parser<SpecCombined> {
-    public static final String KEY_TYPE = "combined";
+public class SubFlowParser implements Parser<SpecSubFlow> {
+    public static final String KEY_TYPE_COMBINED = "combined";
+    public static final String KEY_TYPE_SUBFLOW = "subflow";
 
     @Override
-    public SpecCombined parse(Map<String, Object> rawContext, SpecParserContext specParserContext) {
-        SpecCombined specCombined = new SpecCombined();
+    public SpecSubFlow parse(Map<String, Object> rawContext, SpecParserContext specParserContext) {
+        SpecSubFlow specCombined = new SpecSubFlow();
         SpecDevUtil.setSameKeyField(rawContext, specCombined, specParserContext);
         return specCombined;
     }
 
     @Override
     public String getKeyType() {
-        return KEY_TYPE;
+        return KEY_TYPE_COMBINED;
+    }
+
+    @Override
+    public Set<String> getKeyTypes() {
+        return Sets.newHashSet(KEY_TYPE_COMBINED, KEY_TYPE_COMBINED);
     }
 }

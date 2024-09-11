@@ -25,6 +25,7 @@ import com.aliyun.dataworks.common.spec.exception.SpecErrorCode;
 import com.aliyun.dataworks.common.spec.exception.SpecException;
 import com.aliyun.dataworks.common.spec.parser.impl.DefaultSpecParser;
 import com.aliyun.dataworks.common.spec.parser.impl.SpecParser;
+import org.apache.commons.collections4.CollectionUtils;
 import org.reflections.Reflections;
 
 /**
@@ -51,10 +52,8 @@ public class SpecParserFactory {
                     continue;
                 }
 
-                if (parser.getKeyType() != null) {
-                    parserMap.put(parser.getKeyType(), parser);
-                }
-
+                CollectionUtils.emptyIfNull(parser.getKeyTypes()).forEach(key -> parserMap.put(key, parser));
+                
                 // set Parser‘s Class type to parserMap
                 Arrays.stream(parser.getClass().getGenericInterfaces())
                     .filter(type -> type instanceof ParameterizedType)

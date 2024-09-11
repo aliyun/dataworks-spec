@@ -17,6 +17,7 @@ package com.aliyun.dataworks.common.spec.domain.noref;
 
 import com.aliyun.dataworks.common.spec.domain.SpecNoRefEntity;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * assertion define
@@ -24,6 +25,7 @@ import lombok.Data;
  * @author 聿剑
  * @date 2023/10/25
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 public class SpecAssertion extends SpecNoRefEntity {
     private String field;

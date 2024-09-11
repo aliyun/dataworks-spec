@@ -29,6 +29,8 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import com.alibaba.fastjson2.JSON;
+
 import com.aliyun.dataworks.common.spec.adapter.SpecHandlerContext;
 import com.aliyun.dataworks.common.spec.adapter.handler.AbstractEntityHandler;
 import com.aliyun.dataworks.common.spec.domain.dw.codemodel.Code;
@@ -69,9 +71,6 @@ import com.aliyun.dataworks.migrationx.domain.dataworks.utils.DefaultNodeTypeUti
 import com.aliyun.dataworks.migrationx.domain.dataworks.utils.FolderUtils;
 import com.aliyun.migrationx.common.utils.DateUtils;
 import com.aliyun.migrationx.common.utils.GsonUtils;
-
-import com.alibaba.fastjson2.JSON;
-
 import com.google.common.base.Preconditions;
 import com.google.common.reflect.TypeToken;
 import lombok.extern.slf4j.Slf4j;
@@ -94,9 +93,9 @@ public class BasicNodeSpecHandler extends AbstractEntityHandler<DwNodeEntity, Sp
 
     protected NodeSpecAdapter getSpecAdapter() {
         return Optional.ofNullable(context)
-                .map(SpecHandlerContext::getSpecAdapter)
-                .map(adapter -> (NodeSpecAdapter) adapter)
-                .orElseThrow(() -> new RuntimeException("SpecAdapter is null"));
+            .map(SpecHandlerContext::getSpecAdapter)
+            .map(adapter -> (NodeSpecAdapter)adapter)
+            .orElseThrow(() -> new RuntimeException("SpecAdapter is null"));
     }
 
     protected boolean matchNodeType(DwNodeEntity dwNode, CodeProgramType nodeType) {
@@ -105,9 +104,9 @@ public class BasicNodeSpecHandler extends AbstractEntityHandler<DwNodeEntity, Sp
 
     protected boolean matchNodeType(DwNodeEntity dwNode, String nodeType) {
         return Optional.ofNullable(dwNode)
-                .map(DwNodeEntity::getType)
-                .map(type -> StringUtils.equalsIgnoreCase(nodeType, type))
-                .orElse(false);
+            .map(DwNodeEntity::getType)
+            .map(type -> StringUtils.equalsIgnoreCase(nodeType, type))
+            .orElse(false);
     }
 
     @SuppressWarnings("unchecked")
@@ -166,9 +165,9 @@ public class BasicNodeSpecHandler extends AbstractEntityHandler<DwNodeEntity, Sp
         specNode.setPriority(dmNode.getPriority());
 
         specNode.setTimeout(Optional.ofNullable(dmNode.getExtraConfig())
-                .map(json -> GsonUtils.fromJsonString(json, new TypeToken<Map<String, Object>>() {}.getType()))
-                .map(map -> (Map<String, Object>) map)
-                .map(map -> MapUtils.getInteger(map, "alisaTaskKillTimeout")).orElse(null));
+            .map(json -> GsonUtils.fromJsonString(json, new TypeToken<Map<String, Object>>() {}.getType()))
+            .map(map -> (Map<String, Object>)map)
+            .map(map -> MapUtils.getInteger(map, "alisaTaskKillTimeout")).orElse(null));
         specNode.setRuntimeResource(Optional.ofNullable(dmNode.getResourceGroup()).map(resGroup -> {
             SpecRuntimeResource rt = new SpecRuntimeResource();
             rt.setResourceGroup(resGroup);
@@ -194,7 +193,7 @@ public class BasicNodeSpecHandler extends AbstractEntityHandler<DwNodeEntity, Sp
 
         specScript.setParameters(toScriptParameters(dmNodeBO));
         specScript.setRuntime(toSpecScriptRuntime(dmNodeBO));
-        specScript.setContent(toSpectScriptContent(dmNodeBO));
+        specScript.setContent(toSpecScriptContent(dmNodeBO));
         return specScript;
     }
 
@@ -314,17 +313,17 @@ public class BasicNodeSpecHandler extends AbstractEntityHandler<DwNodeEntity, Sp
 
         CodeModel<Code> cm = CodeModelFactory.getCodeModel(dmNodeBO.getType(), dmNodeBO.getCode());
         return Optional.ofNullable(cm.getCodeModel()).filter(m -> m instanceof MultiLanguageScriptingCode)
-                .map(codeModel -> ((MultiLanguageScriptingCode) codeModel).getLanguage()).orElse(null);
+            .map(codeModel -> ((MultiLanguageScriptingCode)codeModel).getLanguage()).orElse(null);
     }
 
     public SpecScriptRuntime toSpecScriptRuntime(DwNodeEntity scr) {
         SpecScriptRuntime sr = new SpecScriptRuntime();
-        CodeProgramType type = CodeProgramType.getNodeTypeByName(scr.getType());
-        sr.setCommand(type.getName());
+        sr.setCommand(scr.getType());
+        sr.setCommandTypeId(scr.getTypeId());
         return sr;
     }
 
-    public String toSpectScriptContent(DwNodeEntity dmNodeBO) {
+    public String toSpecScriptContent(DwNodeEntity dmNodeBO) {
         return null;
     }
 
@@ -357,17 +356,17 @@ public class BasicNodeSpecHandler extends AbstractEntityHandler<DwNodeEntity, Sp
                 log.warn("invalid input context value: {}", inCtx);
             }
             specVariable.setNode(node);
-            return (Input) specVariable;
+            return (Input)specVariable;
         }).collect(Collectors.toList());
 
         Optional.ofNullable(specNode.getScript()).ifPresent(scr -> {
             List<SpecVariable> parameters = new ArrayList<>(Optional.ofNullable(scr.getParameters()).orElse(new ArrayList<>()));
-            parameters.addAll(ListUtils.emptyIfNull(inputVariables).stream().map(v -> (SpecVariable) v).collect(Collectors.toList()));
+            parameters.addAll(ListUtils.emptyIfNull(inputVariables).stream().map(v -> (SpecVariable)v).collect(Collectors.toList()));
             scr.setParameters(parameters);
         });
         specNode.setInputs(ListUtils.emptyIfNull(inputVariables).stream()
-                .map(v -> (SpecVariable) v).map(SpecVariable::getReferenceVariable)
-                .filter(Objects::nonNull).collect(Collectors.toList()));
+            .map(v -> (SpecVariable)v).map(SpecVariable::getReferenceVariable)
+            .filter(Objects::nonNull).collect(Collectors.toList()));
         specNode.getInputs().addAll(getNodeInputs(dmNodeBO));
 
         List<NodeContext> outputCtxList = dmNodeBO.getOutputContexts();
@@ -379,7 +378,7 @@ public class BasicNodeSpecHandler extends AbstractEntityHandler<DwNodeEntity, Sp
             specVariable.setValue(outCtx.getParamValue());
             specVariable.setNode(node);
             specVariable.setDescription(outCtx.getDescription());
-            return (Output) specVariable;
+            return (Output)specVariable;
         }).collect(Collectors.toList());
         specNode.setOutputs(outputVariables);
         specNode.getOutputs().addAll(getNodeOutputs(dmNodeBO, context));
@@ -396,11 +395,11 @@ public class BasicNodeSpecHandler extends AbstractEntityHandler<DwNodeEntity, Sp
 
         nodeInputOutputs.sort(Comparator.comparing(x -> {
             if (x instanceof SpecNodeOutput) {
-                return ((SpecNodeOutput) x).getArtifactType() + ((SpecNodeOutput) x).getData();
+                return ((SpecNodeOutput)x).getArtifactType() + ((SpecNodeOutput)x).getData();
             } else if (x instanceof SpecTable) {
-                return ((SpecTable) x).getArtifactType() + ((SpecTable) x).getName();
+                return ((SpecTable)x).getArtifactType() + ((SpecTable)x).getName();
             } else if (x instanceof SpecVariable) {
-                return ((SpecVariable) x).getArtifactType() + ((SpecVariable) x).getName();
+                return ((SpecVariable)x).getArtifactType() + ((SpecVariable)x).getName();
             } else {
                 return x.toString();
             }
@@ -450,8 +449,8 @@ public class BasicNodeSpecHandler extends AbstractEntityHandler<DwNodeEntity, Sp
         try {
             InputStream inputStream = BasicNodeSpecHandler.class.getResourceAsStream("/nodemarket/config_pack_cache.json");
             return JSON.parseObject(
-                    IOUtils.toString(inputStream, StandardCharsets.UTF_8),
-                    new TypeToken<Map<String, AppConfigPack>>() {}.getType());
+                IOUtils.toString(inputStream, StandardCharsets.UTF_8),
+                new TypeToken<Map<String, AppConfigPack>>() {}.getType());
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -469,7 +468,7 @@ public class BasicNodeSpecHandler extends AbstractEntityHandler<DwNodeEntity, Sp
 
         try {
             return FolderUtils.normalizeConfigPackPathToSpec(
-                    type.getCode(), dwNode.getFolder(), getConfigPack(), context.getLocale()) + "/" + dwNode.getName();
+                type.getCode(), dwNode.getFolder(), getConfigPack(), context.getLocale()) + "/" + dwNode.getName();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -491,7 +490,7 @@ public class BasicNodeSpecHandler extends AbstractEntityHandler<DwNodeEntity, Sp
             a.setData(out.getData());
             a.setRefTableName(out.getRefTableName());
             a.setIsDefault(Objects.equals(IoParseType.SYSTEM.getCode(), out.getParseType()));
-            return (T) a;
+            return (T)a;
         }).collect(Collectors.toList());
     }
 

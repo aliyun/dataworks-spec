@@ -18,6 +18,7 @@ package com.aliyun.dataworks.common.spec.domain.ref;
 import com.aliyun.dataworks.common.spec.domain.SpecRefEntity;
 import com.aliyun.dataworks.common.spec.domain.enums.SpecFileResourceType;
 import com.aliyun.dataworks.common.spec.domain.ref.file.SpecObjectStorageFile;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -29,7 +30,8 @@ import lombok.ToString;
 @Getter
 @Setter
 @ToString(callSuper = true)
-public class SpecFileResource extends SpecRefEntity {
+@EqualsAndHashCode(callSuper = true)
+public class SpecFileResource extends SpecRefEntity implements ScriptWired {
     /**
      * Resource name
      */
@@ -37,10 +39,12 @@ public class SpecFileResource extends SpecRefEntity {
     /**
      * Resource config script
      */
+    @EqualsAndHashCode.Include
     private SpecScript script;
     /**
      * Runtime resource for file resource register to calculation engine
      */
+    @EqualsAndHashCode.Include
     private SpecRuntimeResource runtimeResource;
     /**
      * Resource type
@@ -49,9 +53,11 @@ public class SpecFileResource extends SpecRefEntity {
     /**
      * Resource file storage
      */
+    @EqualsAndHashCode.Include
     private SpecObjectStorageFile file;
     /**
      * Resource calculate engine datasource
      */
+    @EqualsAndHashCode.Include
     private SpecDatasource datasource;
 }

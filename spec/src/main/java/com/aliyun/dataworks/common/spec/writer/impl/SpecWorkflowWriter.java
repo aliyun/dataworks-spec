@@ -15,12 +15,12 @@
 
 package com.aliyun.dataworks.common.spec.writer.impl;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
@@ -29,20 +29,12 @@ import com.aliyun.dataworks.common.spec.annotation.SpecWriter;
 import com.aliyun.dataworks.common.spec.domain.SpecContext;
 import com.aliyun.dataworks.common.spec.domain.enums.SpecVersion;
 import com.aliyun.dataworks.common.spec.domain.interfaces.NodeIO;
-import com.aliyun.dataworks.common.spec.domain.ref.SpecNode;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecNodeOutput;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecTable;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecVariable;
-import com.aliyun.dataworks.common.spec.parser.impl.DoWhileParser;
-import com.aliyun.dataworks.common.spec.parser.impl.SpecBranchParser;
-import com.aliyun.dataworks.common.spec.parser.impl.SpecForEachParser;
-import com.aliyun.dataworks.common.spec.parser.impl.SpecJoinParser;
-import com.aliyun.dataworks.common.spec.parser.impl.SpecParamHubParser;
-import com.aliyun.dataworks.common.spec.parser.impl.SubFlowParser;
+import com.aliyun.dataworks.common.spec.domain.ref.SpecWorkflow;
 import com.aliyun.dataworks.common.spec.writer.SpecWriterContext;
-import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
-import org.apache.commons.lang3.StringUtils;
 
 /**
  * Spec node writer
@@ -51,44 +43,25 @@ import org.apache.commons.lang3.StringUtils;
  * @date 2023/8/27
  */
 @SpecWriter
-public class SpecNodeWriter extends DefaultJsonObjectWriter<SpecNode> {
-    public SpecNodeWriter(SpecWriterContext context) {
+public class SpecWorkflowWriter extends DefaultJsonObjectWriter<SpecWorkflow> {
+    public SpecWorkflowWriter(SpecWriterContext context) {
         super(context);
     }
 
     @Override
-    public JSONObject write(SpecNode specObj, SpecWriterContext context) {
+    public JSONObject write(SpecWorkflow specObj, SpecWriterContext context) {
         JSONObject json = writeJsonObject(specObj, true);
 
         JSONObject inputs = writeIo(specObj.getInputs());
         json.put("inputs", inputs);
         JSONObject outputs = writeIo(specObj.getOutputs());
         json.put("outputs", outputs);
-        json.put("runtimeResource", writeByWriter(specObj.getRuntimeResource()));
         json.put("script", writeByWriter(specObj.getScript()));
         json.put("trigger", writeByWriter(specObj.getTrigger()));
-        if (CollectionUtils.isNotEmpty(specObj.getFunctions())) {
-            json.put("functions", new JSONArray().fluentAddAll(ListUtils.emptyIfNull(specObj.getFunctions()).stream()
-                .map(this::writeByWriter).collect(Collectors.toList())));
-        }
-        if (CollectionUtils.isNotEmpty(specObj.getFileResources())) {
-            json.put("fileResources", new JSONArray().fluentAddAll(ListUtils.emptyIfNull(specObj.getFileResources()).stream()
-                .map(this::writeByWriter).collect(Collectors.toList())));
-        }
-
-        List<String> removeKeyList = json.keySet().stream().filter(entry -> Stream
-            .of(SpecParamHubParser.PARAM_HUB, DoWhileParser.DO_WHILE, SpecForEachParser.FOREACH)
-            .map(key -> key.replace("-", ""))
-            .anyMatch(key -> StringUtils.equalsIgnoreCase(key, entry))).collect(Collectors.toList());
-        ListUtils.emptyIfNull(removeKeyList).forEach(json::remove);
-
-        json.put(SpecParamHubParser.PARAM_HUB, writeByWriter(specObj.getParamHub()));
-        json.put(DoWhileParser.DO_WHILE, writeByWriter(specObj.getDoWhile()));
-        json.put(SpecForEachParser.FOREACH, writeByWriter(specObj.getForeach()));
-        json.put(SpecBranchParser.BRANCH, writeByWriter(specObj.getBranch()));
-        json.put(SpecJoinParser.KEY_JOIN, writeByWriter(specObj.getJoin()));
-        json.put(SubFlowParser.KEY_TYPE_COMBINED, writeByWriter(specObj.getCombined()));
-        json.put(SubFlowParser.KEY_TYPE_SUBFLOW, writeByWriter(specObj.getSubflow()));
+        json.put("strategy", writeByWriter(specObj.getStrategy()));
+        json.put("nodes", Optional.ofNullable(specObj.getNodes()).map(nodes -> writerListByWriter(new ArrayList<>(nodes))).orElse(new JSONArray()));
+        json.put("dependencies", Optional.ofNullable(specObj.getDependencies()).map(dependencies -> writerListByWriter(new ArrayList<>(dependencies)))
+            .orElse(new JSONArray()));
         return json;
     }
 

@@ -15,37 +15,40 @@
 
 package com.aliyun.dataworks.common.spec.domain.ref;
 
-import com.aliyun.dataworks.common.spec.domain.SpecRefEntity;
+import com.aliyun.dataworks.common.spec.domain.enums.FailureStrategy;
+import com.aliyun.dataworks.common.spec.domain.enums.NodeInstanceModeType;
+import com.aliyun.dataworks.common.spec.domain.enums.NodeRerunModeType;
+import lombok.Data;
 import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.Setter;
-import lombok.ToString;
 
 /**
- * Datasource define
+ * Schedule strategy
  *
- * @author yiwei.qyw
- * @date 2023/7/4
+ * @author 聿剑
+ * @date 2024/7/8
  */
-@Getter
-@Setter
-@ToString(callSuper = true)
-@EqualsAndHashCode(callSuper = true)
-public class SpecDatasource extends SpecRefEntity {
+@Data
+@EqualsAndHashCode
+public class SpecScheduleStrategy {
+    private Integer priority;
+
+    private Integer timeout;
+
+    private NodeInstanceModeType instanceMode;
+
+    private NodeRerunModeType rerunMode;
+
+    private Integer rerunTimes;
+
+    private Integer rerunInterval;
+
     /**
-     * Datasource name
+     * 是否忽略分支条件跳过
      */
-    private String name;
+    private Boolean ignoreBranchConditionSkip;
+
     /**
-     * Datasource type
+     * 失败策略
      */
-    private String type;
-    /**
-     * Datasource subType
-     */
-    private String subType;
-    /**
-     * Datasource config
-     */
-    private String config;
+    private FailureStrategy failureStrategy;
 }

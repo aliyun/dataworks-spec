@@ -16,18 +16,23 @@
 package com.aliyun.dataworks.common.spec.domain.ref;
 
 import com.aliyun.dataworks.common.spec.domain.SpecRefEntity;
+import com.aliyun.dataworks.common.spec.domain.enums.NodeRecurrenceType;
 import com.aliyun.dataworks.common.spec.domain.enums.TriggerType;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 /**
  * @author yiwei.qyw
  * @date 2023/7/4
  */
+@EqualsAndHashCode(callSuper = true)
 @Data
 public class SpecTrigger extends SpecRefEntity {
     private TriggerType type;
     private String cron;
+    private NodeRecurrenceType recurrence;
     private String startTime;
     private String endTime;
     private String timezone;
+    private Integer delaySeconds;
 }

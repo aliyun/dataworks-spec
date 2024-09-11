@@ -31,5 +31,6 @@ public class SpecRuntimeResource extends SpecRefEntity {
     /**
      * 运行时资源，指定cu数
      */
+    @Deprecated
     private String cu;
 }

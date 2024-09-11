@@ -78,11 +78,7 @@ public class SpecVariableParser implements Parser<SpecVariable> {
     }
 
     private static void parseName(Map<String, Object> variableMap, SpecVariable variable) {
-        String name = (String)variableMap.get(KEY_NAME);
-        if (StringUtils.isBlank(name)) {
-            throw new SpecException(SpecErrorCode.PARSE_ERROR, MessageFormat.format("{0} field of variable is required, source: {1}",
-                KEY_NAME, JSON.toJSONString(variableMap)));
-        }
+        String name = StringUtils.defaultString((String)variableMap.get(KEY_NAME), "unnamed");
         variable.setName(name);
     }
 

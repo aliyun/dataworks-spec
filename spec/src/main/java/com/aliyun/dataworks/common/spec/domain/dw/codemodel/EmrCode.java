@@ -24,7 +24,6 @@ import java.util.stream.Collectors;
 import com.aliyun.dataworks.common.spec.domain.dw.types.CalcEngineType;
 import com.aliyun.dataworks.common.spec.domain.dw.types.CodeProgramType;
 import com.aliyun.dataworks.common.spec.utils.JSONUtils;
-
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
@@ -53,9 +52,6 @@ public class EmrCode extends AbstractBaseCode {
     @Override
     public EmrCode parse(String code) {
         EmrCode m = JSONUtils.parseObject(code, EmrCode.class);
-        if (m == null) {
-            return new EmrCode();
-        }
         Optional.ofNullable(m).ifPresent(mm -> {
             this.setName(mm.getName());
             this.setType(mm.getType());
@@ -108,8 +104,8 @@ public class EmrCode extends AbstractBaseCode {
     @Override
     public List<String> getProgramTypes() {
         return Arrays.stream(CodeProgramType.values())
-                .map(Enum::name)
-                .filter(named -> CodeProgramType.matchEngine(named, CalcEngineType.EMR)).collect(Collectors.toList());
+            .map(Enum::name)
+            .filter(named -> CodeProgramType.matchEngine(named, CalcEngineType.EMR)).collect(Collectors.toList());
     }
 
     @Override
@@ -131,9 +127,9 @@ public class EmrCode extends AbstractBaseCode {
     @Override
     public String getSourceCode() {
         return Optional.ofNullable(properties)
-                .map(EmrProperty::getArguments)
-                .orElse(ListUtils.emptyIfNull(null))
-                .stream()
-                .findFirst().orElse(null);
+            .map(EmrProperty::getArguments)
+            .orElse(ListUtils.emptyIfNull(null))
+            .stream()
+            .findFirst().orElse(null);
     }
 }

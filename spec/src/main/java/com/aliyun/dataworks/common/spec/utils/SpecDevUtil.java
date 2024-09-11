@@ -22,12 +22,15 @@ import java.lang.reflect.Type;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import com.alibaba.fastjson2.JSON;
+import com.alibaba.fastjson2.JSONObject;
+import com.alibaba.fastjson2.annotation.JSONField;
 
 import com.aliyun.dataworks.common.spec.domain.SpecRefEntity;
 import com.aliyun.dataworks.common.spec.domain.interfaces.LabelEnum;
@@ -38,6 +41,7 @@ import com.aliyun.dataworks.common.spec.parser.SpecParserContext;
 import com.aliyun.dataworks.common.spec.parser.SpecParserContext.SpecEntityContext;
 import com.aliyun.dataworks.common.spec.parser.SpecParserFactory;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.ClassUtils;
 import org.apache.commons.lang3.StringUtils;
 
@@ -47,6 +51,7 @@ import org.apache.commons.lang3.StringUtils;
  * @author yiwei.qyw
  * @date 2023/7/7
  */
+@Slf4j
 @SuppressWarnings("rawtypes")
 public class SpecDevUtil {
 
@@ -68,10 +73,13 @@ public class SpecDevUtil {
         String clzName = fieldClz.getSimpleName();
 
         Object resEntity = null;
-        if (value instanceof List) {
+
+        if (value instanceof List && List.class.isAssignableFrom(declaredField.getType())) {
+            // for list field
             resEntity = getListObj(clzName, (List)value, parserContext, declaredField);
-        } else if (value instanceof Map) {
-            resEntity = getSpecEntity(clzName, value, parserContext);
+        } else if (value instanceof Map && !List.class.isAssignableFrom(declaredField.getType())) {
+            // for no-list object field
+            resEntity = getSpecEntity(fieldClz, value, parserContext);
         } else if (value instanceof String) {
             // reference string
             setRefEntity(ownerObject, clzName, value, parserContext, declaredField);
@@ -409,10 +417,15 @@ public class SpecDevUtil {
     }
 
     @SuppressWarnings("unchecked")
-    private static Object getSpecEntity(String simpleName, Object value, SpecParserContext parserContext) {
-        Parser parser = SpecParserFactory.getParser(simpleName);
+    private static Object getSpecEntity(Class clz, Object value, SpecParserContext parserContext) {
+        Parser parser = SpecParserFactory.getParser(clz.getSimpleName());
         // generate Object by Parser
         if (parser == null) {
+            try {
+                return JSON.parseObject(JSON.toJSONString(value), clz);
+            } catch (Exception e) {
+                log.warn("parse by json failed: {}, error: {}", clz, e.getMessage());
+            }
             return null;
         }
 
@@ -507,4 +520,41 @@ public class SpecDevUtil {
         }
     }
 
+    public static JSONObject writeJsonObject(Object specObj, boolean withoutCollectionFields) {
+        if (specObj == null) {
+            return null;
+        }
+
+        JSONObject json = new JSONObject();
+
+        List<Field> fields = SpecDevUtil.getPropertyFields(specObj);
+        Optional.ofNullable(specObj.getClass().getSuperclass()).map(Class::getDeclaredFields).map(Arrays::asList).ifPresent(
+            list -> fields.addAll(1, list));
+
+        fields.stream()
+            .filter(f -> !f.getName().contains("$") && !Modifier.isStatic(f.getModifiers()))
+            .filter(f -> Optional.ofNullable(f.getAnnotation(JSONField.class)).map(JSONField::serialize).orElse(true))
+            .forEach(field -> {
+                field.setAccessible(true);
+                try {
+                    Object value = field.get(specObj);
+                    if (value == null) {
+                        return;
+                    }
+
+                    if (LabelEnum.class.isAssignableFrom(value.getClass())) {
+                        value = ((LabelEnum)value).getLabel();
+                    }
+
+                    if (withoutCollectionFields && (value instanceof Collection || value instanceof Map)) {
+                        return;
+                    }
+
+                    json.put(field.getName(), value);
+                } catch (IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        return json;
+    }
 }

@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 import com.alibaba.fastjson2.JSON;
 
 import com.aliyun.dataworks.common.spec.domain.DataWorksWorkflowSpec;
+import com.aliyun.dataworks.common.spec.domain.SpecRefEntity;
 import com.aliyun.dataworks.common.spec.domain.Specification;
 import com.aliyun.dataworks.common.spec.domain.enums.ArtifactType;
 import com.aliyun.dataworks.common.spec.domain.enums.DependencyType;
@@ -35,6 +36,7 @@ import com.aliyun.dataworks.common.spec.domain.ref.SpecNode;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecNodeOutput;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecScript;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecVariable;
+import com.aliyun.dataworks.common.spec.domain.ref.SpecWorkflow;
 import com.aliyun.dataworks.common.spec.exception.SpecErrorCode;
 import com.aliyun.dataworks.common.spec.exception.SpecException;
 import com.google.common.base.Joiner;
@@ -54,28 +56,58 @@ public class DataWorksNodeInputOutputAdapter {
     private static final Logger log = LoggerFactory.getLogger(DataWorksNodeInputOutputAdapter.class);
 
     protected final Specification<DataWorksWorkflowSpec> spec;
-    protected final DataWorksWorkflowSpec specification;
-    protected final SpecNode specNode;
+    private final SpecEntityDelegate<? extends SpecRefEntity> objectDelegate;
 
-    public DataWorksNodeInputOutputAdapter(Specification<DataWorksWorkflowSpec> specification, SpecNode specNode) {
+    public DataWorksNodeInputOutputAdapter(Specification<DataWorksWorkflowSpec> specification, SpecRefEntity entity) {
         this.spec = specification;
-        this.specification = this.spec.getSpec();
-        this.specNode = specNode;
+        this.objectDelegate = new SpecEntityDelegate<>(entity);
     }
 
     public List<Input> getInputs() {
-        SpecNode outerNode = ListUtils.emptyIfNull(specification.getNodes()).stream()
-            // current SpecNode is inner node of other node
+        List<SpecNode> nodes = ListUtils.emptyIfNull(Optional.ofNullable(spec)
+            .map(Specification::getSpec).map(DataWorksWorkflowSpec::getNodes).orElse(null));
+
+        // current SpecNode is inner node of normal node
+        SpecNode outerNode = nodes.stream()
             .filter(node -> ListUtils.emptyIfNull(node.getInnerNodes()).stream()
-                .anyMatch(innerNode -> StringUtils.equals(innerNode.getId(), specNode.getId())))
+                .anyMatch(innerNode -> StringUtils.equals(innerNode.getId(), objectDelegate.getId())))
             .findAny().orElse(null);
         if (outerNode != null) {
-            return getInputList(outerNode.getInnerFlow(), outerNode.getInnerNodes(), specNode);
+            return getInputList(outerNode.getInnerDependencies(), outerNode.getInnerNodes(), objectDelegate);
         }
-        return getInputList(specification.getFlow(), specification.getNodes(), specNode);
+
+        // current node is inner node of workflow
+        SpecWorkflow outerWorkflow = Optional.ofNullable(spec)
+            .map(Specification::getSpec)
+            .map(DataWorksWorkflowSpec::getWorkflows).flatMap(wfs ->
+                wfs.stream().filter(wf ->
+                    ListUtils.emptyIfNull(wf.getNodes()).stream().anyMatch(n ->
+                        StringUtils.equalsIgnoreCase(n.getId(), objectDelegate.getId()))).findFirst())
+            .orElse(null);
+        if (outerWorkflow != null) {
+            return getInputList(outerWorkflow.getDependencies(), outerWorkflow.getNodes(), objectDelegate);
+        }
+
+        // current node is inner node of the inner node of workflow node
+        SpecNode container = Optional.ofNullable(spec)
+            .map(Specification::getSpec)
+            .map(DataWorksWorkflowSpec::getWorkflows)
+            .map(wfs -> wfs.stream().map(wf -> ListUtils.emptyIfNull(wf.getNodes())).collect(Collectors.toList()))
+            .orElse(ListUtils.emptyIfNull(null))
+            .stream()
+            .flatMap(List::stream)
+            .filter(containerNode -> ListUtils.emptyIfNull(containerNode.getInnerNodes()).stream()
+                .anyMatch(n -> StringUtils.equalsIgnoreCase(n.getId(), objectDelegate.getId())))
+            .findAny().orElse(null);
+        if (container != null) {
+            return getInputList(container.getInnerDependencies(), container.getInnerNodes(), objectDelegate);
+        }
+
+        return getInputList(Optional.ofNullable(spec).map(Specification::getSpec).map(DataWorksWorkflowSpec::getFlow).orElse(null), nodes,
+            objectDelegate);
     }
 
-    private List<Input> getInputList(List<SpecFlowDepend> flow, List<SpecNode> allNodes, SpecNode node) {
+    private List<Input> getInputList(List<SpecFlowDepend> flow, List<SpecNode> allNodes, SpecEntityDelegate<?> node) {
         List<Input> inputs = ListUtils.emptyIfNull(node.getInputs()).stream()
             .filter(o -> o instanceof SpecNodeOutput)
             .map(o -> (SpecArtifact)o)
@@ -123,7 +155,7 @@ public class DataWorksNodeInputOutputAdapter {
     }
 
     public List<Output> getOutputs() {
-        return ListUtils.emptyIfNull(specNode.getOutputs()).stream()
+        return ListUtils.emptyIfNull(objectDelegate.getOutputs()).stream()
             .filter(o -> o instanceof SpecArtifact)
             .map(o -> (SpecArtifact)o)
             .filter(o -> ArtifactType.NODE_OUTPUT.equals(o.getArtifactType()))
@@ -131,7 +163,7 @@ public class DataWorksNodeInputOutputAdapter {
     }
 
     public List<InputContext> getInputContexts() {
-        return ListUtils.emptyIfNull(specNode.getInputs()).stream()
+        return ListUtils.emptyIfNull(objectDelegate.getInputs()).stream()
             .filter(i -> i instanceof SpecArtifact)
             .filter(i -> ArtifactType.VARIABLE.equals(((SpecArtifact)i).getArtifactType()))
             .map(i -> (SpecVariable)i)
@@ -144,7 +176,7 @@ public class DataWorksNodeInputOutputAdapter {
     }
 
     private String getInputContextKey(SpecVariable i) {
-        return Optional.ofNullable(specNode.getScript()).map(SpecScript::getParameters)
+        return Optional.ofNullable(objectDelegate.getScript()).map(SpecScript::getParameters)
             .map(params -> params.stream()
                 .filter(param -> param.getReferenceVariable() != null)
                 .filter(param -> matchVariable(i, param.getReferenceVariable()))
@@ -196,7 +228,7 @@ public class DataWorksNodeInputOutputAdapter {
     }
 
     public List<OutputContext> getOutputContexts() {
-        return ListUtils.emptyIfNull(specNode.getOutputs()).stream()
+        return ListUtils.emptyIfNull(objectDelegate.getOutputs()).stream()
             .filter(i -> i instanceof SpecArtifact)
             .filter(i -> ArtifactType.VARIABLE.equals(((SpecArtifact)i).getArtifactType()))
             .map(i -> (SpecVariable)i)

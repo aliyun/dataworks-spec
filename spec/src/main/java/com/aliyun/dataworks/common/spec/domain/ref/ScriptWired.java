@@ -13,22 +13,12 @@
  * limitations under the License.
  */
 
-package com.aliyun.dataworks.common.spec.domain.noref;
-
-import java.util.List;
-
-import com.aliyun.dataworks.common.spec.domain.SpecNoRefEntity;
-import com.aliyun.dataworks.common.spec.domain.ref.SpecNode;
-import lombok.Data;
+package com.aliyun.dataworks.common.spec.domain.ref;
 
 /**
- * 组合节点Spec对象定义
- *
- * @author sam.liux
- * @date 2023/10/25
+ * @author 聿剑
+ * @date 2024/7/2
  */
-@Data
-public class SpecCombined extends SpecNoRefEntity {
-    private List<SpecNode> nodes;
-    private List<SpecFlowDepend> flow;
+public interface ScriptWired {
+    SpecScript getScript();
 }

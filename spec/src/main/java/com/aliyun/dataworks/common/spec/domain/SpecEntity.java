@@ -29,7 +29,7 @@ import lombok.EqualsAndHashCode;
  * @date 2023/7/4
  */
 @Data
-@EqualsAndHashCode(exclude = "metadata")
+@EqualsAndHashCode(exclude = {"metadata", "context"})
 public class SpecEntity {
     private Map<String, Object> metadata;
 

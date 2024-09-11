@@ -13,31 +13,24 @@
  * limitations under the License.
  */
 
-package com.aliyun.dataworks.common.spec.domain.specification;
+package com.aliyun.dataworks.common.spec.domain.noref;
 
-import java.util.Collections;
 import java.util.List;
 
-import com.aliyun.dataworks.common.spec.domain.Spec;
 import com.aliyun.dataworks.common.spec.domain.SpecNoRefEntity;
-import com.aliyun.dataworks.common.spec.domain.enums.SpecKind;
-import com.aliyun.dataworks.common.spec.domain.noref.SpecFlowDepend;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecNode;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 /**
- * @author 聿剑
- * @date 2024/5/20
+ * 子Workflow Spec对象定义
+ *
+ * @author sam.liux
+ * @date 2023/10/25
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class DataWorksNodeSpec extends SpecNoRefEntity implements Spec {
-    private SpecNode node;
-    private SpecFlowDepend flow;
-
-    @Override
-    public List<SpecKind> getKinds() {
-        return Collections.singletonList(SpecKind.NODE);
-    }
+public class SpecSubFlow extends SpecNoRefEntity {
+    private List<SpecNode> nodes;
+    private List<SpecFlowDepend> dependencies;
 }

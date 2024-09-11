@@ -371,9 +371,13 @@ public interface DwNodeEntity {
      */
     SpecComponent getComponent();
 
-    String getOrigin();
+    default String getOrigin() {
+        return null;
+    }
 
-    String getWorkflowName();
+    default String getWorkflowName() {
+        return null;
+    }
 
     /**
      * get config pack

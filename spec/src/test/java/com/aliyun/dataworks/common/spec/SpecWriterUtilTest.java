@@ -118,6 +118,7 @@ public class SpecWriterUtilTest {
 
         container.setEnv(Lists.newArrayList(envVar1, envVar2));
         runtime.setContainer(container);
+        runtime.setCu("0.5");
 
         CodeModel<Code> hive = CodeModelFactory.getCodeModel("EMR_HIVE", "{}");
         EmrCode emrCode = (EmrCode)hive.getCodeModel();

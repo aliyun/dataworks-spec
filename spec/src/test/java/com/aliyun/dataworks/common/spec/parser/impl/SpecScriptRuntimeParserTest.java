@@ -42,6 +42,7 @@ public class SpecScriptRuntimeParserTest {
         specContainer.setImageId("image_id");
         param.setContainer(specContainer);
         param.setCommand("PYTHON");
+        param.setCu("0.5");
 
         Map<String, Object> map = JSON.parseObject(JSON.toJSONString(param), Map.class);
 
