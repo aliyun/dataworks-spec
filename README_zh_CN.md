@@ -1,6 +1,6 @@
 [![License](https://img.shields.io/badge/license-Apache%202-4EB1BA.svg)](https://www.apache.org/licenses/LICENSE-2.0.html)
-![version](https://img.shields.io/badge/version-1.0.0-blue)
-![codecov](https://img.shields.io/badge/codecov-77.71%25-red)
+![version](https://img.shields.io/badge/version-1.2.0-blue)
+[![Java CI with Maven](https://github.com/aliyun/dataworks-spec/actions/workflows/main.yml/badge.svg)](https://github.com/aliyun/dataworks-spec/actions/workflows/main.yml)
 [![EN doc](https://img.shields.io/badge/document-English-blue.svg)](./README.md)
 
 # 简介
