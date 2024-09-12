@@ -45,6 +45,7 @@
         <oozie.version>5.2.1</oozie.version>
         <azkaban.version>3.71.0-3</azkaban.version>
         <azkaban.az.core.version>3.58.0</azkaban.az.core.version>
+        <azkaban.spi.version>3.50.3</azkaban.spi.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -127,7 +128,7 @@
             <dependency>
                 <groupId>com.linkedin.azkaban</groupId>
                 <artifactId>azkaban-spi</artifactId>
-                <version>${azkaban.version}</version>
+                <version>${azkaban.spi.version}</version>
             </dependency>
             <dependency>
                 <groupId>org.reflections</groupId>
