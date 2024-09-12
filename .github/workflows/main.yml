@@ -23,9 +23,16 @@ jobs:
       run: mvn -B clean package --file pom.xml
     - name: Run JUnit tests
       run: mvn -B verify --file pom.xml
+    - name: Collect Test Results
+      run: |
+        mkdir -p ./test-results
+        for d in $(find . -type d -name "surefire-reports"); do
+          cp $d/*.xml ./test-results/
+        done
+      shell: bash
     - name: Archive test results
       if: always()
       uses: actions/upload-artifact@v3
       with:
         name: test-results
-        path: target/surefire-reports/
+        path: spec/target/surefire-reports/
