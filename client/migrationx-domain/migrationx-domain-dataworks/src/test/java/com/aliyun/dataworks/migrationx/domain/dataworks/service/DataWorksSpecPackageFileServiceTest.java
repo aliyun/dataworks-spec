@@ -30,7 +30,10 @@ import com.aliyun.dataworks.migrationx.domain.dataworks.objects.types.NodeUseTyp
 import com.aliyun.dataworks.migrationx.domain.dataworks.objects.types.WorkflowType;
 import com.aliyun.dataworks.migrationx.domain.dataworks.service.impl.DataWorksSpecPackageFileService;
 
+import com.aliyun.migrationx.common.context.TransformerContext;
+import com.aliyun.migrationx.common.metrics.enums.CollectorType;
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 
 /**
