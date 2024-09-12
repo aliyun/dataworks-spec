@@ -42,7 +42,7 @@
         <dependency>
             <groupId>com.linkedin.azkaban</groupId>
             <artifactId>az-core</artifactId>
-            <version>${azkaban.version}-1</version>
+            <version>${azkaban.az.core.version}</version>
         </dependency>
         <dependency>
             <groupId>com.linkedin.azkaban</groupId>
