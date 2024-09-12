@@ -3,6 +3,7 @@ package com.aliyun.migrationx.common.context;
 import java.io.File;
 import java.io.FileNotFoundException;
 
+import com.aliyun.migrationx.common.metrics.DefaultMetricCollector;
 import com.aliyun.migrationx.common.metrics.DolphinMetricsCollector;
 import com.aliyun.migrationx.common.metrics.MetricsCollector;
 import com.aliyun.migrationx.common.metrics.enums.CollectorType;
@@ -10,7 +11,11 @@ import com.aliyun.migrationx.common.metrics.enums.CollectorType;
 import org.apache.commons.lang3.StringUtils;
 
 public class TransformerContext {
-    private static final ThreadLocal<TransformerContext> threadLocal = new ThreadLocal<>();
+    private static final ThreadLocal<TransformerContext> threadLocal = ThreadLocal.withInitial(() -> {
+        TransformerContext ctx = new TransformerContext();
+        ctx.metricsCollector = new DefaultMetricCollector();
+        return ctx;
+    });
 
     private MetricsCollector metricsCollector;
 
@@ -57,7 +62,7 @@ public class TransformerContext {
                 context.metricsCollector = new DolphinMetricsCollector();
                 break;
             default:
-                throw new UnsupportedOperationException(type.name());
+                context.metricsCollector = new DefaultMetricCollector();
         }
         threadLocal.set(context);
     }

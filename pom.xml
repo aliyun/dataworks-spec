@@ -48,6 +48,31 @@
         <dom4j.version>1.6.1</dom4j.version>
         <powermock.version>2.0.9</powermock.version>
         <druid.version>1.2.4</druid.version>
+        <powermock.jdk11.argLine>
+            --add-opens java.base/java.text=ALL-UNNAMED
+            --add-opens java.base/java.lang=ALL-UNNAMED
+            --add-modules java.xml
+            --add-exports java.base/jdk.internal.misc=ALL-UNNAMED
+            --add-exports java.base/sun.nio.ch=ALL-UNNAMED
+            --add-exports java.base/sun.nio.cs=ALL-UNNAMED
+            --add-exports java.base/sun.security.ssl=ALL-UNNAMED
+            --add-exports java.base/sun.security.util=ALL-UNNAMED
+            --add-exports java.base/sun.security.provider=ALL-UNNAMED
+            --add-exports java.base/sun.security.action=ALL-UNNAMED
+            --add-exports java.base/sun.security.jca=ALL-UNNAMED
+            --add-exports java.base/sun.security.x509=ALL-UNNAMED
+            --add-exports java.base/sun.security.pkcs=ALL-UNNAMED
+            --add-exports java.base/sun.security.rsa=ALL-UNNAMED
+            --add-exports java.base/sun.security.tools=ALL-UNNAMED
+            --add-exports java.base/sun.security.tools.keytool=ALL-UNNAMED
+            --add-exports java.base/sun.security.tools.jarsigner=ALL-UNNAMED
+            --add-exports java.base/sun.security.tools.policytool=ALL-UNNAMED
+            --add-exports java.base/sun.security.tools.keytool=ALL-UNNAMED
+            --add-exports java.base/sun.security.tools.policytool=ALL-UNNAMED
+            --add-exports java.base/sun.security.tools.keytool=ALL-UNNAMED
+            --add-exports java.base/sun.security.tools.policytool=ALL-UNNAMED
+            --add-exports java.xml/jdk.xml.internal=ALL-UNNAMED
+        </powermock.jdk11.argLine>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -305,6 +330,22 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-dependency-plugin</artifactId>
                     <version>3.6.1</version>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>3.2.5</version>
+                    <configuration>
+                        <argLine>${powermock.jdk11.argLine}</argLine>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-failsafe-plugin</artifactId>
+                    <version>3.0.0-M5</version>
+                    <configuration>
+                        <argLine>${powermock.jdk11.argLine}</argLine>
+                    </configuration>
                 </plugin>
             </plugins>
         </pluginManagement>
