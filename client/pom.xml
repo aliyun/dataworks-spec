@@ -123,7 +123,7 @@
             <dependency>
                 <groupId>com.linkedin.azkaban</groupId>
                 <artifactId>azkaban-common</artifactId>
-                <version>${azkaban.version}</version>
+                <version>${azkaban.az.core.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.linkedin.azkaban</groupId>
