@@ -44,6 +44,7 @@
         <dom4j.version>1.6.1</dom4j.version>
         <oozie.version>5.2.1</oozie.version>
         <azkaban.version>3.71.0-3</azkaban.version>
+        <azkaban.az.core.version>3.58.0</azkaban.az.core.version>
     </properties>
     <dependencyManagement>
         <dependencies>
@@ -116,7 +117,7 @@
             <dependency>
                 <groupId>com.linkedin.azkaban</groupId>
                 <artifactId>az-core</artifactId>
-                <version>${azkaban.version}-1</version>
+                <version>${azkaban.az.core.version}</version>
             </dependency>
             <dependency>
                 <groupId>com.linkedin.azkaban</groupId>
