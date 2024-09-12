@@ -134,6 +134,10 @@
             <version>${oozie.version}</version>
             <exclusions>
                 <exclusion>
+                    <artifactId>hive-hcatalog-server-extensions</artifactId>
+                    <groupId>org.apache.hive.hcatalog</groupId>
+                </exclusion>
+                <exclusion>
                     <groupId>org.slf4j</groupId>
                     <artifactId>slf4j-log4j12</artifactId>
                 </exclusion>
