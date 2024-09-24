@@ -1,0 +1,255 @@
+{
+  "version": "1.2.0",
+  "kind": "CycleWorkflow",
+  "spec": {
+    "workflows": [
+      {
+        "id": "14055241210976",
+        "trigger": {
+          "type": "Scheduler",
+          "id": "10",
+          "cron": "0 0 3 * * ? *",
+          "startTime": "2024-06-24 00:00:00",
+          "endTime": "2124-06-24 00:00:00",
+          "timezone": "Asia/Shanghai",
+          "delaySeconds": 0
+        },
+        "strategy": {
+          "priority": 2,
+          "timeout": 0,
+          "instanceMode": "T+1",
+          "rerunMode": "Allowed",
+          "rerunTimes": 0,
+          "rerunInterval": 0,
+          "ignoreBranchConditionSkip": false,
+          "failureStrategy": "Continue"
+        },
+        "name": "sql-python-spark工作流",
+        "owner": "1",
+        "description": "",
+        "inputs": {
+        },
+        "outputs": {
+          "nodeOutputs": [
+            {
+              "data": "14055241210976",
+              "artifactType": "NodeOutput",
+              "refTableName": "sql-python-spark工作流_默认节点输出",
+              "isDefault": true,
+              "id": "sql-python-spark工作流.14055241210976_out"
+            }
+          ]
+        },
+        "nodes": [
+          {
+            "id": "14055205350881",
+            "priority": 2,
+            "timeout": 0,
+            "rerunTimes": 0,
+            "rerunInterval": 60000,
+            "script": {
+              "language": "sql",
+              "path": "业务流程/sql-python-spark工作流/MaxCompute/数据开发/sql节点",
+              "runtime": {
+                "engine": "MaxCompute",
+                "command": "ODPS_SQL"
+              },
+              "content": "select now();",
+              "id": "14055205350881-sql-1203",
+              "parameters": [
+                {
+                  "name": "sql_input",
+                  "artifactType": "Variable",
+                  "scope": "NodeParameter",
+                  "type": "Constant",
+                  "value": "111",
+                  "description": "VARCHAR",
+                  "id": "7e1a238a-7ed1-4e99-912c-fd200ebd3c9b"
+                }
+              ]
+            },
+            "trigger": {
+              "type": "Scheduler",
+              "id": "10-14055205350881",
+              "cron": "0 0 3 * * ? *",
+              "recurrence": "Normal",
+              "startTime": "2024-06-24 00:00:00",
+              "endTime": "2124-06-24 00:00:00",
+              "timezone": "Asia/Shanghai",
+              "delaySeconds": 0
+            },
+            "name": "sql节点",
+            "description": "",
+            "inputs": {
+            },
+            "outputs": {
+              "nodeOutputs": [
+                {
+                  "data": "14055205350881",
+                  "artifactType": "NodeOutput",
+                  "refTableName": "sql节点_默认节点输出",
+                  "isDefault": true,
+                  "id": "sql节点.14055205350881_out"
+                }
+              ]
+            }
+          },
+          {
+            "id": "14055212547297",
+            "priority": 2,
+            "timeout": 0,
+            "rerunTimes": 0,
+            "rerunInterval": 60000,
+            "script": {
+              "language": "python3",
+              "path": "业务流程/sql-python-spark工作流/MaxCompute/数据开发/python节点",
+              "runtime": {
+                "engine": "MaxCompute",
+                "command": "PYODPS3"
+              },
+              "content": "\nimport os\nimport sys\nprint(\"hello,world!\")",
+              "id": "14055212547297-python-6332",
+              "parameters": [
+                {
+                  "name": "python_input",
+                  "artifactType": "Variable",
+                  "scope": "NodeParameter",
+                  "type": "Constant",
+                  "value": "222",
+                  "description": "VARCHAR",
+                  "id": "a307e613-cf1e-4980-9146-578630f6de26"
+                }
+              ]
+            },
+            "trigger": {
+              "type": "Scheduler",
+              "id": "10-14055212547297",
+              "cron": "0 0 3 * * ? *",
+              "recurrence": "Normal",
+              "startTime": "2024-06-24 00:00:00",
+              "endTime": "2124-06-24 00:00:00",
+              "timezone": "Asia/Shanghai",
+              "delaySeconds": 0
+            },
+            "name": "python节点",
+            "description": "",
+            "inputs": {
+              "nodeOutputs": [
+                {
+                  "data": "14055205350881",
+                  "artifactType": "NodeOutput",
+                  "refTableName": "sql节点_默认节点输出",
+                  "isDefault": true,
+                  "id": "ab6e0606-9907-4b2a-880a-844e10c6d9fe"
+                }
+              ]
+            },
+            "outputs": {
+              "nodeOutputs": [
+                {
+                  "data": "14055212547297",
+                  "artifactType": "NodeOutput",
+                  "refTableName": "python节点_默认节点输出",
+                  "isDefault": true,
+                  "id": "python节点.14055212547297_out"
+                }
+              ]
+            }
+          },
+          {
+            "id": "14055220680161",
+            "priority": 2,
+            "timeout": 0,
+            "rerunTimes": 0,
+            "rerunInterval": 60000,
+            "script": {
+              "language": "json",
+              "path": "业务流程/sql-python-spark工作流/MaxCompute/数据开发/spark节点",
+              "runtime": {
+                "engine": "MaxCompute",
+                "command": "ODPS_SPARK"
+              },
+              "content": "{\"resourceReferences\":[\"mapreduce-examples.jar\"],\"programType\":null,\"sparkJson\":{\"version\":\"2.x\",\"language\":\"java\",\"mainClass\":\"com.demo.Main\",\"args\":\"10\",\"configs\":[\"spark.executor.memory=2G\",\"spark.driver.memory=512M\",\"spark.driver.cores=1\",\"spark.executor.cores=2\",\"spark.hadoop.odps.task.major.version=cupid_v2\",\"spark.executor.instances=2\",\"spark.executor.extraJavaOptions=\\\"-XX:MaxPermSize=256m\\\"\"],\"mainJar\":\"mapreduce-examples.jar\",\"mainPy\":null,\"assistPys\":[],\"assistJars\":[],\"assistFiles\":[],\"assistArchives\":[],\"archivesName\":[]},\"sourceCode\":\"##@resource_reference{\\\"mapreduce-examples.jar\\\"}\\n{\\\"version\\\":\\\"2.x\\\",\\\"language\\\":\\\"java\\\",\\\"mainClass\\\":\\\"com.demo.Main\\\",\\\"args\\\":\\\"10\\\",\\\"configs\\\":[\\\"spark.executor.memory=2G\\\",\\\"spark.driver.memory=512M\\\",\\\"spark.driver.cores=1\\\",\\\"spark.executor.cores=2\\\",\\\"spark.hadoop.odps.task.major.version=cupid_v2\\\",\\\"spark.executor.instances=2\\\",\\\"spark.executor.extraJavaOptions=\\\\\\\"-XX:MaxPermSize=256m\\\\\\\"\\\"],\\\"mainJar\\\":\\\"mapreduce-examples.jar\\\",\\\"assistPys\\\":[],\\\"assistJars\\\":[],\\\"assistFiles\\\":[],\\\"assistArchives\\\":[],\\\"archivesName\\\":[]}\"}",
+              "id": "14055220680161-json-8990",
+              "parameters": [
+                {
+                  "name": "spark_input",
+                  "artifactType": "Variable",
+                  "scope": "NodeParameter",
+                  "type": "Constant",
+                  "value": "333",
+                  "description": "VARCHAR",
+                  "id": "4620aff6-f25d-4890-a392-d73f2f9612ed"
+                }
+              ]
+            },
+            "trigger": {
+              "type": "Scheduler",
+              "id": "10-14055220680161",
+              "cron": "0 0 3 * * ? *",
+              "recurrence": "Normal",
+              "startTime": "2024-06-24 00:00:00",
+              "endTime": "2124-06-24 00:00:00",
+              "timezone": "Asia/Shanghai",
+              "delaySeconds": 0
+            },
+            "name": "spark节点",
+            "description": "",
+            "inputs": {
+              "nodeOutputs": [
+                {
+                  "data": "14055212547297",
+                  "artifactType": "NodeOutput",
+                  "refTableName": "python节点_默认节点输出",
+                  "isDefault": true,
+                  "id": "202872a3-a81d-4aa1-8dfa-34fdbd2898ed"
+                }
+              ]
+            },
+            "outputs": {
+              "nodeOutputs": [
+                {
+                  "data": "14055220680161",
+                  "artifactType": "NodeOutput",
+                  "refTableName": "spark节点_默认节点输出",
+                  "isDefault": true,
+                  "id": "spark节点.14055220680161_out"
+                }
+              ]
+            },
+            "fileResources": [
+              {
+                "name": "mapreduce-examples.jar",
+                "type": "jar"
+              }
+            ]
+          }
+        ],
+        "dependencies": [
+          {
+            "nodeId": "14055220680161",
+            "depends": [
+              {
+                "nodeId": "14055212547297",
+                "type": "Normal",
+                "output": "14055212547297",
+                "refTableName": "python节点_默认节点输出"
+              }
+            ]
+          },
+          {
+            "nodeId": "14055212547297",
+            "depends": [
+              {
+                "nodeId": "14055205350881",
+                "type": "Normal",
+                "output": "14055205350881",
+                "refTableName": "sql节点_默认节点输出"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,214 @@
+{
+  "version": "1.2.0",
+  "kind": "CycleWorkflow",
+  "spec": {
+    "workflows": [
+      {
+        "id": "14022094338528",
+        "trigger": {
+          "type": "Scheduler",
+          "id": "9",
+          "cron": "0 0 2 * * ? *",
+          "startTime": "2024-06-21 00:00:00",
+          "endTime": "2124-06-21 00:00:00",
+          "timezone": "Asia/Shanghai",
+          "delaySeconds": 0
+        },
+        "strategy": {
+          "priority": 2,
+          "timeout": 0,
+          "instanceMode": "T+1",
+          "rerunMode": "Allowed",
+          "rerunTimes": 0,
+          "rerunInterval": 0,
+          "ignoreBranchConditionSkip": false,
+          "failureStrategy": "Continue"
+        },
+        "name": "sql-python工作流",
+        "owner": "1",
+        "description": "",
+        "inputs": {
+        },
+        "outputs": {
+          "nodeOutputs": [
+            {
+              "data": "14022094338528",
+              "artifactType": "NodeOutput",
+              "refTableName": "sql-python工作流_默认节点输出",
+              "isDefault": true,
+              "id": "sql-python工作流.14022094338528_out"
+            }
+          ]
+        },
+        "nodes": [
+          {
+            "id": "14022067659489",
+            "priority": 2,
+            "timeout": 0,
+            "rerunTimes": 0,
+            "rerunInterval": 60000,
+            "script": {
+              "language": "sql",
+              "path": "业务流程/sql-python工作流/MaxCompute/数据开发/sql节点",
+              "runtime": {
+                "engine": "MaxCompute",
+                "command": "ODPS_SQL"
+              },
+              "content": "select now();",
+              "id": "14022067659489-sql-4397",
+              "parameters": [
+                {
+                  "name": "input",
+                  "artifactType": "Variable",
+                  "scope": "NodeParameter",
+                  "type": "Constant",
+                  "value": "1",
+                  "description": "VARCHAR",
+                  "id": "6cb15b60-cd94-40ab-8c6e-1bfabda5f5d7"
+                }
+              ]
+            },
+            "trigger": {
+              "type": "Scheduler",
+              "id": "9-14022067659489",
+              "cron": "0 0 2 * * ? *",
+              "recurrence": "Normal",
+              "startTime": "2024-06-21 00:00:00",
+              "endTime": "2124-06-21 00:00:00",
+              "timezone": "Asia/Shanghai",
+              "delaySeconds": 0
+            },
+            "name": "sql节点",
+            "description": "",
+            "inputs": {
+            },
+            "outputs": {
+              "nodeOutputs": [
+                {
+                  "data": "14022067659489",
+                  "artifactType": "NodeOutput",
+                  "refTableName": "sql节点_默认节点输出",
+                  "isDefault": true,
+                  "id": "sql节点.14022067659489_out"
+                }
+              ],
+              "variables": [
+                {
+                  "name": "date",
+                  "artifactType": "Variable",
+                  "scope": "NodeContext",
+                  "type": "NodeOutput",
+                  "value": "2024-06-21",
+                  "description": "VARCHAR",
+                  "id": "bf3c9456-1feb-409b-a314-79ed3f1ea933",
+                  "node": {
+                    "nodeId": "14022067659489",
+                    "type": "Normal",
+                    "output": "14022067659489",
+                    "refTableName": "sql节点_默认节点输出"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "id": "14022084350176",
+            "priority": 2,
+            "timeout": 0,
+            "rerunTimes": 0,
+            "rerunInterval": 60000,
+            "script": {
+              "language": "python3",
+              "path": "业务流程/sql-python工作流/MaxCompute/数据开发/python节点",
+              "runtime": {
+                "engine": "MaxCompute",
+                "command": "PYODPS3"
+              },
+              "content": "##@resource_reference{\"math_lib.py\"}\n\nimport os\nimport sys\nsys.path.append(os.path.dirname(os.path.abspath('math_lib.py')))\nprint(\"hello,world!\")",
+              "id": "14022084350176-python-1296"
+            },
+            "trigger": {
+              "type": "Scheduler",
+              "id": "9-14022084350176",
+              "cron": "0 0 2 * * ? *",
+              "recurrence": "Normal",
+              "startTime": "2024-06-21 00:00:00",
+              "endTime": "2124-06-21 00:00:00",
+              "timezone": "Asia/Shanghai",
+              "delaySeconds": 0
+            },
+            "name": "python节点",
+            "description": "",
+            "inputs": {
+              "nodeOutputs": [
+                {
+                  "data": "14022067659489",
+                  "artifactType": "NodeOutput",
+                  "refTableName": "sql节点_默认节点输出",
+                  "isDefault": true,
+                  "id": "037271ad-3f98-4465-b84c-ab114811ac80"
+                }
+              ],
+              "variables": [
+                {
+                  "name": "date",
+                  "artifactType": "Variable",
+                  "scope": "NodeContext",
+                  "type": "NodeOutput",
+                  "value": "2024-06-21",
+                  "description": "VARCHAR",
+                  "id": "283eb7c3-47f0-40b5-abb6-b33db097e732",
+                  "referenceVariable": {
+                    "name": "date",
+                    "artifactType": "Variable",
+                    "scope": "NodeContext",
+                    "type": "NodeOutput",
+                    "value": "2024-06-21",
+                    "description": "VARCHAR",
+                    "id": "bf3c9456-1feb-409b-a314-79ed3f1ea933",
+                    "node": {
+                      "nodeId": "14022067659489",
+                      "type": "Normal",
+                      "output": "14022067659489",
+                      "refTableName": "sql节点_默认节点输出"
+                    }
+                  }
+                }
+              ]
+            },
+            "outputs": {
+              "nodeOutputs": [
+                {
+                  "data": "14022084350176",
+                  "artifactType": "NodeOutput",
+                  "refTableName": "python节点_默认节点输出",
+                  "isDefault": true,
+                  "id": "python节点.14022084350176_out"
+                }
+              ]
+            },
+            "fileResources": [
+              {
+                "name": "math_lib.py",
+                "type": "python"
+              }
+            ]
+          }
+        ],
+        "dependencies": [
+          {
+            "nodeId": "14022084350176",
+            "depends": [
+              {
+                "nodeId": "14022067659489",
+                "type": "Normal",
+                "output": "14022067659489",
+                "refTableName": "sql节点_默认节点输出"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

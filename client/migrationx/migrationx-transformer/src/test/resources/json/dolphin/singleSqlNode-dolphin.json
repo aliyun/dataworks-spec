@@ -1,0 +1,149 @@
+[
+  {
+    "processDefinition": {
+      "id": 38,
+      "code": 13821685449696,
+      "name": "单SQL流程",
+      "version": 3,
+      "releaseState": "ONLINE",
+      "projectCode": 13821668364768,
+      "description": "",
+      "globalParams": "[{\"prop\":\"date\",\"value\":\"{{biz_date}}\",\"direct\":\"IN\",\"type\":\"VARCHAR\"}]",
+      "globalParamList": [
+        {
+          "prop": "date",
+          "direct": "IN",
+          "type": "VARCHAR",
+          "value": "${{biz_date}}"
+        }
+      ],
+      "globalParamMap": {
+        "date": "${{biz_date}}"
+      },
+      "createTime": "2024-06-03 18:58:38",
+      "updateTime": "2024-06-05 14:21:53",
+      "flag": "YES",
+      "userId": 1,
+      "userName": null,
+      "projectName": null,
+      "locations": "[{\"taskCode\":13821670806241,\"x\":810,\"y\":420}]",
+      "scheduleReleaseState": null,
+      "timeout": 0,
+      "modifyBy": null,
+      "warningGroupId": null,
+      "executionType": "PARALLEL"
+    },
+    "processTaskRelationList": [
+      {
+        "id": 75,
+        "name": "",
+        "processDefinitionVersion": 3,
+        "projectCode": 13821668364768,
+        "processDefinitionCode": 13821685449696,
+        "preTaskCode": 0,
+        "preTaskVersion": 0,
+        "postTaskCode": 13821670806241,
+        "postTaskVersion": 3,
+        "conditionType": "NONE",
+        "conditionParams": {},
+        "createTime": "2024-06-05 14:21:53",
+        "updateTime": "2024-06-05 14:21:53",
+        "operator": 1,
+        "operateTime": "2024-06-05 14:21:53"
+      }
+    ],
+    "taskDefinitionList": [
+      {
+        "id": 39,
+        "code": 13821670806241,
+        "name": "单SQL节点",
+        "version": 3,
+        "description": "",
+        "projectCode": 13821668364768,
+        "userId": 1,
+        "taskType": "SQL",
+        "taskParams": {
+          "localParams": [
+            {
+              "prop": "date",
+              "direct": "IN",
+              "type": "VARCHAR",
+              "value": "${{sys.biz_date}}"
+            }
+          ],
+          "resourceList": [],
+          "type": "MYSQL",
+          "datasource": 1,
+          "sql": "SELECT NOW();",
+          "sqlType": "0",
+          "preStatements": [
+            "select date_sub(curdate(),interval 1 day);"
+          ],
+          "postStatements": [
+            "select date_add(curdate(),interval 1 day);"
+          ],
+          "displayRows": 10
+        },
+        "taskParamList": [
+          {
+            "prop": "date",
+            "direct": "IN",
+            "type": "VARCHAR",
+            "value": "${{sys.biz_date}}"
+          }
+        ],
+        "taskParamMap": {
+          "date": "${{sys.biz_date}}"
+        },
+        "flag": "YES",
+        "isCache": "NO",
+        "taskPriority": "MEDIUM",
+        "userName": null,
+        "projectName": null,
+        "workerGroup": "default",
+        "environmentCode": -1,
+        "failRetryTimes": 0,
+        "failRetryInterval": 1,
+        "timeoutFlag": "CLOSE",
+        "timeoutNotifyStrategy": null,
+        "timeout": 0,
+        "delayTime": 5,
+        "resourceIds": null,
+        "createTime": "2024-06-03 18:58:38",
+        "updateTime": "2024-06-05 14:21:53",
+        "modifyBy": null,
+        "taskGroupId": 0,
+        "taskGroupPriority": 0,
+        "cpuQuota": -1,
+        "memoryMax": -1,
+        "taskExecuteType": "BATCH",
+        "operator": 1,
+        "operateTime": "2024-06-05 14:21:53"
+      }
+    ],
+    "schedule": {
+      "id": 7,
+      "processDefinitionCode": 13821685449696,
+      "processDefinitionName": null,
+      "projectName": null,
+      "definitionDescription": null,
+      "startTime": "2024-06-03 00:00:00",
+      "endTime": "2124-06-03 00:00:00",
+      "timezoneId": "Asia/Shanghai",
+      "crontab": "0 0 0 * * ? *",
+      "failureStrategy": "CONTINUE",
+      "warningType": "NONE",
+      "createTime": "2024-06-03 18:59:32",
+      "updateTime": "2024-06-03 18:59:32",
+      "userId": 1,
+      "userName": null,
+      "releaseState": "OFFLINE",
+      "warningGroupId": 0,
+      "processInstancePriority": "MEDIUM",
+      "workerGroup": "default",
+      "tenantCode": "default",
+      "environmentCode": -1,
+      "environmentName": null
+    }
+  }
+]

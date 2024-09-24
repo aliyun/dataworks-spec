@@ -1,0 +1,87 @@
+{
+  "version": "1.1.0",
+  "kind": "CycleWorkflow",
+  "spec": {
+    "workflows": [
+      {
+        "nodes": [
+          {
+            "recurrence": "Normal",
+            "id": "8204310273201954362",
+            "timeout": 0,
+            "instanceMode": "T+1",
+            "rerunMode": "Allowed",
+            "rerunTimes": 3,
+            "rerunInterval": 180000,
+            "datasource": {
+              "name": "odps_first",
+              "type": "odps"
+            },
+            "script": {
+              "language": "odps-sql",
+              "path": "莫泣/SQL导入海豚测试",
+              "runtime": {
+                "command": "ODPS_SQL",
+                "commandTypeId": 10
+              },
+              "id": "6076746955066988942",
+              "content": "select * from odps_first.test_odps_first"
+            },
+            "trigger": {
+              "type": "Scheduler",
+              "id": "7853591996306682867",
+              "cron": "00 00 00 * * ?",
+              "startTime": "1970-01-01 00:00:00",
+              "endTime": "9999-01-01 00:00:00",
+              "timezone": "Asia/Shanghai"
+            },
+            "runtimeResource": {
+              "resourceGroup": "wengzi_test",
+              "id": "5700220827937093292",
+              "resourceGroupId": "9527"
+            },
+            "name": "SQL导入海豚测试",
+            "owner": "446209",
+            "metadata": {
+              "tenantId": "1",
+              "projectId": "23620"
+            },
+            "inputs": {
+              "nodeOutputs": [
+                {
+                  "data": "dw_scheduler_pre_root",
+                  "artifactType": "NodeOutput",
+                  "isDefault": false
+                }
+              ]
+            },
+            "outputs": {
+              "nodeOutputs": [
+                {
+                  "data": "8204310273201954362",
+                  "artifactType": "NodeOutput",
+                  "refTableName": "SQL导入海豚测试",
+                  "isDefault": true
+                }
+              ]
+            }
+          }
+        ],
+        "dependencies": [
+          {
+            "nodeId": "8204310273201954362",
+            "depends": [
+              {
+                "type": "Normal",
+                "output": "dw_scheduler_pre_root"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "metadata": {
+    "uuid": "8204310273201954362"
+  }
+}

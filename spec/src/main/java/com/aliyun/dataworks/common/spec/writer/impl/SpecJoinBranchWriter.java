@@ -36,6 +36,7 @@ public class SpecJoinBranchWriter extends DefaultJsonObjectWriter<SpecJoinBranch
     @Override
     public JSONObject write(SpecJoinBranch specObj, SpecWriterContext context) {
         JSONObject json = super.write(specObj, context);
+        Optional.ofNullable(specObj.getNodeId()).ifPresent(specNode -> json.put("nodeId", specNode.getId()));
         Optional.ofNullable(specObj.getAssertion()).ifPresent(specAssertion -> json.put("assertion", writeByWriter(specAssertion)));
         Optional.ofNullable(specObj.getOutput()).ifPresent(specNodeOutput -> json.put("output", writeByWriter(specNodeOutput)));
         return json;

@@ -29,4 +29,14 @@ public class SpecConstants {
     public static final String SPEC_KEY_ARTIFACTS = "artifacts";
     public static final String SPEC_KEY_STORAGE = "storage";
     public static final String SPEC_KEY_TYPE = "type";
+
+    public static final String METADATA_KEY_OWNER = "owner";
+    public static final String METADATA_KEY_DESCRIPTION = "description";
+
+    public static final String SCRIPT_LANGUAGE_PYTHON3 = "python3";
+    public static final String SCRIPT_LANGUAGE_PYTHON2 = "python2";
+
+    private SpecConstants() {
+
+    }
 }
