@@ -1,0 +1,235 @@
+[
+  {
+    "processDefinition": {
+      "id": 42,
+      "code": 13862212058080,
+      "name": "多sql节点流程",
+      "version": 3,
+      "releaseState": "ONLINE",
+      "projectCode": 13821668364768,
+      "description": "",
+      "globalParams": "[{\"prop\":\"date\",\"value\":\"${{biz_date}}\",\"direct\":\"IN\",\"type\":\"VARCHAR\"}]",
+      "globalParamList": [
+        {
+          "prop": "date",
+          "direct": "IN",
+          "type": "VARCHAR",
+          "value": "${{biz_date}}"
+        }
+      ],
+      "globalParamMap": {
+        "date": "${{biz_date}}"
+      },
+      "createTime": "2024-06-07 10:55:32",
+      "updateTime": "2024-06-07 10:57:56",
+      "flag": "YES",
+      "userId": 1,
+      "userName": null,
+      "projectName": null,
+      "locations": "[{\"taskCode\":13862175803105,\"x\":380,\"y\":360},{\"taskCode\":13862188967265,\"x\":760,\"y\":390}]",
+      "scheduleReleaseState": null,
+      "timeout": 0,
+      "modifyBy": null,
+      "warningGroupId": null,
+      "executionType": "PARALLEL"
+    },
+    "processTaskRelationList": [
+      {
+        "id": 81,
+        "name": "",
+        "processDefinitionVersion": 3,
+        "projectCode": 13821668364768,
+        "processDefinitionCode": 13862212058080,
+        "preTaskCode": 0,
+        "preTaskVersion": 0,
+        "postTaskCode": 13862175803105,
+        "postTaskVersion": 3,
+        "conditionType": "NONE",
+        "conditionParams": {},
+        "createTime": "2024-06-07 10:57:56",
+        "updateTime": "2024-06-07 10:57:56",
+        "operator": 1,
+        "operateTime": "2024-06-07 10:57:56"
+      },
+      {
+        "id": 82,
+        "name": "",
+        "processDefinitionVersion": 3,
+        "projectCode": 13821668364768,
+        "processDefinitionCode": 13862212058080,
+        "preTaskCode": 13862175803105,
+        "preTaskVersion": 3,
+        "postTaskCode": 13862188967265,
+        "postTaskVersion": 3,
+        "conditionType": "NONE",
+        "conditionParams": {},
+        "createTime": "2024-06-07 10:57:56",
+        "updateTime": "2024-06-07 10:57:56",
+        "operator": 1,
+        "operateTime": "2024-06-07 10:57:56"
+      }
+    ],
+    "taskDefinitionList": [
+      {
+        "id": 45,
+        "code": 13862175803105,
+        "name": "前置sql节点",
+        "version": 3,
+        "description": "",
+        "projectCode": 13821668364768,
+        "userId": 1,
+        "taskType": "SQL",
+        "taskParams": {
+          "localParams": [
+            {
+              "prop": "pre_param",
+              "direct": "IN",
+              "type": "VARCHAR",
+              "value": "pre"
+            }
+          ],
+          "resourceList": [],
+          "type": "MYSQL",
+          "datasource": 1,
+          "sql": "select now();",
+          "sqlType": "0",
+          "preStatements": [
+            "select 'pre-pre';"
+          ],
+          "postStatements": [
+            "select 'pre-post-1';",
+            "select 'pre-post-2'"
+          ],
+          "displayRows": 10
+        },
+        "taskParamList": [
+          {
+            "prop": "pre_param",
+            "direct": "IN",
+            "type": "VARCHAR",
+            "value": "pre"
+          }
+        ],
+        "taskParamMap": {
+          "pre_param": "pre"
+        },
+        "flag": "YES",
+        "isCache": "NO",
+        "taskPriority": "MEDIUM",
+        "userName": null,
+        "projectName": null,
+        "workerGroup": "default",
+        "environmentCode": -1,
+        "failRetryTimes": 0,
+        "failRetryInterval": 1,
+        "timeoutFlag": "CLOSE",
+        "timeoutNotifyStrategy": null,
+        "timeout": 0,
+        "delayTime": 5,
+        "resourceIds": null,
+        "createTime": "2024-06-07 10:55:32",
+        "updateTime": "2024-06-07 10:57:56",
+        "modifyBy": null,
+        "taskGroupId": 0,
+        "taskGroupPriority": 0,
+        "cpuQuota": -1,
+        "memoryMax": -1,
+        "taskExecuteType": "BATCH",
+        "operator": 1,
+        "operateTime": "2024-06-07 10:57:56"
+      },
+      {
+        "id": 46,
+        "code": 13862188967265,
+        "name": "后置sql节点",
+        "version": 3,
+        "description": "",
+        "projectCode": 13821668364768,
+        "userId": 1,
+        "taskType": "SQL",
+        "taskParams": {
+          "localParams": [
+            {
+              "prop": "post_param",
+              "direct": "IN",
+              "type": "VARCHAR",
+              "value": "post"
+            }
+          ],
+          "resourceList": [],
+          "type": "MYSQL",
+          "datasource": 1,
+          "sql": "select CURRENT_TIMESTAMP;",
+          "sqlType": "0",
+          "preStatements": [
+            "select 'post-pre-1';",
+            "select 'post-pre-2'"
+          ],
+          "postStatements": [
+            "select 'post-post';"
+          ],
+          "displayRows": 10
+        },
+        "taskParamList": [
+          {
+            "prop": "post_param",
+            "direct": "IN",
+            "type": "VARCHAR",
+            "value": "post"
+          }
+        ],
+        "taskParamMap": {
+          "post_param": "post"
+        },
+        "flag": "YES",
+        "isCache": "NO",
+        "taskPriority": "MEDIUM",
+        "userName": null,
+        "projectName": null,
+        "workerGroup": "default",
+        "environmentCode": -1,
+        "failRetryTimes": 0,
+        "failRetryInterval": 1,
+        "timeoutFlag": "CLOSE",
+        "timeoutNotifyStrategy": null,
+        "timeout": 0,
+        "delayTime": 10,
+        "resourceIds": null,
+        "createTime": "2024-06-07 10:55:32",
+        "updateTime": "2024-06-07 10:57:56",
+        "modifyBy": null,
+        "taskGroupId": 0,
+        "taskGroupPriority": 0,
+        "cpuQuota": -1,
+        "memoryMax": -1,
+        "taskExecuteType": "BATCH",
+        "operator": 1,
+        "operateTime": "2024-06-07 10:57:56"
+      }
+    ],
+    "schedule": {
+      "id": 8,
+      "processDefinitionCode": 13862212058080,
+      "processDefinitionName": null,
+      "projectName": null,
+      "definitionDescription": null,
+      "startTime": "2024-06-07 00:00:00",
+      "endTime": "2124-06-07 00:00:00",
+      "timezoneId": "Asia/Shanghai",
+      "crontab": "0 0 2 * * ? *",
+      "failureStrategy": "CONTINUE",
+      "warningType": "NONE",
+      "createTime": "2024-06-07 10:58:44",
+      "updateTime": "2024-06-07 10:58:44",
+      "userId": 1,
+      "userName": null,
+      "releaseState": "OFFLINE",
+      "warningGroupId": 0,
+      "processInstancePriority": "MEDIUM",
+      "workerGroup": "default",
+      "tenantCode": "default",
+      "environmentCode": -1,
+      "environmentName": null
+    }
+  }
+]

@@ -1,0 +1,7 @@
+{
+  "spec": {
+    "dataworks": {
+      "appClass": "com.aliyun.dataworks.client.toolkits.command.SpecCommandApp"
+    }
+  }
+}

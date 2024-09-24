@@ -1,0 +1,118 @@
+[
+  {
+    "processDefinition": {
+      "id": 55,
+      "code": 14076078949856,
+      "name": "单shell节点",
+      "version": 1,
+      "releaseState": "ONLINE",
+      "projectCode": 13821668364768,
+      "description": "",
+      "globalParams": "[]",
+      "globalParamList": [],
+      "globalParamMap": {},
+      "createTime": "2024-06-26 19:02:47",
+      "updateTime": "2024-06-26 19:02:47",
+      "flag": "YES",
+      "userId": 1,
+      "userName": null,
+      "projectName": null,
+      "locations": "[{\"taskCode\":14076072320609,\"x\":696,\"y\":409}]",
+      "scheduleReleaseState": null,
+      "timeout": 0,
+      "modifyBy": null,
+      "warningGroupId": null,
+      "executionType": "PARALLEL"
+    },
+    "processTaskRelationList": [
+      {
+        "id": 117,
+        "name": "",
+        "processDefinitionVersion": 1,
+        "projectCode": 13821668364768,
+        "processDefinitionCode": 14076078949856,
+        "preTaskCode": 0,
+        "preTaskVersion": 0,
+        "postTaskCode": 14076072320609,
+        "postTaskVersion": 1,
+        "conditionType": "NONE",
+        "conditionParams": {},
+        "createTime": "2024-06-26 19:02:47",
+        "updateTime": "2024-06-26 19:02:47",
+        "operator": 1,
+        "operateTime": "2024-06-26 19:02:47"
+      }
+    ],
+    "taskDefinitionList": [
+      {
+        "id": 65,
+        "code": 14076072320609,
+        "name": "shell节点",
+        "version": 1,
+        "description": "",
+        "projectCode": 13821668364768,
+        "userId": 1,
+        "taskType": "SHELL",
+        "taskParams": {
+          "localParams": [],
+          "rawScript": "echo $JAVA_HOME",
+          "resourceList": [
+            {
+              "resourceName": "file:/dolphinscheduler/default/resources/mapreduce-examples.jar"
+            }
+          ]
+        },
+        "taskParamList": [],
+        "taskParamMap": null,
+        "flag": "YES",
+        "isCache": "NO",
+        "taskPriority": "MEDIUM",
+        "userName": null,
+        "projectName": null,
+        "workerGroup": "default",
+        "environmentCode": -1,
+        "failRetryTimes": 0,
+        "failRetryInterval": 1,
+        "timeoutFlag": "CLOSE",
+        "timeoutNotifyStrategy": null,
+        "timeout": 0,
+        "delayTime": 0,
+        "resourceIds": null,
+        "createTime": "2024-06-26 19:02:47",
+        "updateTime": "2024-06-26 19:02:47",
+        "modifyBy": null,
+        "taskGroupId": 0,
+        "taskGroupPriority": 0,
+        "cpuQuota": -1,
+        "memoryMax": -1,
+        "taskExecuteType": "BATCH",
+        "operator": 1,
+        "operateTime": "2024-06-26 19:02:47"
+      }
+    ],
+    "schedule": {
+      "id": 11,
+      "processDefinitionCode": 14076078949856,
+      "processDefinitionName": null,
+      "projectName": null,
+      "definitionDescription": null,
+      "startTime": "2024-06-26 00:00:00",
+      "endTime": "2124-06-26 00:00:00",
+      "timezoneId": "Asia/Shanghai",
+      "crontab": "0 0 4 * * ? *",
+      "failureStrategy": "CONTINUE",
+      "warningType": "NONE",
+      "createTime": "2024-06-26 19:03:12",
+      "updateTime": "2024-06-26 19:03:12",
+      "userId": 1,
+      "userName": null,
+      "releaseState": "OFFLINE",
+      "warningGroupId": 0,
+      "processInstancePriority": "MEDIUM",
+      "workerGroup": "default",
+      "tenantCode": "default",
+      "environmentCode": -1,
+      "environmentName": null
+    }
+  }
+]

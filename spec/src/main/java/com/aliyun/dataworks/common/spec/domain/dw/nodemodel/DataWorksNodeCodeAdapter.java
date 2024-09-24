@@ -55,7 +55,6 @@ import com.aliyun.dataworks.common.spec.exception.SpecErrorCode;
 import com.aliyun.dataworks.common.spec.exception.SpecException;
 import com.aliyun.dataworks.common.spec.utils.GsonUtils;
 import com.aliyun.dataworks.common.spec.utils.ReflectUtils;
-
 import com.google.gson.JsonObject;
 import org.apache.commons.collections4.ListUtils;
 import org.apache.commons.collections4.MapUtils;
@@ -86,7 +85,7 @@ public class DataWorksNodeCodeAdapter implements DataWorksNodeAdapterContextAwar
             () -> new SpecException(SpecErrorCode.PARSE_ERROR, "node.script is null"));
 
         SpecScriptRuntime runtime = Optional.ofNullable(script.getRuntime()).orElseThrow(
-                () -> new SpecException(SpecErrorCode.PARSE_ERROR, "node.script.runtime is null"));
+            () -> new SpecException(SpecErrorCode.PARSE_ERROR, "node.script.runtime is null"));
 
         try {
             String command = runtime.getCommand();
@@ -148,7 +147,7 @@ public class DataWorksNodeCodeAdapter implements DataWorksNodeAdapterContextAwar
             CodeModel<ControllerJoinCode> code = CodeModelFactory.getCodeModel(CodeProgramType.CONTROLLER_JOIN.name(), "");
             code.getCodeModel().setResultStatus(Optional.ofNullable(join.getResultStatus()).orElse("1"));
             String logic = Optional.ofNullable(join.getLogic()).map(SpecLogic::getExpression).filter(StringUtils::isNotBlank)
-                    .orElseThrow(() -> new SpecException(SpecErrorCode.PARSE_ERROR, "node.join.logic.expression is empty"));
+                .orElseThrow(() -> new SpecException(SpecErrorCode.PARSE_ERROR, "node.join.logic.expression is empty"));
 
             ControllerJoinCode.Branch tempBranch = null;
             String tempBranchName = null;
@@ -171,10 +170,10 @@ public class DataWorksNodeCodeAdapter implements DataWorksNodeAdapterContextAwar
 
             code.getCodeModel().setBranchList(ListUtils.emptyIfNull(join.getBranches()).stream().map(b -> {
                 ControllerJoinCode.Branch theBranch = Optional.ofNullable(branchMap.get(b.getName())).orElseThrow(
-                        () -> new SpecException(SpecErrorCode.PARSE_ERROR, "logic branch " + b.getName() + " is not exist"));
+                    () -> new SpecException(SpecErrorCode.PARSE_ERROR, "logic branch " + b.getName() + " is not exist"));
                 theBranch.setNode(b.getOutput().getData());
-                theBranch.setRunStatus(ListUtils.emptyIfNull(b.getAssertion().getIn().getValue()).stream().map(s -> (String) s)
-                        .collect(Collectors.toList()));
+                theBranch.setRunStatus(ListUtils.emptyIfNull(b.getAssertion().getIn().getValue()).stream().map(s -> (String)s)
+                    .collect(Collectors.toList()));
                 return theBranch;
             }).collect(Collectors.toList()));
             return code.getContent();
@@ -192,14 +191,14 @@ public class DataWorksNodeCodeAdapter implements DataWorksNodeAdapterContextAwar
         CodeModel<ControllerBranchCode> code = CodeModelFactory.getCodeModel(CodeProgramType.CONTROLLER_BRANCH.name(), "");
         code.getCodeModel().setSourceCode(script.getContent());
         List<Branch> branches = ListUtils.emptyIfNull(Optional.ofNullable(specNode)
-                        .map(SpecNode::getBranch).map(SpecBranch::getBranches).orElse(null))
-                .stream().map(branch -> {
-                    Branch b = new Branch();
-                    b.setCondition(branch.getWhen());
-                    b.setNodeoutput(branch.getOutput().getData());
-                    b.setDescription(branch.getDesc());
-                    return b;
-                }).collect(Collectors.toList());
+                .map(SpecNode::getBranch).map(SpecBranch::getBranches).orElse(null))
+            .stream().map(branch -> {
+                Branch b = new Branch();
+                b.setCondition(branch.getWhen());
+                b.setNodeoutput(branch.getOutput().getData());
+                b.setDescription(branch.getDesc());
+                return b;
+            }).collect(Collectors.toList());
         code.getCodeModel().setBranchList(branches);
         return code.getContent();
     }
@@ -267,26 +266,26 @@ public class DataWorksNodeCodeAdapter implements DataWorksNodeAdapterContextAwar
 
             Optional.ofNullable(rt.getEmrJobConfig()).ifPresent(emrJobConfig -> {
                 EmrAllocationSpec allocationSpec = new EmrAllocationSpec();
-                allocationSpec.setUserName((String) emrJobConfig.get("submitter"));
-                allocationSpec.setQueue(Optional.ofNullable((String) emrJobConfig.get("queue")).filter(StringUtils::isNotBlank).orElse("default"));
+                allocationSpec.setUserName((String)emrJobConfig.get("submitter"));
+                allocationSpec.setQueue(Optional.ofNullable((String)emrJobConfig.get("queue")).filter(StringUtils::isNotBlank).orElse("default"));
                 allocationSpec.setMemory(Optional.ofNullable(emrJobConfig.get("memory")).map(String::valueOf).orElse("2048"));
                 allocationSpec.setVcores(Optional.ofNullable(emrJobConfig.get("cores")).map(String::valueOf).orElse("1"));
                 allocationSpec.setPriority(Optional.ofNullable(emrJobConfig.get("priority")).map(String::valueOf).orElse("1"));
-                allocationSpec.setUseGateway(Optional.ofNullable((String) emrJobConfig.get("submitMode"))
-                        .map(mode -> LabelEnum.getByLabel(EmrJobSubmitMode.class, mode))
-                        .map(mode -> Objects.equals(mode, EmrJobSubmitMode.LOCAL)).orElse(false));
+                allocationSpec.setUseGateway(Optional.ofNullable((String)emrJobConfig.get("submitMode"))
+                    .map(mode -> LabelEnum.getByLabel(EmrJobSubmitMode.class, mode))
+                    .map(mode -> Objects.equals(mode, EmrJobSubmitMode.LOCAL)).orElse(false));
                 allocationSpec.setReuseSession(Optional.ofNullable(emrJobConfig.get("sessionEnabled"))
-                        .map(String::valueOf).map(BooleanUtils::toBoolean).orElse(false));
-                allocationSpec.setBatchMode(Optional.ofNullable((String) emrJobConfig.get("executeMode"))
-                        .map(mode -> LabelEnum.getByLabel(EmrJobExecuteMode.class, mode))
-                        .map(mode -> Objects.equals(mode, EmrJobExecuteMode.BATCH)).orElse(false));
+                    .map(String::valueOf).map(BooleanUtils::toBoolean).orElse(false));
+                allocationSpec.setBatchMode(Optional.ofNullable((String)emrJobConfig.get("executeMode"))
+                    .map(mode -> LabelEnum.getByLabel(EmrJobExecuteMode.class, mode))
+                    .map(mode -> Objects.equals(mode, EmrJobExecuteMode.BATCH)).orElse(false));
                 allocationSpec.setEnableJdbcSql(Optional.ofNullable(emrJobConfig.get("enableJdbcSql"))
-                        .map(String::valueOf).map(BooleanUtils::toBoolean).orElse(false));
+                    .map(String::valueOf).map(BooleanUtils::toBoolean).orElse(false));
                 codeModel.getProperties().getEnvs().put(EmrCode.ENVS_KEY_FLOW_SKIP_SQL_ANALYZE, String.valueOf(allocationSpec.getBatchMode()));
-                Optional.ofNullable((JsonObject) GsonUtils.fromJsonString(GsonUtils.toJsonString(allocationSpec), JsonObject.class)).ifPresent(
-                        json -> json.entrySet().forEach(entry -> allocationSpecProps.put(entry.getKey(), entry.getValue().getAsString())));
+                Optional.ofNullable((JsonObject)GsonUtils.fromJsonString(GsonUtils.toJsonString(allocationSpec), JsonObject.class)).ifPresent(
+                    json -> json.entrySet().forEach(entry -> allocationSpecProps.put(entry.getKey(), entry.getValue().getAsString())));
                 emrJobConfig.keySet().stream().filter(key -> ListUtils.emptyIfNull(ReflectUtils.getPropertyFields(allocationSpec)).stream()
-                        .noneMatch(f -> StringUtils.equals(f.getName(), key))).forEach(key -> allocationSpecProps.put(key, emrJobConfig.get(key)));
+                    .noneMatch(f -> StringUtils.equals(f.getName(), key))).forEach(key -> allocationSpecProps.put(key, emrJobConfig.get(key)));
             });
         });
         codeModel.setLauncher(launcher);

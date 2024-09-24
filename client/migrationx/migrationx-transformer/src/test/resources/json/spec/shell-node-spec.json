@@ -1,0 +1,90 @@
+{
+  "version": "1.2.0",
+  "kind": "CycleWorkflow",
+  "spec": {
+    "workflows": [
+      {
+        "id": "14076078949856",
+        "trigger": {
+          "type": "Scheduler",
+          "id": "11",
+          "cron": "0 0 4 * * ? *",
+          "startTime": "2024-06-26 00:00:00",
+          "endTime": "2124-06-26 00:00:00",
+          "timezone": "Asia/Shanghai",
+          "delaySeconds": 0
+        },
+        "strategy": {
+          "priority": 2,
+          "timeout": 0,
+          "instanceMode": "T+1",
+          "rerunMode": "Allowed",
+          "rerunTimes": 0,
+          "rerunInterval": 0,
+          "ignoreBranchConditionSkip": false,
+          "failureStrategy": "Continue"
+        },
+        "name": "单shell节点",
+        "owner": "1",
+        "description": "",
+        "inputs": {
+        },
+        "outputs": {
+          "nodeOutputs": [
+            {
+              "data": "14076078949856",
+              "artifactType": "NodeOutput",
+              "refTableName": "单shell节点_默认节点输出",
+              "isDefault": true,
+              "id": "单shell节点.14076078949856_out"
+            }
+          ]
+        },
+        "nodes": [
+          {
+            "id": "14076072320609",
+            "priority": 2,
+            "timeout": 0,
+            "rerunTimes": 0,
+            "rerunInterval": 60000,
+            "script": {
+              "language": "shell",
+              "path": "业务流程/单shell节点/通用/shell节点",
+              "runtime": {
+                "engine": "General",
+                "command": "DIDE_SHELL"
+              },
+              "content": "##@resource_reference{\"mapreduce-examples.jar\"}\n\necho $JAVA_HOME",
+              "id": "14076072320609-shell-4363"
+            },
+            "trigger": {
+              "type": "Scheduler",
+              "id": "11-14076072320609",
+              "cron": "0 0 4 * * ? *",
+              "recurrence": "Normal",
+              "startTime": "2024-06-26 00:00:00",
+              "endTime": "2124-06-26 00:00:00",
+              "timezone": "Asia/Shanghai",
+              "delaySeconds": 0
+            },
+            "name": "shell节点",
+            "description": "",
+            "inputs": {
+            },
+            "outputs": {
+              "nodeOutputs": [
+                {
+                  "data": "14076072320609",
+                  "artifactType": "NodeOutput",
+                  "refTableName": "shell节点_默认节点输出",
+                  "isDefault": true,
+                  "id": "shell节点.14076072320609_out"
+                }
+              ]
+            }
+          }
+        ]
+      }
+    ]
+  }
+}

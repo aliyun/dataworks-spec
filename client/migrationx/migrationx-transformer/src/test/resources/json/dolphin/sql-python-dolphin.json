@@ -1,0 +1,211 @@
+[
+  {
+    "processDefinition": {
+      "id": 51,
+      "code": 14022094338528,
+      "name": "sql-python工作流",
+      "version": 2,
+      "releaseState": "ONLINE",
+      "projectCode": 13821668364768,
+      "description": "",
+      "globalParams": "[]",
+      "globalParamList": [],
+      "globalParamMap": {},
+      "createTime": "2024-06-21 21:53:32",
+      "updateTime": "2024-06-21 22:03:48",
+      "flag": "YES",
+      "userId": 1,
+      "userName": null,
+      "projectName": null,
+      "locations": "[{\"taskCode\":14022067659489,\"x\":199,\"y\":232},{\"taskCode\":14022084350176,\"x\":480,\"y\":240}]",
+      "scheduleReleaseState": null,
+      "timeout": 0,
+      "modifyBy": null,
+      "warningGroupId": null,
+      "executionType": "PARALLEL"
+    },
+    "processTaskRelationList": [
+      {
+        "id": 109,
+        "name": "",
+        "processDefinitionVersion": 2,
+        "projectCode": 13821668364768,
+        "processDefinitionCode": 14022094338528,
+        "preTaskCode": 0,
+        "preTaskVersion": 0,
+        "postTaskCode": 14022067659489,
+        "postTaskVersion": 1,
+        "conditionType": "NONE",
+        "conditionParams": {},
+        "createTime": "2024-06-21 22:03:48",
+        "updateTime": "2024-06-21 22:03:48",
+        "operator": 1,
+        "operateTime": "2024-06-21 22:03:48"
+      },
+      {
+        "id": 110,
+        "name": "",
+        "processDefinitionVersion": 2,
+        "projectCode": 13821668364768,
+        "processDefinitionCode": 14022094338528,
+        "preTaskCode": 14022067659489,
+        "preTaskVersion": 1,
+        "postTaskCode": 14022084350176,
+        "postTaskVersion": 2,
+        "conditionType": "NONE",
+        "conditionParams": {},
+        "createTime": "2024-06-21 22:03:48",
+        "updateTime": "2024-06-21 22:03:48",
+        "operator": 1,
+        "operateTime": "2024-06-21 22:03:48"
+      }
+    ],
+    "taskDefinitionList": [
+      {
+        "id": 56,
+        "code": 14022067659489,
+        "name": "sql节点",
+        "version": 1,
+        "description": "",
+        "projectCode": 13821668364768,
+        "userId": 1,
+        "taskType": "SQL",
+        "taskParams": {
+          "localParams": [
+            {
+              "prop": "input",
+              "direct": "IN",
+              "type": "VARCHAR",
+              "value": "1"
+            },
+            {
+              "prop": "date",
+              "direct": "OUT",
+              "type": "VARCHAR",
+              "value": "2024-06-21"
+            }
+          ],
+          "resourceList": [],
+          "type": "MYSQL",
+          "datasource": 1,
+          "sql": "select now();",
+          "sqlType": "0",
+          "preStatements": [],
+          "postStatements": [],
+          "displayRows": 10
+        },
+        "taskParamList": [
+          {
+            "prop": "input",
+            "direct": "IN",
+            "type": "VARCHAR",
+            "value": "1"
+          },
+          {
+            "prop": "date",
+            "direct": "OUT",
+            "type": "VARCHAR",
+            "value": "2024-06-21"
+          }
+        ],
+        "taskParamMap": {
+          "date": "2024-06-21",
+          "input": "1"
+        },
+        "flag": "YES",
+        "isCache": "NO",
+        "taskPriority": "MEDIUM",
+        "userName": null,
+        "projectName": null,
+        "workerGroup": "default",
+        "environmentCode": -1,
+        "failRetryTimes": 0,
+        "failRetryInterval": 1,
+        "timeoutFlag": "CLOSE",
+        "timeoutNotifyStrategy": null,
+        "timeout": 0,
+        "delayTime": 0,
+        "resourceIds": null,
+        "createTime": "2024-06-21 21:53:32",
+        "updateTime": "2024-06-21 21:53:32",
+        "modifyBy": null,
+        "taskGroupId": 0,
+        "taskGroupPriority": 0,
+        "cpuQuota": -1,
+        "memoryMax": -1,
+        "taskExecuteType": "BATCH",
+        "operator": 1,
+        "operateTime": "2024-06-21 21:53:32"
+      },
+      {
+        "id": 58,
+        "code": 14022084350176,
+        "name": "python节点",
+        "version": 2,
+        "description": "",
+        "projectCode": 13821668364768,
+        "userId": 1,
+        "taskType": "PYTHON",
+        "taskParams": {
+          "localParams": [],
+          "rawScript": "print(\"hello,world!\")",
+          "resourceList": [
+            {
+              "resourceName": "file:/dolphinscheduler/default/resources/math_lib.py"
+            }
+          ]
+        },
+        "taskParamList": [],
+        "taskParamMap": null,
+        "flag": "YES",
+        "isCache": "NO",
+        "taskPriority": "MEDIUM",
+        "userName": null,
+        "projectName": null,
+        "workerGroup": "default",
+        "environmentCode": -1,
+        "failRetryTimes": 0,
+        "failRetryInterval": 1,
+        "timeoutFlag": "CLOSE",
+        "timeoutNotifyStrategy": null,
+        "timeout": 0,
+        "delayTime": 0,
+        "resourceIds": null,
+        "createTime": "2024-06-21 21:53:32",
+        "updateTime": "2024-06-21 22:03:48",
+        "modifyBy": null,
+        "taskGroupId": 0,
+        "taskGroupPriority": 0,
+        "cpuQuota": -1,
+        "memoryMax": -1,
+        "taskExecuteType": "BATCH",
+        "operator": 1,
+        "operateTime": "2024-06-21 22:03:48"
+      }
+    ],
+    "schedule": {
+      "id": 9,
+      "processDefinitionCode": 14022094338528,
+      "processDefinitionName": null,
+      "projectName": null,
+      "definitionDescription": null,
+      "startTime": "2024-06-21 00:00:00",
+      "endTime": "2124-06-21 00:00:00",
+      "timezoneId": "Asia/Shanghai",
+      "crontab": "0 0 2 * * ? *",
+      "failureStrategy": "CONTINUE",
+      "warningType": "NONE",
+      "createTime": "2024-06-21 22:04:19",
+      "updateTime": "2024-06-21 22:04:19",
+      "userId": 1,
+      "userName": null,
+      "releaseState": "OFFLINE",
+      "warningGroupId": 0,
+      "processInstancePriority": "MEDIUM",
+      "workerGroup": "default",
+      "tenantCode": "default",
+      "environmentCode": -1,
+      "environmentName": null
+    }
+  }
+]

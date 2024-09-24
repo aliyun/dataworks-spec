@@ -1,0 +1,299 @@
+[
+  {
+    "processDefinition": {
+      "id": 53,
+      "code": 14055241210976,
+      "name": "sql-python-spark工作流",
+      "version": 3,
+      "releaseState": "ONLINE",
+      "projectCode": 13821668364768,
+      "description": "",
+      "globalParams": "[]",
+      "globalParamList": [],
+      "globalParamMap": {},
+      "createTime": "2024-06-24 21:49:32",
+      "updateTime": "2024-06-27 10:15:38",
+      "flag": "YES",
+      "userId": 1,
+      "userName": null,
+      "projectName": null,
+      "locations": "[{\"taskCode\":14055205350881,\"x\":66,\"y\":217},{\"taskCode\":14055212547297,\"x\":320,\"y\":340},{\"taskCode\":14055220680161,\"x\":575,\"y\":477}]",
+      "scheduleReleaseState": null,
+      "timeout": 0,
+      "modifyBy": null,
+      "warningGroupId": null,
+      "executionType": "PARALLEL"
+    },
+    "processTaskRelationList": [
+      {
+        "id": 118,
+        "name": "",
+        "processDefinitionVersion": 3,
+        "projectCode": 13821668364768,
+        "processDefinitionCode": 14055241210976,
+        "preTaskCode": 0,
+        "preTaskVersion": 0,
+        "postTaskCode": 14055205350881,
+        "postTaskVersion": 3,
+        "conditionType": "NONE",
+        "conditionParams": {},
+        "createTime": "2024-06-27 10:15:38",
+        "updateTime": "2024-06-27 10:15:38",
+        "operator": 1,
+        "operateTime": "2024-06-27 10:15:38"
+      },
+      {
+        "id": 119,
+        "name": "",
+        "processDefinitionVersion": 3,
+        "projectCode": 13821668364768,
+        "processDefinitionCode": 14055241210976,
+        "preTaskCode": 14055212547297,
+        "preTaskVersion": 3,
+        "postTaskCode": 14055220680161,
+        "postTaskVersion": 3,
+        "conditionType": "NONE",
+        "conditionParams": {},
+        "createTime": "2024-06-27 10:15:38",
+        "updateTime": "2024-06-27 10:15:38",
+        "operator": 1,
+        "operateTime": "2024-06-27 10:15:38"
+      },
+      {
+        "id": 120,
+        "name": "",
+        "processDefinitionVersion": 3,
+        "projectCode": 13821668364768,
+        "processDefinitionCode": 14055241210976,
+        "preTaskCode": 14055205350881,
+        "preTaskVersion": 3,
+        "postTaskCode": 14055212547297,
+        "postTaskVersion": 3,
+        "conditionType": "NONE",
+        "conditionParams": {},
+        "createTime": "2024-06-27 10:15:38",
+        "updateTime": "2024-06-27 10:15:38",
+        "operator": 1,
+        "operateTime": "2024-06-27 10:15:38"
+      }
+    ],
+    "taskDefinitionList": [
+      {
+        "id": 66,
+        "code": 14055205350881,
+        "name": "sql节点",
+        "version": 3,
+        "description": "",
+        "projectCode": 13821668364768,
+        "userId": 1,
+        "taskType": "SQL",
+        "taskParams": {
+          "localParams": [
+            {
+              "prop": "sql_input",
+              "direct": "IN",
+              "type": "VARCHAR",
+              "value": "111"
+            }
+          ],
+          "resourceList": [],
+          "type": "MYSQL",
+          "datasource": 1,
+          "sql": "select now();",
+          "sqlType": "0",
+          "preStatements": [],
+          "postStatements": [],
+          "displayRows": 10
+        },
+        "taskParamList": [
+          {
+            "prop": "sql_input",
+            "direct": "IN",
+            "type": "VARCHAR",
+            "value": "111"
+          }
+        ],
+        "taskParamMap": {
+          "sql_input": "111"
+        },
+        "flag": "YES",
+        "isCache": "NO",
+        "taskPriority": "MEDIUM",
+        "userName": null,
+        "projectName": null,
+        "workerGroup": "default",
+        "environmentCode": -1,
+        "failRetryTimes": 0,
+        "failRetryInterval": 1,
+        "timeoutFlag": "CLOSE",
+        "timeoutNotifyStrategy": null,
+        "timeout": 0,
+        "delayTime": 0,
+        "resourceIds": null,
+        "createTime": "2024-06-24 21:49:32",
+        "updateTime": "2024-06-27 10:15:38",
+        "modifyBy": null,
+        "taskGroupId": 0,
+        "taskGroupPriority": 0,
+        "cpuQuota": -1,
+        "memoryMax": -1,
+        "taskExecuteType": "BATCH",
+        "operator": 1,
+        "operateTime": "2024-06-27 10:15:38"
+      },
+      {
+        "id": 67,
+        "code": 14055212547297,
+        "name": "python节点",
+        "version": 3,
+        "description": "",
+        "projectCode": 13821668364768,
+        "userId": 1,
+        "taskType": "PYTHON",
+        "taskParams": {
+          "localParams": [
+            {
+              "prop": "python_input",
+              "direct": "IN",
+              "type": "VARCHAR",
+              "value": "222"
+            }
+          ],
+          "rawScript": "print(\"hello,world!\")",
+          "resourceList": []
+        },
+        "taskParamList": [
+          {
+            "prop": "python_input",
+            "direct": "IN",
+            "type": "VARCHAR",
+            "value": "222"
+          }
+        ],
+        "taskParamMap": {
+          "python_input": "222"
+        },
+        "flag": "YES",
+        "isCache": "NO",
+        "taskPriority": "MEDIUM",
+        "userName": null,
+        "projectName": null,
+        "workerGroup": "default",
+        "environmentCode": -1,
+        "failRetryTimes": 0,
+        "failRetryInterval": 1,
+        "timeoutFlag": "CLOSE",
+        "timeoutNotifyStrategy": null,
+        "timeout": 0,
+        "delayTime": 0,
+        "resourceIds": null,
+        "createTime": "2024-06-24 21:49:32",
+        "updateTime": "2024-06-27 10:15:38",
+        "modifyBy": null,
+        "taskGroupId": 0,
+        "taskGroupPriority": 0,
+        "cpuQuota": -1,
+        "memoryMax": -1,
+        "taskExecuteType": "BATCH",
+        "operator": 1,
+        "operateTime": "2024-06-27 10:15:38"
+      },
+      {
+        "id": 68,
+        "code": 14055220680161,
+        "name": "spark节点",
+        "version": 3,
+        "description": "",
+        "projectCode": 13821668364768,
+        "userId": 1,
+        "taskType": "SPARK",
+        "taskParams": {
+          "localParams": [
+            {
+              "prop": "spark_input",
+              "direct": "IN",
+              "type": "VARCHAR",
+              "value": "333"
+            }
+          ],
+          "rawScript": "",
+          "resourceList": [],
+          "programType": "SCALA",
+          "mainClass": "com.demo.Main",
+          "mainJar": {
+            "resourceName": "file:/dolphinscheduler/default/resources/mapreduce-examples.jar"
+          },
+          "deployMode": "local",
+          "mainArgs": "10",
+          "others": "--conf spark.executor.extraJavaOptions=\"-XX:MaxPermSize=256m\"",
+          "yarnQueue": "",
+          "driverCores": 1,
+          "driverMemory": "512M",
+          "numExecutors": 2,
+          "executorMemory": "2G",
+          "executorCores": 2,
+          "sqlExecutionType": "SCRIPT"
+        },
+        "taskParamList": [
+          {
+            "prop": "spark_input",
+            "direct": "IN",
+            "type": "VARCHAR",
+            "value": "333"
+          }
+        ],
+        "taskParamMap": {
+          "spark_input": "333"
+        },
+        "flag": "YES",
+        "isCache": "NO",
+        "taskPriority": "MEDIUM",
+        "userName": null,
+        "projectName": null,
+        "workerGroup": "default",
+        "environmentCode": -1,
+        "failRetryTimes": 0,
+        "failRetryInterval": 1,
+        "timeoutFlag": "CLOSE",
+        "timeoutNotifyStrategy": null,
+        "timeout": 0,
+        "delayTime": 0,
+        "resourceIds": null,
+        "createTime": "2024-06-24 21:49:32",
+        "updateTime": "2024-06-27 10:15:38",
+        "modifyBy": null,
+        "taskGroupId": 0,
+        "taskGroupPriority": 0,
+        "cpuQuota": -1,
+        "memoryMax": -1,
+        "taskExecuteType": "BATCH",
+        "operator": 1,
+        "operateTime": "2024-06-27 10:15:38"
+      }
+    ],
+    "schedule": {
+      "id": 10,
+      "processDefinitionCode": 14055241210976,
+      "processDefinitionName": null,
+      "projectName": null,
+      "definitionDescription": null,
+      "startTime": "2024-06-24 00:00:00",
+      "endTime": "2124-06-24 00:00:00",
+      "timezoneId": "Asia/Shanghai",
+      "crontab": "0 0 3 * * ? *",
+      "failureStrategy": "CONTINUE",
+      "warningType": "NONE",
+      "createTime": "2024-06-24 22:08:16",
+      "updateTime": "2024-06-24 22:08:16",
+      "userId": 1,
+      "userName": null,
+      "releaseState": "OFFLINE",
+      "warningGroupId": 0,
+      "processInstancePriority": "MEDIUM",
+      "workerGroup": "default",
+      "tenantCode": "default",
+      "environmentCode": -1,
+      "environmentName": null
+    }
+  }
+]

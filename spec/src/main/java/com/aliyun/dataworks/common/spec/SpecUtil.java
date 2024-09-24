@@ -42,6 +42,10 @@ import com.google.common.base.Preconditions;
  */
 public class SpecUtil {
 
+    private SpecUtil() {
+
+    }
+
     /**
      * Parse json to spec Domain object
      *
@@ -71,7 +75,7 @@ public class SpecUtil {
         if (writer == null) {
             throw new SpecException(SpecErrorCode.PARSER_LOAD_ERROR, "no available registered writer found for type: " + specification.getClass());
         }
-        return JSON.toJSONString(writer.write(specification, context), Feature.PrettyFormat);
+        return JSON.toJSONString(writer.write(specification, context), Feature.PrettyFormat, Feature.WriteEnumsUsingName);
     }
 
     @SuppressWarnings("unchecked")

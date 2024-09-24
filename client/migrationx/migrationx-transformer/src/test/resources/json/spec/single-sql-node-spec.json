@@ -1,0 +1,260 @@
+{
+  "version": "1.2.0",
+  "kind": "CycleWorkflow",
+  "spec": {
+    "workflows": [
+      {
+        "id": "13821685449696",
+        "trigger": {
+          "type": "Scheduler",
+          "id": "7",
+          "cron": "0 0 0 * * ? *",
+          "startTime": "2024-06-03 00:00:00",
+          "endTime": "2124-06-03 00:00:00",
+          "timezone": "Asia/Shanghai",
+          "delaySeconds": 0
+        },
+        "strategy": {
+          "priority": 2,
+          "timeout": 0,
+          "instanceMode": "T+1",
+          "rerunMode": "Allowed",
+          "rerunTimes": 0,
+          "rerunInterval": 0,
+          "ignoreBranchConditionSkip": false,
+          "failureStrategy": "Continue"
+        },
+        "name": "单SQL流程",
+        "owner": "1",
+        "description": "",
+        "inputs": {
+          "variables": [
+            {
+              "name": "date",
+              "artifactType": "Variable",
+              "scope": "Workflow",
+              "type": "System",
+              "value": "${{biz_date}}",
+              "description": "VARCHAR",
+              "id": "c15b71df-8c8a-46a8-a2f5-550b83963ce6"
+            }
+          ]
+        },
+        "outputs": {
+          "nodeOutputs": [
+            {
+              "data": "13821685449696",
+              "artifactType": "NodeOutput",
+              "refTableName": "单SQL流程_默认节点输出",
+              "isDefault": true,
+              "id": "单SQL流程.13821685449696_out"
+            }
+          ]
+        },
+        "nodes": [
+          {
+            "id": "13821670806241",
+            "priority": 2,
+            "timeout": 0,
+            "rerunTimes": 0,
+            "rerunInterval": 60000,
+            "script": {
+              "language": "sql",
+              "path": "业务流程/单SQL流程/MaxCompute/数据开发/单SQL节点",
+              "runtime": {
+                "engine": "MaxCompute",
+                "command": "ODPS_SQL"
+              },
+              "content": "SELECT NOW();",
+              "id": "13821670806241-sql-2576",
+              "parameters": [
+                {
+                  "name": "date",
+                  "artifactType": "Variable",
+                  "scope": "NodeParameter",
+                  "type": "System",
+                  "value": "${{sys.biz_date}}",
+                  "description": "VARCHAR",
+                  "id": "ec01a53f-2a16-412b-abb2-96e4a86db629"
+                }
+              ]
+            },
+            "trigger": {
+              "type": "Scheduler",
+              "id": "7-13821670806241",
+              "cron": "0 0 0 * * ? *",
+              "recurrence": "Normal",
+              "startTime": "2024-06-03 00:00:00",
+              "endTime": "2124-06-03 00:00:00",
+              "timezone": "Asia/Shanghai",
+              "delaySeconds": 300
+            },
+            "name": "单SQL节点",
+            "description": "",
+            "inputs": {
+              "nodeOutputs": [
+                {
+                  "data": "13821670806241-pre-0",
+                  "artifactType": "NodeOutput",
+                  "refTableName": "单SQL节点-pre-0_默认节点输出",
+                  "isDefault": true,
+                  "id": "单SQL节点-pre-0.13821670806241-pre-0_out"
+                }
+              ]
+            },
+            "outputs": {
+              "nodeOutputs": [
+                {
+                  "data": "13821670806241",
+                  "artifactType": "NodeOutput",
+                  "refTableName": "单SQL节点_默认节点输出",
+                  "isDefault": true,
+                  "id": "单SQL节点.13821670806241_out"
+                }
+              ]
+            }
+          },
+          {
+            "id": "13821670806241-pre-0",
+            "priority": 2,
+            "timeout": 0,
+            "rerunTimes": 0,
+            "rerunInterval": 60000,
+            "script": {
+              "language": "sql",
+              "path": "业务流程/单SQL流程/MaxCompute/数据开发/单SQL节点-pre-0",
+              "runtime": {
+                "engine": "MaxCompute",
+                "command": "ODPS_SQL"
+              },
+              "content": "select date_sub(curdate(),interval 1 day);",
+              "id": "13821670806241-sql-2576-pre-0",
+              "parameters": [
+                {
+                  "name": "date",
+                  "artifactType": "Variable",
+                  "scope": "NodeParameter",
+                  "type": "System",
+                  "value": "${{sys.biz_date}}",
+                  "description": "VARCHAR",
+                  "id": "ec01a53f-2a16-412b-abb2-96e4a86db629"
+                }
+              ]
+            },
+            "trigger": {
+              "type": "Scheduler",
+              "id": "7-13821670806241",
+              "cron": "0 0 0 * * ? *",
+              "recurrence": "Normal",
+              "startTime": "2024-06-03 00:00:00",
+              "endTime": "2124-06-03 00:00:00",
+              "timezone": "Asia/Shanghai",
+              "delaySeconds": 300
+            },
+            "name": "单SQL节点-pre-0",
+            "description": "",
+            "inputs": {
+            },
+            "outputs": {
+              "nodeOutputs": [
+                {
+                  "data": "13821670806241-pre-0",
+                  "artifactType": "NodeOutput",
+                  "refTableName": "单SQL节点-pre-0_默认节点输出",
+                  "isDefault": true,
+                  "id": "单SQL节点-pre-0.13821670806241-pre-0_out"
+                }
+              ]
+            }
+          },
+          {
+            "id": "13821670806241-post-0",
+            "priority": 2,
+            "timeout": 0,
+            "rerunTimes": 0,
+            "rerunInterval": 60000,
+            "script": {
+              "language": "sql",
+              "path": "业务流程/单SQL流程/MaxCompute/数据开发/单SQL节点-post-0",
+              "runtime": {
+                "engine": "MaxCompute",
+                "command": "ODPS_SQL"
+              },
+              "content": "select date_add(curdate(),interval 1 day);",
+              "id": "13821670806241-sql-2576-post-0",
+              "parameters": [
+                {
+                  "name": "date",
+                  "artifactType": "Variable",
+                  "scope": "NodeParameter",
+                  "type": "System",
+                  "value": "${{sys.biz_date}}",
+                  "description": "VARCHAR",
+                  "id": "ec01a53f-2a16-412b-abb2-96e4a86db629"
+                }
+              ]
+            },
+            "trigger": {
+              "type": "Scheduler",
+              "id": "7-13821670806241",
+              "cron": "0 0 0 * * ? *",
+              "recurrence": "Normal",
+              "startTime": "2024-06-03 00:00:00",
+              "endTime": "2124-06-03 00:00:00",
+              "timezone": "Asia/Shanghai",
+              "delaySeconds": 300
+            },
+            "name": "单SQL节点-post-0",
+            "description": "",
+            "inputs": {
+              "nodeOutputs": [
+                {
+                  "data": "13821670806241",
+                  "artifactType": "NodeOutput",
+                  "refTableName": "单SQL节点_默认节点输出",
+                  "isDefault": true,
+                  "id": "单SQL节点.13821670806241_out"
+                }
+              ]
+            },
+            "outputs": {
+              "nodeOutputs": [
+                {
+                  "data": "13821670806241-post-0",
+                  "artifactType": "NodeOutput",
+                  "refTableName": "单SQL节点-post-0_默认节点输出",
+                  "isDefault": true,
+                  "id": "单SQL节点-post-0.13821670806241-post-0_out"
+                }
+              ]
+            }
+          }
+        ],
+        "dependencies": [
+          {
+            "nodeId": "13821670806241",
+            "depends": [
+              {
+                "nodeId": "13821670806241-pre-0",
+                "type": "Normal",
+                "output": "13821670806241-pre-0",
+                "refTableName": "单SQL节点-pre-0_默认节点输出"
+              }
+            ]
+          },
+          {
+            "nodeId": "13821670806241-post-0",
+            "depends": [
+              {
+                "nodeId": "13821670806241",
+                "type": "Normal",
+                "output": "13821670806241",
+                "refTableName": "单SQL节点_默认节点输出"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
