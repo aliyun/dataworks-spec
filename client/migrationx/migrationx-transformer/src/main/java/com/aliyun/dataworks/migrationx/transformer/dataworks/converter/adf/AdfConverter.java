@@ -53,7 +53,11 @@ public class AdfConverter {
             flows.add(toWorkflow(pipeline, trigger));
         }
         for(SpecWorkflow flow : flows) {
-            flow.setCitable(citableFlowIds.contains(flow.getId()));
+            boolean citable = citableFlowIds.contains(flow.getId());
+            flow.setCitable(citable);
+            if (citable) {
+                flow.getTrigger().setType(TriggerType.NONE);
+            }
         }
         return flows;
     }
