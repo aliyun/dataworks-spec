@@ -32,7 +32,17 @@ jobs:
       shell: bash
     - name: Archive test results
       if: always()
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: test-results
-        path: spec/target/surefire-reports/
+        path: |
+          spec/target/surefire-reports/
+          client/**/target/surefire-reports
+    - name: Publish Test Results
+      uses: EnricoMi/publish-unit-test-result-action@v2
+      if: always()
+      with:
+        files: |
+          test-results/**/*.xml
+          test-results/**/*.trx
+          test-results/**/*.json
