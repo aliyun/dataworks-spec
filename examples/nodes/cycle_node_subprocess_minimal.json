@@ -1,0 +1,19 @@
+{
+    "kind": "Node",
+    "spec": {
+        "nodes": [
+            {
+                "script": {
+                    "path": "聿剑测试/workflow1/workflow041102/subprocess4",
+                    "runtime": {
+                        "command": "SUB_PROCESS"
+                    }
+                },
+                "name": "subprocess4",
+                "subflow": {
+                    "name": "SP_subprocess4"
+                }
+            }
+        ]
+    }
+}

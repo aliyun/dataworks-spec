@@ -1,0 +1,65 @@
+{
+    "kind": "Node",
+    "version": "1.1.0",
+    "spec": {
+        "nodes": [
+            {
+                "id": "python1",
+                "timeout": 0,
+                "rerunMode": "Allowed",
+                "rerunTimes": 0,
+                "rerunInterval": 180000,
+                "script": {
+                    "language": "python3",
+                    "path": "test1/workflow1/python1",
+                    "runtime": {
+                        "command": "PYTHON",
+                        "commandTypeId": 1322,
+                        "cu": "0.5"
+                    },
+                    "content": "print(\"dddd\", \"${input1}\")"
+                },
+                "trigger": {
+                    "type": "Manual",
+                    "timezone": "Asia/Shanghai"
+                },
+                "name": "python1",
+                "owner": "1107550004253538",
+                "inputs": {
+                    "variables": [
+                        {
+                            "inputName": "input1",
+                            "artifactType": "Variable",
+                            "name": "outputs",
+                            "scope": "NodeContext",
+                            "type": "NodeOutput",
+                            "value": "${outputs}",
+                            "node": {
+                                "output": "yongxunQA_emr_chengdu1.2025_05_28_21_21_15_6015062126715695745",
+                                "refTableName": "assign1",
+                                "name": "outputs"
+                            }
+                        }
+                    ]
+                },
+                "outputs": {
+                    "nodeOutputs": [
+                        {
+                            "data": "yongxunQA_emr_chengdu1.2025_05_28_21_21_15_6123419979096480467"
+                        }
+                    ]
+                }
+            }
+        ],
+        "flow": [
+            {
+                "nodeId": "python1",
+                "depends": [
+                    {
+                        "output": "yongxunQA_emr_chengdu1.2025_05_28_21_21_15_6015062126715695745"
+                    }
+                ]
+            }
+        ]
+    }
+}

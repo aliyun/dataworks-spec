@@ -1,0 +1,16 @@
+{
+  "uuid": "4961467403182748571",
+  "ossKey": "system_dw_uad/unknown/ide/1/x/yz.jar",
+  "fileSize": 4840717,
+  "uploadTime": "2025-01-15 10:46:27",
+  "fileName": "ip2region_emr2.jar",
+  "runtimeResource": {
+    "resourceGroup": "autotest_new_group"
+  },
+  "type": "FILE",
+  "sourceType": "LOCAL",
+  "sourcePath": "",
+  "targetType": "OSS",
+  "targetPath": "",
+  "uadResourceId": "file_721037267203xyz"
+}

@@ -1,0 +1,16 @@
+{
+  "kind": "CycleWorkflow",
+  "spec": {
+      "workflows": [
+          {
+              "script": {
+                  "path": "聿剑/createworkflow2",
+                  "runtime": {
+                      "command": "WORKFLOW"
+                  }
+              },
+              "name": "createworkflow2"  
+          }
+      ]
+  }
+}

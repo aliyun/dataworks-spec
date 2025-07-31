@@ -1,0 +1,25 @@
+{
+    "kind":"Resource",
+    "spec":{
+        "fileResources":[
+            {
+                "name":"resource_odps_python.py",
+                "id":"5369959518424235005",
+                "script":{
+                    "path":"/path/to/resource_odps_python.py",
+                    "runtime":{
+                        "command":"ODPS_PYTHON"
+                    }
+                },
+                "runtimeResource":{
+                    "resourceGroup":"autotest_new_group"
+                },
+                "type":"python",
+                "datasource":{
+                    "name":"odps_first",
+                    "type":"odps"
+                }
+            }
+        ]
+    }
+}

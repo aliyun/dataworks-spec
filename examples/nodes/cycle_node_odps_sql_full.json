@@ -1,0 +1,110 @@
+{
+    "kind": "Node",
+    "spec": {
+        "nodes": [
+            {
+                "recurrence": "Normal",
+                "id": "5479743988095323770",
+                "timeout": 0,
+                "instanceMode": "T+1",
+                "rerunMode": "Allowed",
+                "rerunTimes": 3,
+                "rerunInterval": 120000,
+                "datasource": {
+                    "name": "lwt_test_newIde_pro",
+                    "type": "odps"
+                },
+                "script": {
+                    "language": "odps-sql",
+                    "path": "聿剑/openapi/{name}",
+                    "content": "select 1;",
+                    "runtime": {
+                        "command": "ODPS_SQL",
+                        "cu": "0.25"
+                    }
+                },
+                "trigger": {
+                    "type": "Scheduler",
+                    "cron": "00 26 00 * * ?",
+                    "startTime": "1970-01-01 00:00:00",
+                    "endTime": "9999-01-01 00:00:00",
+                    "timezone": "GMT+08:00",
+                    "delaySeconds": 0
+                },
+                "runtimeResource": {
+                    "resourceGroup": "S_res_group_524257424564736_1701742527418"
+                },
+                "name": "{name}",
+                "owner": "1107550004253538",
+                "inputs": {
+                    "nodeOutputs": [
+                        {
+                            "data": "lwt_test_newIde.mycustom_{name}_input1",
+                            "artifactType": "NodeOutput"
+                        }
+                    ],
+                    "variables": [
+                        {
+                            "inputName": "input1",
+                            "name": "outputs",
+                            "type": "NodeOutput",
+                            "scope": "NodeContext",
+                            "value": "${outputs}",
+                            "referenceVariable": {
+                                "name": "outputs",
+                                "type": "NodeOutput",
+                                "scope": "NodeContext",
+                                "value": "${outputs}",
+                                "node": {
+                                    "output": "lwt_test_newIde.mycustom_{name}_input1"
+                                }
+                            }
+                        }
+                    ]
+                },
+                "outputs": {
+                    "nodeOutputs": [
+                        {
+                            "data": "lwt_test_newIde.mycustom_{name}_output1",
+                            "artifactType": "NodeOutput",
+                            "sourceType": "System",
+                            "refTableName": "mcsql2",
+                            "isDefault": false
+                        }
+                    ],
+                    "variables": [
+                        {
+                            "name": "output1",
+                            "type": "System",
+                            "scope": "NodeContext",
+                            "value": "${yyyymmdd}",
+                            "node": {
+                                "output": "lwt_test_newIde.mycustom_{name}_output1"
+                            }
+                        },
+                        {
+                            "name": "outputs",
+                            "type": "NodeOutput",
+                            "scope": "NodeContext",
+                            "value": "${outputs}",
+                            "node": {
+                                "output": "lwt_test_newIde.mycustom_{name}_output1"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "dependencies": [
+            {
+                "nodeId": "5479743988095323770",
+                "depends": [
+                    {
+                        "type": "Normal",
+                        "output": "lwt_test_newide_root"
+                    }
+                ]
+            }
+        ]
+    }
+}

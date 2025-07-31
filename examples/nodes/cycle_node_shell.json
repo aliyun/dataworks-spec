@@ -1,0 +1,65 @@
+{
+    "kind": "Node",
+    "version": "1.1.0",
+    "spec": {
+        "nodes": [
+            {
+                "id": "shell1",
+                "timeout": 0,
+                "rerunMode": "Allowed",
+                "rerunTimes": 0,
+                "rerunInterval": 180000,
+                "script": {
+                    "language": "shell-script",
+                    "path": "test1/workflow1/shell1",
+                    "runtime": {
+                        "command": "DIDE_SHELL",
+                        "commandTypeId": 6,
+                        "cu": "0.25"
+                    },
+                    "content": "#!/bin/bash\n#********************************************************************#\n##author:dw_on_emr_qa3@test.aliyunid.com\n##create time:2025-05-22 20:21:35\n#********************************************************************#\n\necho shell, '${input3}', $1"
+                },
+                "trigger": {
+                    "type": "Manual",
+                    "timezone": "Asia/Shanghai"
+                },
+                "name": "shell1",
+                "owner": "1107550004253538",
+                "inputs": {
+                    "variables": [
+                        {
+                            "inputName": "input3",
+                            "artifactType": "Variable",
+                            "name": "outputs",
+                            "scope": "NodeContext",
+                            "type": "NodeOutput",
+                            "value": "${outputs}",
+                            "node": {
+                                "output": "yongxunQA_emr_chengdu1.2025_05_28_21_21_15_6015062126715695745",
+                                "refTableName": "assign1",
+                                "name": "outputs"
+                            }
+                        }
+                    ]
+                },
+                "outputs": {
+                    "nodeOutputs": [
+                        {
+                            "data": "yongxunQA_emr_chengdu1.2025_05_28_21_21_15_8540823129056658410"
+                        }
+                    ]
+                }
+            }
+        ],
+        "flow": [
+            {
+                "nodeId": "shell1",
+                "depends": [
+                    {
+                        "output": "yongxunQA_emr_chengdu1.2025_05_28_21_21_15_6015062126715695745"
+                    }
+                ]
+            }
+        ]
+    }
+}

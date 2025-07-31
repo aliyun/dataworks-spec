@@ -1,0 +1,60 @@
+{
+    "kind": "Node",
+    "version": "1.1.0",
+    "spec": {
+        "nodes": [
+            {
+                "id": "assign1",
+                "script": {
+                    "language": "shell-script",
+                    "path": "testopenapi1/assign1",
+                    "runtime": {
+                        "command": "CONTROLLER_ASSIGNMENT",
+                        "commandTypeId": 1100,
+                        "cu": "0.25"
+                    },
+                    "content": "echo '123445'"
+                },
+                "trigger": {
+                    "type": "Manual",
+                    "timezone": "Asia/Shanghai"
+                },
+                "runtimeResource": {
+                    "resourceGroup": "group_524257424564736",
+                    "resourceGroupId": "1000008200005"
+                },
+                "name": "assign1",
+                "inputs": {},
+                "outputs": {
+                    "nodeOutputs": [
+                        {
+                            "data": "yongxunQA_emr_chengdu1.2025_05_28_21_21_15_6015062126715695745"
+                        }
+                    ],
+                    "variables": [
+                        {
+                            "artifactType": "Variable",
+                            "name": "outputs",
+                            "scope": "NodeContext",
+                            "type": "NodeOutput",
+                            "value": "${outputs}",
+                            "node": {
+                                "output": "yongxunQA_emr_chengdu1.2025_05_28_21_21_15_6015062126715695745"
+                            }
+                        }
+                    ]
+                }
+            }
+        ],
+        "flow": [
+            {
+                "nodeId": "assign1",
+                "depends": [
+                    {
+                        "output": "yongxunQA_emr_chengdu1.2025_05_28_21_21_15_7343470073706653895"
+                    }
+                ]
+            }
+        ]
+    }
+}

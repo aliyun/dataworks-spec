@@ -1,0 +1,16 @@
+{
+    "kind": "Function",
+    "spec": {
+        "functions": [
+            {
+                "script": {
+                    "content": "{\"name\": \"{name}\", \"datasource\": {\"type\": \"ODPS\", \"name\": \"lwt_test_newIde_pro\"}, \"clazzName\": \"{name}\", \"fileResource\": \"测试文件1.py\", \"runtimeResource\": {\"resourceGroup\": \"S_res_group_524257424564736_1701742527418\"}}",
+                    "path": "聿剑/openapi/{name}",
+                    "runtime": {
+                        "command": "ODPS_FUNCTION"
+                    }
+                }
+            }
+        ]
+    }
+}

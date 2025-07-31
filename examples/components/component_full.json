@@ -1,0 +1,44 @@
+{
+  "kind": "Component",
+  "spec": {
+    "components": [
+      {
+        "name": "com0073001",
+        "id": "5687800960837700407",
+        "owner": "1107550004253538",
+        "description": "descriptions of component",
+        "script": {
+          "id": "8161769361997196161",
+          "language": "odps-sql",
+          "path": "test1/test2/com0073001",
+          "runtime": {
+            "command": "SQL_COMPONENT",
+            "commandTypeId": 3010
+          }
+        },
+        "inputs": [
+          {
+            "defaultValue": "default_value1",
+            "description": "desc1",
+            "name": "para1",
+            "type": "string"
+          },
+          {
+            "defaultValue": "value2",
+            "description": "desc2",
+            "name": "para2",
+            "type": "string"
+          }
+        ],
+        "outputs": [
+          {
+            "defaultValue": "table1",
+            "description": "out desc",
+            "name": "outtable1",
+            "type": "string"
+          }
+        ]
+      }
+    ]
+  }
+}

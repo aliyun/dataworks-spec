@@ -1,0 +1,16 @@
+{
+  "kind": "Node",
+  "spec": {
+      "nodes": [
+          {
+              "script": {
+                  "path": "聿剑/createworkflow2/{name}",
+                  "runtime": {
+                      "command": "ODPS_SQL"
+                  }
+              },
+              "name": "{name}"  
+          }
+      ]
+  }
+}

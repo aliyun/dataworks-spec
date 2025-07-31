@@ -1,0 +1,21 @@
+{
+  "kind":"Resource",
+  "spec":{
+    "fileResources":[
+      {
+        "name":"resource_emr_python.py",
+        "id":"4961467403182748571",
+        "script":{
+          "path":"/path/to/resource_emr_python.py",
+          "runtime":{
+            "command":"EMR_FILE"
+          }
+        },
+        "runtimeResource":{
+          "resourceGroup":"autotest_new_group"
+        },
+        "type":"file"
+      }
+    ]
+  }
+}
