@@ -89,6 +89,10 @@ public class SpecScriptRuntime extends SpecNoRefEntity {
      */
     private SpecContainer container;
     /**
+     * linked role arn
+     */
+    private String linkedRoleArn;
+    /**
      * runtime resource info
      */
     private String cu;

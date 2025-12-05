@@ -27,8 +27,18 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 @Data
 public class SpecRuntimeResource extends SpecRefEntity {
+    /**
+     * resource group identifier
+     */
     private String resourceGroup;
+    /**
+     * scheduler resource group id
+     */
     private String resourceGroupId;
+    /**
+     * resource group name
+     */
+    private String resourceGroupName;
     /**
      * 运行时资源，指定cu数
      *

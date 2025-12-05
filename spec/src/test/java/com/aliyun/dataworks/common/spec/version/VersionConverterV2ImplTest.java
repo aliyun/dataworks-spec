@@ -27,6 +27,7 @@ import com.aliyun.dataworks.common.spec.SpecUtil;
 import com.aliyun.dataworks.common.spec.domain.DataWorksWorkflowSpec;
 import com.aliyun.dataworks.common.spec.domain.Specification;
 import com.aliyun.dataworks.common.spec.domain.enums.FlowType;
+import com.aliyun.dataworks.common.spec.domain.enums.PriorityWeightStrategy;
 import com.aliyun.dataworks.common.spec.domain.enums.SpecKind;
 import com.aliyun.dataworks.common.spec.domain.enums.SpecVersion;
 import com.aliyun.dataworks.common.spec.domain.enums.TriggerType;
@@ -370,6 +371,10 @@ public class VersionConverterV2ImplTest {
 
         assertTrue(CollectionUtils.isEmpty(newParsed.getSpec().getVariables()));
         assertEquals(1, newParsed.getSpec().getWorkflows().get(0).getScript().getParameters().size());
+
+        assertEquals(1, newParsed.getSpec().getWorkflows().get(0).getStrategy().getPriority().intValue());
+        assertEquals(PriorityWeightStrategy.DISABLED, newParsed.getSpec().getWorkflows().get(0).getStrategy().getPriorityWeightStrategy());
+        assertEquals(0, newParsed.getSpec().getWorkflows().get(0).getStrategy().getMaxInternalConcurrency().intValue());
     }
 
     @Test

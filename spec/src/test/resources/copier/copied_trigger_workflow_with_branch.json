@@ -1,0 +1,269 @@
+{
+  "version": "1.2.0",
+  "kind": "TriggerWorkflow",
+  "spec": {
+    "workflows": [
+      {
+        "script": {
+          "path": "聿剑/triflow1_回归1",
+          "runtime": {
+            "command": "WORKFLOW"
+          },
+          "parameters": [
+            {
+              "artifactType": "Variable",
+              "name": "flow1",
+              "scope": "Workflow",
+              "type": "System",
+              "value": "111111"
+            }
+          ]
+        },
+        "id": "6745878829284281437",
+        "trigger": {
+          "type": "Custom",
+          "startTime": "1970-01-01 00:00:00",
+          "endTime": "9999-01-01 00:00:00",
+          "timezone": "Asia/Shanghai"
+        },
+        "strategy": {
+          "priority": 1,
+          "priorityWeightStrategy": "Disabled",
+          "maxInternalConcurrency": 0,
+          "timeout": 0,
+          "timeoutUnit": "HOURS",
+          "rerunMode": "Allowed",
+          "rerunTimes": 3,
+          "rerunInterval": 180000,
+          "failureStrategy": "Break",
+          "recurrenceType": "NoneAuto"
+        },
+        "name": "triflow1_回归1",
+        "owner": "1107550004253538",
+        "citable": true,
+        "inputs": {
+        },
+        "outputs": {
+          "nodeOutputs": [
+            {
+              "data": "6745878829284281437",
+              "artifactType": "NodeOutput",
+              "sourceType": "System",
+              "refTableName": "triflow1_回归1",
+              "isDefault": true
+            }
+          ]
+        },
+        "nodes": [
+          {
+            "recurrence": "Normal",
+            "id": "5030143290444071238",
+            "timeout": 0,
+            "timeoutUnit": "HOURS",
+            "instanceMode": "T+1",
+            "rerunMode": "Allowed",
+            "rerunTimes": 0,
+            "rerunInterval": 180000,
+            "datasource": {
+              "name": "sy_odps_01",
+              "type": "odps"
+            },
+            "script": {
+              "language": "odps-sql",
+              "path": "聿剑/triflow1_回归1/cmsql1",
+              "runtime": {
+                "command": "ODPS_SQL",
+                "commandTypeId": 10,
+                "cu": "0.25"
+              },
+              "parameters": [
+                {
+                  "artifactType": "Variable",
+                  "name": "node1",
+                  "scope": "NodeParameter",
+                  "type": "System",
+                  "value": "node_1111"
+                }
+              ]
+            },
+            "trigger": {
+              "type": "Custom",
+              "startTime": "1970-01-01 00:00:00",
+              "endTime": "9999-01-01 00:00:00",
+              "timezone": "Asia/Shanghai",
+              "delaySeconds": 0
+            },
+            "runtimeResource": {
+              "resourceGroup": "Serverless_res_group_524257424564736_746503276393248",
+              "resourceGroupId": "400007200003",
+              "resourceGroupName": "my-group-name"
+            },
+            "name": "cmsql1",
+            "owner": "1107550004253538",
+            "inputs": {
+            },
+            "outputs": {
+              "nodeOutputs": [
+                {
+                  "data": "5030143290444071238",
+                  "artifactType": "NodeOutput",
+                  "sourceType": "System",
+                  "refTableName": "cmsql1",
+                  "isDefault": true
+                }
+              ]
+            }
+          },
+          {
+            "recurrence": "Normal",
+            "id": "5508324582831585753",
+            "timeout": 0,
+            "timeoutUnit": "HOURS",
+            "instanceMode": "T+1",
+            "rerunMode": "Allowed",
+            "rerunTimes": 0,
+            "rerunInterval": 180000,
+            "script": {
+              "language": "shell-script",
+              "path": "聿剑/triflow1_回归1/she111",
+              "runtime": {
+                "command": "DIDE_SHELL",
+                "commandTypeId": 6,
+                "cu": "0.25"
+              },
+              "parameters": [
+                {
+                  "artifactType": "Variable",
+                  "name": "-",
+                  "scope": "NodeParameter",
+                  "type": "NoKvVariableExpression",
+                  "value": ""
+                }
+              ]
+            },
+            "trigger": {
+              "type": "Custom",
+              "startTime": "1970-01-01 00:00:00",
+              "endTime": "9999-01-01 00:00:00",
+              "timezone": "Asia/Shanghai",
+              "delaySeconds": 0
+            },
+            "runtimeResource": {
+              "resourceGroup": "group_524257424564736",
+              "resourceGroupId": "400001100001",
+              "resourceGroupName": "my-group-name"
+            },
+            "name": "she111",
+            "owner": "1107550004253538",
+            "inputs": {
+            },
+            "outputs": {
+              "nodeOutputs": [
+                {
+                  "data": "5508324582831585753",
+                  "artifactType": "NodeOutput",
+                  "sourceType": "System",
+                  "refTableName": "she111",
+                  "isDefault": true
+                }
+              ]
+            }
+          },
+          {
+            "recurrence": "Normal",
+            "id": "7487311068902474330",
+            "timeout": 0,
+            "timeoutUnit": "HOURS",
+            "instanceMode": "T+1",
+            "rerunMode": "Allowed",
+            "rerunTimes": 0,
+            "rerunInterval": 180000,
+            "script": {
+              "path": "聿剑/triflow1_回归1/分支1",
+              "runtime": {
+                "command": "CONTROLLER_BRANCH",
+                "commandTypeId": 1101,
+                "cu": "0.25"
+              }
+            },
+            "trigger": {
+              "type": "Custom",
+              "startTime": "1970-01-01 00:00:00",
+              "endTime": "9999-01-01 00:00:00",
+              "timezone": "Asia/Shanghai",
+              "delaySeconds": 0
+            },
+            "runtimeResource": {
+              "resourceGroup": "group_524257424564736",
+              "resourceGroupId": "400001100001",
+              "resourceGroupName": "my-group-name"
+            },
+            "branch": {
+              "branches": [
+                {
+                  "when": "True",
+                  "output": {
+                    "data": "wl_test_0317_01.bbbb_true_1_CPSinrD30CPE",
+                    "artifactType": "NodeOutput"
+                  }
+                },
+                {
+                  "when": "False",
+                  "output": {
+                    "data": "wl_test_0317_01.bbb_false_1_CPSsJ9gSDCPE",
+                    "artifactType": "NodeOutput"
+                  }
+                }
+              ]
+            },
+            "name": "分支1",
+            "owner": "1107550004253538",
+            "inputs": {
+            },
+            "outputs": {
+              "nodeOutputs": [
+                {
+                  "data": "7487311068902474330",
+                  "artifactType": "NodeOutput",
+                  "sourceType": "System",
+                  "refTableName": "分支1",
+                  "isDefault": true
+                },
+                {
+                  "data": "wl_test_0317_01.bbb_false_1_CPSsJ9gSDCPE",
+                  "artifactType": "NodeOutput"
+                },
+                {
+                  "data": "wl_test_0317_01.bbbb_true_1_CPSinrD30CPE",
+                  "artifactType": "NodeOutput"
+                }
+              ]
+            }
+          }
+        ],
+        "dependencies": [
+          {
+            "nodeId": "5030143290444071238",
+            "depends": [
+              {
+                "type": "Normal",
+                "output": "wl_test_0317_01.bbb_false_1_CPSsJ9gSDCPE",
+                "sourceType": "Manual"
+              }
+            ]
+          },
+          {
+            "nodeId": "5508324582831585753",
+            "depends": [
+              {
+                "type": "Normal",
+                "output": "wl_test_0317_01.bbbb_true_1_CPSinrD30CPE",
+                "sourceType": "Manual"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

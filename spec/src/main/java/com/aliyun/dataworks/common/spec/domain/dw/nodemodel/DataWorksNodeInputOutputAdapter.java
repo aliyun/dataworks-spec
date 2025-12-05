@@ -181,7 +181,13 @@ public class DataWorksNodeInputOutputAdapter {
         return Optional.ofNullable(objectDelegate.getScript())
             .map(SpecScript::getParameters).flatMap(params -> params.stream()
                 .filter(param -> param.getReferenceVariable() != null)
-                .filter(param -> matchVariable(i, param.getReferenceVariable()))
+                .filter(param -> {
+                    if (StringUtils.isNotBlank(i.getInputName())) {
+                        return matchVariable(i, param.getReferenceVariable()) && StringUtils.equalsIgnoreCase(i.getInputName(), param.getName());
+                    }
+
+                    return matchVariable(i, param.getReferenceVariable());
+                })
                 .map(SpecVariable::getName).findAny())
             .or(() -> Optional.ofNullable(i.getInputName()))
             .orElseThrow(() -> new SpecException(SpecErrorCode.PARSE_ERROR, "inputs variable missing binding in script.parameters: " + i.getName()));

@@ -29,7 +29,7 @@ import lombok.EqualsAndHashCode;
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
-public class SpecTable extends SpecArtifact {
+public class SpecTable extends SpecArtifact implements ScriptWired {
     public SpecTable() {
         setArtifactType(ArtifactType.TABLE);
     }
@@ -58,4 +58,14 @@ public class SpecTable extends SpecArtifact {
      * 逻辑表UUID
      */
     private String logicTableUuid;
+
+    /////////////////   表节点   /////////////////
+
+    @EqualsAndHashCode.Include
+    private SpecScript script;
+
+    @EqualsAndHashCode.Include
+    private SpecRuntimeResource runtimeResource;
+
+    private String owner;
 }

@@ -15,6 +15,16 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import static com.aliyun.dataworks.migrationx.domain.dataworks.packages.enums.PackageValidateErrorCode.ANY_FOLDER_NOT_ALLOW_IN_FOLDER;
+import static com.aliyun.dataworks.migrationx.domain.dataworks.packages.enums.PackageValidateErrorCode.DATAWORKS_HIDDEN_FOLDER_MISSING_METADATA_FILE;
+import static com.aliyun.dataworks.migrationx.domain.dataworks.packages.enums.PackageValidateErrorCode.DATAWORKS_HIDDEN_FOLDER_MISSING_TYPE_FILE;
+import static com.aliyun.dataworks.migrationx.domain.dataworks.packages.enums.PackageValidateErrorCode.DATAWORKS_HIDDEN_FOLDER_MULTIPLE_TYPE_FILES;
+import static com.aliyun.dataworks.migrationx.domain.dataworks.packages.enums.PackageValidateErrorCode.METADATA_FILE_EMPTY;
+import static com.aliyun.dataworks.migrationx.domain.dataworks.packages.enums.PackageValidateErrorCode.MISSING_REQUIRED_FOLDER;
+import static com.aliyun.dataworks.migrationx.domain.dataworks.packages.enums.PackageValidateErrorCode.ONLY_SPECIFIC_FILE_ALLOWED_IN_FOLDER;
+import static com.aliyun.dataworks.migrationx.domain.dataworks.packages.enums.PackageValidateErrorCode.ONLY_SPEC_FOLDER_ALLOWED_IN_FOLDER;
+import static com.aliyun.dataworks.migrationx.domain.dataworks.packages.enums.PackageValidateErrorCode.SPEC_PACKAGE_MISSING_FILE;
+import static com.aliyun.dataworks.migrationx.domain.dataworks.packages.enums.PackageValidateErrorCode.SPEC_PACKAGE_MULTIPLE_FILES;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
@@ -189,7 +199,7 @@ public class SpecPackageValidatorTest {
         assertTrue("Should have validation failure results",
             context.getResults().stream().anyMatch(result -> result.getValid() != null && !result.getValid()));
         assertTrue("Should report not allowed files", context.getResults().stream().anyMatch(result ->
-            result.getValid() != null && !result.getValid() && "SPEC_PACKAGE_MULTIPLE_FILES".equals(result.getErrorCode())));
+            result.getValid() != null && !result.getValid() && SPEC_PACKAGE_MULTIPLE_FILES.getErrorCode().equals(result.getErrorCode())));
     }
 
     @Test
@@ -216,9 +226,9 @@ public class SpecPackageValidatorTest {
             context.getResults().stream().anyMatch(result -> result.getValid() != null && !result.getValid()));
         assertTrue("Should report missing required folder", context.getResults().stream().anyMatch(result ->
             result.getValid() != null && !result.getValid() &&
-                ("MISSING_REQUIRED_FOLDER".equals(result.getErrorCode()) ||
-                    "DATAWORKS_HIDDEN_FOLDER_MISSING_METADATA_FILE".equals(result.getErrorCode()) ||
-                    "DATAWORKS_HIDDEN_FOLDER_MISSING_TYPE_FILE".equals(result.getErrorCode()))));
+                (MISSING_REQUIRED_FOLDER.getErrorCode().equals(result.getErrorCode()) ||
+                    DATAWORKS_HIDDEN_FOLDER_MISSING_METADATA_FILE.getErrorCode().equals(result.getErrorCode()) ||
+                    DATAWORKS_HIDDEN_FOLDER_MISSING_TYPE_FILE.getErrorCode().equals(result.getErrorCode()))));
     }
 
     @Test
@@ -252,7 +262,7 @@ public class SpecPackageValidatorTest {
             context.getResults().stream().anyMatch(result -> result.getValid() != null && !result.getValid()));
         assertTrue("Should report missing required file", context.getResults().stream().anyMatch(result ->
             result.getValid() != null && !result.getValid() &&
-                ("SPEC_PACKAGE_MISSING_FILE".equals(result.getErrorCode()) ||
+                (SPEC_PACKAGE_MISSING_FILE.getErrorCode().equals(result.getErrorCode()) ||
                     "DATAWORKS_HIDDEN_FOLDER_MISSING_METADATA_FILE".equals(result.getErrorCode()) ||
                     "DATAWORKS_HIDDEN_FOLDER_MISSING_TYPE_FILE".equals(result.getErrorCode())) &&
                 (result.getErrorMessage().contains(".schedule.json") || result.getErrorMessage().contains(".spec.json") || result.getErrorMessage()
@@ -290,9 +300,9 @@ public class SpecPackageValidatorTest {
             context.getResults().stream().anyMatch(result -> result.getValid() != null && !result.getValid()));
         assertTrue("Should report missing required file", context.getResults().stream().anyMatch(result ->
             result.getValid() != null && !result.getValid() &&
-                ("SPEC_PACKAGE_MISSING_FILE".equals(result.getErrorCode()) ||
-                    "DATAWORKS_HIDDEN_FOLDER_MISSING_METADATA_FILE".equals(result.getErrorCode()) ||
-                    "DATAWORKS_HIDDEN_FOLDER_MISSING_TYPE_FILE".equals(result.getErrorCode())) &&
+                (SPEC_PACKAGE_MISSING_FILE.getErrorCode().equals(result.getErrorCode()) ||
+                    DATAWORKS_HIDDEN_FOLDER_MISSING_METADATA_FILE.getErrorCode().equals(result.getErrorCode()) ||
+                    DATAWORKS_HIDDEN_FOLDER_MISSING_TYPE_FILE.getErrorCode().equals(result.getErrorCode())) &&
                 result.getErrorMessage().contains(packageName)));
     }
 
@@ -330,7 +340,7 @@ public class SpecPackageValidatorTest {
         assertTrue("Should have validation failure results",
             context.getResults().stream().anyMatch(result -> result.getValid() != null && !result.getValid()));
         assertTrue("Should report not allowed file", context.getResults().stream().anyMatch(result ->
-            result.getValid() != null && !result.getValid() && "ONLY_SPECIFIC_FILE_ALLOWED_IN_FOLDER".equals(result.getErrorCode()) &&
+            result.getValid() != null && !result.getValid() && ONLY_SPECIFIC_FILE_ALLOWED_IN_FOLDER.getErrorCode().equals(result.getErrorCode()) &&
                 result.getErrorMessage().contains("invalid-file.txt")));
     }
 
@@ -386,7 +396,7 @@ public class SpecPackageValidatorTest {
             .forEach(result -> System.out.println("Error code: " + result.getErrorCode() + ", Message: " + result.getErrorMessage()));
 
         assertTrue("Should report not allowed file", context.getResults().stream().anyMatch(result ->
-            result.getValid() != null && !result.getValid() && "SPEC_PACKAGE_MULTIPLE_FILES".equals(result.getErrorCode())));
+            result.getValid() != null && !result.getValid() && SPEC_PACKAGE_MULTIPLE_FILES.getErrorCode().equals(result.getErrorCode())));
     }
 
     @Test
@@ -430,7 +440,7 @@ public class SpecPackageValidatorTest {
         assertTrue("Should have validation failure results",
             context.getResults().stream().anyMatch(result -> result.getValid() != null && !result.getValid()));
         assertTrue("Should report not allowed file", context.getResults().stream().anyMatch(result ->
-            result.getValid() != null && !result.getValid() && "SPEC_PACKAGE_MULTIPLE_FILES".equals(result.getErrorCode())));
+            result.getValid() != null && !result.getValid() && SPEC_PACKAGE_MULTIPLE_FILES.getErrorCode().equals(result.getErrorCode())));
     }
 
     @Test
@@ -715,7 +725,7 @@ public class SpecPackageValidatorTest {
         assertTrue("Should have validation failure results",
             context.getResults().stream().anyMatch(result -> result.getValid() != null && !result.getValid()));
         assertTrue("Should report not allowed folder", context.getResults().stream().anyMatch(result ->
-            result.getValid() != null && !result.getValid() && "ONLY_SPEC_FOLDER_ALLOWED_IN_FOLDER".equals(result.getErrorCode()) &&
+            result.getValid() != null && !result.getValid() && ONLY_SPEC_FOLDER_ALLOWED_IN_FOLDER.getErrorCode().equals(result.getErrorCode()) &&
                 result.getErrorMessage().contains("sub-package")));
     }
 
@@ -751,7 +761,7 @@ public class SpecPackageValidatorTest {
         assertTrue("Should have validation failure results",
             context.getResults().stream().anyMatch(result -> result.getValid() != null && !result.getValid()));
         assertTrue("Should report file content is empty", context.getResults().stream().anyMatch(result ->
-            result.getValid() != null && !result.getValid() && "METADATA_FILE_EMPTY".equals(result.getErrorCode())));
+            result.getValid() != null && !result.getValid() && METADATA_FILE_EMPTY.getErrorCode().equals(result.getErrorCode())));
     }
 
     @Test
@@ -782,9 +792,8 @@ public class SpecPackageValidatorTest {
             context.getResults().stream().anyMatch(result -> result.getValid() != null && !result.getValid()));
         assertTrue("Should report missing required file", context.getResults().stream().anyMatch(result ->
             result.getValid() != null && !result.getValid() &&
-                ("SPEC_PACKAGE_MISSING_SCHEDULE_FILE".equals(result.getErrorCode()) ||
-                    "DATAWORKS_HIDDEN_FOLDER_MISSING_METADATA_FILE".equals(result.getErrorCode()) ||
-                    "DATAWORKS_HIDDEN_FOLDER_MISSING_TYPE_FILE".equals(result.getErrorCode())) &&
+                (DATAWORKS_HIDDEN_FOLDER_MISSING_METADATA_FILE.getErrorCode().equals(result.getErrorCode()) ||
+                    DATAWORKS_HIDDEN_FOLDER_MISSING_TYPE_FILE.getErrorCode().equals(result.getErrorCode())) &&
                 (result.getErrorMessage().contains("metadata.json") || result.getErrorMessage().contains(".type"))));
     }
 
@@ -865,7 +874,7 @@ public class SpecPackageValidatorTest {
         assertTrue("Should have validation failure results",
             context.getResults().stream().anyMatch(result -> result.getValid() != null && !result.getValid()));
         assertTrue("Should report not allowed directory", context.getResults().stream().anyMatch(result ->
-            result.getValid() != null && !result.getValid() && "ANY_FOLDER_NOT_ALLOW_IN_FOLDER".equals(result.getErrorCode()) &&
+            result.getValid() != null && !result.getValid() && ANY_FOLDER_NOT_ALLOW_IN_FOLDER.getErrorCode().equals(result.getErrorCode()) &&
                 result.getErrorMessage().contains("sub-dir")));
     }
 
@@ -904,7 +913,7 @@ public class SpecPackageValidatorTest {
         assertNotNull(context.getResults());
         // Check if there are results marked as not allowed files (metadata2.json will be marked as not allowed file)
         boolean hasNotAllowedFile = context.getResults().stream().anyMatch(result ->
-            result.getValid() != null && !result.getValid() && "ONLY_SPECIFIC_FILE_ALLOWED_IN_FOLDER".equals(result.getErrorCode()));
+            result.getValid() != null && !result.getValid() && "0x50830e0000000000a".equals(result.getErrorCode()));
         // This test is mainly to cover the file checking logic in validateDataworksFolder
         // Not specifically testing duplicate metadata.json file checking (because file system doesn't allow same name files)
     }
@@ -944,7 +953,8 @@ public class SpecPackageValidatorTest {
         assertTrue("Should have validation failure results",
             context.getResults().stream().anyMatch(result -> result.getValid() != null && !result.getValid()));
         assertTrue("Should report multiple .type files exist", context.getResults().stream().anyMatch(result ->
-            result.getValid() != null && !result.getValid() && "DATAWORKS_HIDDEN_FOLDER_MULTIPLE_TYPE_FILES".equals(result.getErrorCode())));
+            result.getValid() != null && !result.getValid() && DATAWORKS_HIDDEN_FOLDER_MULTIPLE_TYPE_FILES.getErrorCode()
+                .equals(result.getErrorCode())));
     }
 
     @Test

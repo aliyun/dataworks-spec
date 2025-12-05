@@ -205,6 +205,7 @@ public class NodeSpecUpdateAdapter {
                     refNode.setOutput(o);
                     ref.setNode(refNode);
                     ref.setName(kv[1]);
+                    ref.setInputName(inCtx.getParamName());
                     ref.setType(VariableType.NODE_OUTPUT);
                     ref.setScope(VariableScopeType.NODE_CONTEXT);
                     specVariable.setReferenceVariable(ref);

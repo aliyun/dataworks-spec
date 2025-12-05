@@ -542,6 +542,7 @@ public class SpecDevUtil {
         JSONObject json = new JSONObject();
 
         List<Field> fields = SpecDevUtil.getPropertyFields(specObj);
+        log.debug("class: {}, fields: {}", specObj.getClass().getSimpleName(), fields.stream().map(Field::getName).collect(Collectors.toList()));
         Optional.ofNullable(specObj.getClass().getSuperclass()).map(Class::getDeclaredFields).map(Arrays::asList).ifPresent(
             list -> fields.addAll(1, list));
 

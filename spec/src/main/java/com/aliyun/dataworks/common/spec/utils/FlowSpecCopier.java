@@ -19,6 +19,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.regex.Pattern;
 
 import com.alibaba.fastjson2.JSONObject;
 import com.alibaba.fastjson2.JSONWriter.Feature;
@@ -46,6 +47,8 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.RegExUtils;
 import org.apache.commons.lang3.StringUtils;
 
 /**
@@ -58,6 +61,10 @@ import org.apache.commons.lang3.StringUtils;
 @Getter
 @Slf4j
 public class FlowSpecCopier {
+    private static final String COPY_SUFFIX_START = "CPS";
+    private static final String COPY_SUFFIX_END = "CPE";
+    protected static final Pattern COPY_SUFFIX_PATTERN = Pattern.compile(COPY_SUFFIX_START + "[a-zA-Z0-9]{6}" + COPY_SUFFIX_END);
+
     private final Map<String, String> uuidMapping = new HashMap<>();
     private final Map<String, String> outputMapping = new HashMap<>();
 
@@ -319,10 +326,19 @@ public class FlowSpecCopier {
                 nodeOutput.setData(newId);
                 outputMapping.put(oldId, newId);
             } else {
-                if (SpecKind.CYCLE_WORKFLOW.getLabel().equalsIgnoreCase(specKind)) {
+                if (SpecKind.CYCLE_WORKFLOW.getLabel().equalsIgnoreCase(specKind) ||
+                    SpecKind.TRIGGER_WORKFLOW.getLabel().equalsIgnoreCase(specKind)) {
                     // cycle workflow output data replace to avoid deployment output conflicts
                     String oldOutput = nodeOutput.getData();
-                    String newOutput = Joiner.on("_").join(nodeOutput.getData(), newId);
+                    // generate a short random string
+                    String randomSuffix = COPY_SUFFIX_START + RandomStringUtils.randomAlphanumeric(6) + COPY_SUFFIX_END;
+                    String newOutput;
+                    // if oldOutput contains randomSuffix, replace it
+                    if (COPY_SUFFIX_PATTERN.matcher(oldOutput).find()) {
+                        newOutput = RegExUtils.replacePattern(oldOutput, COPY_SUFFIX_PATTERN.pattern(), randomSuffix);
+                    } else {
+                        newOutput = Joiner.on("_").join(oldOutput, randomSuffix);
+                    }
                     log.info("replace node output: {} to: {}", oldOutput, newOutput);
                     nodeOutput.setData(newOutput);
                     outputMapping.put(oldOutput, newOutput);

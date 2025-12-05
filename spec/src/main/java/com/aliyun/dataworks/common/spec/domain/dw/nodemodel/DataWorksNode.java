@@ -116,6 +116,13 @@ public interface DataWorksNode {
     String getAdvanceSettings();
 
     /**
+     * get settings json for task run/deploy
+     *
+     * @return settings json
+     */
+    String getSettingsJson();
+
+    /**
      * Node quota
      *
      * @return String quota

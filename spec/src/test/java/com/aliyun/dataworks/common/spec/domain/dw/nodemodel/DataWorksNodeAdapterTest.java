@@ -39,6 +39,7 @@ import com.aliyun.dataworks.common.spec.domain.enums.NodeRecurrenceType;
 import com.aliyun.dataworks.common.spec.domain.enums.TriggerType;
 import com.aliyun.dataworks.common.spec.domain.noref.SpecDepend;
 import com.aliyun.dataworks.common.spec.domain.noref.SpecFlowDepend;
+import com.aliyun.dataworks.common.spec.domain.ref.SpecDataset;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecNode;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecNodeOutput;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecScheduleStrategy;
@@ -49,6 +50,7 @@ import com.aliyun.dataworks.common.spec.domain.ref.component.SpecComponent;
 import com.aliyun.dataworks.common.spec.domain.ref.component.SpecComponentParameter;
 import com.aliyun.dataworks.common.spec.domain.ref.runtime.SpecScriptRuntime;
 import com.aliyun.dataworks.common.spec.writer.SpecWriterContext;
+import com.google.common.collect.Lists;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.ListUtils;
@@ -1093,6 +1095,36 @@ public class DataWorksNodeAdapterTest {
         Assert.assertEquals(4, (int)advanceSettings.getInteger("spark.executor.cores"));
         Assert.assertEquals("spark-submit --master yarn", dataWorksNodeAdapter.getCode());
         Assert.assertEquals("123", dataWorksNodeAdapter.getQuota());
+    }
+
+    @Test
+    public void testGetSettingsJson() {
+        Specification<DataWorksWorkflowSpec> sp = new Specification<>();
+        DataWorksWorkflowSpec spec = new DataWorksWorkflowSpec();
+        SpecNode node = new SpecNode();
+        node.setId("adb-spark-0");
+        node.setName("adb-spark-0");
+        SpecScript script = new SpecScript();
+        SpecScriptRuntime runtime = new SpecScriptRuntime();
+        runtime.setCommand("PYTHON");
+        runtime.setLinkedRoleArn("AliyunServiceRoleForDataWorksEngine");
+        script.setRuntime(runtime);
+        script.setContent("select 1;");
+        node.setScript(script);
+        SpecDataset dataset = new SpecDataset();
+        dataset.setIdentifier("dataset");
+        dataset.setVersion(1);
+        node.setDatasets(Lists.newArrayList(dataset));
+        spec.setNodes(Collections.singletonList(node));
+        sp.setSpec(spec);
+
+        DataWorksNodeAdapter dataWorksNodeAdapter = new DataWorksNodeAdapter(sp, node);
+        dataWorksNodeAdapter.setContext(Context.builder().deployToScheduler(true).build());
+        JSONObject settingsJson = JSON.parseObject(dataWorksNodeAdapter.getSettingsJson());
+        log.info("settings json: {}, code: {}", settingsJson, dataWorksNodeAdapter.getCode());
+        Assert.assertNotNull(settingsJson);
+        Assert.assertEquals("AliyunServiceRoleForDataWorksEngine", settingsJson.getString(DataWorksNodeAdapter.SETTINGS_JSON_LINKED_ROLE_ARN));
+        Assert.assertEquals("[{\"identifier\":\"dataset\",\"version\":1}]", settingsJson.getString(DataWorksNodeAdapter.SETTINGS_JSON_DATASET_INFO));
     }
 
     @Test

@@ -117,6 +117,7 @@ public class SpecWriterUtilTest {
         envVar2.setValue("value2");
 
         container.setEnv(Lists.newArrayList(envVar1, envVar2));
+        runtime.setLinkedRoleArn("slr_for_dw");
         runtime.setContainer(container);
         runtime.setCu("0.5");
 
