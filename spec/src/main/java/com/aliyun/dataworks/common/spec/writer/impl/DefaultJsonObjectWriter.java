@@ -17,6 +17,7 @@ package com.aliyun.dataworks.common.spec.writer.impl;
 
 import java.util.List;
 import java.util.Optional;
+import java.util.TreeMap;
 
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
@@ -50,7 +51,9 @@ public class DefaultJsonObjectWriter<T extends SpecEntity> extends AbstractWrite
     protected JSONObject writeJsonObject(Object specObj, boolean withoutCollectionFields) {
         JSONObject json = super.writeJsonObject(specObj, withoutCollectionFields);
         if (specObj instanceof SpecEntity) {
-            Optional.ofNullable(((T)specObj).getMetadata()).filter(MapUtils::isNotEmpty).ifPresent(metadata -> json.put("metadata", metadata));
+            Optional.ofNullable(((T)specObj).getMetadata())
+                .filter(MapUtils::isNotEmpty)
+                .ifPresent(metadata -> json.put("metadata", new TreeMap<>(metadata)));
         }
         return json;
     }

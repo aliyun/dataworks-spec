@@ -110,6 +110,10 @@ public class VersionConverterV2Impl extends AbstractVersionConverter<DataWorksWo
                     convertManualFlowVariables(sourceSpecification.getSpec(), script);
                     ((SpecWorkflow)entity).setScript(script);
 
+                    Optional.ofNullable(sourceSpecification.getSpec())
+                        .map(DataWorksWorkflowSpec::getStrategy)
+                        .ifPresent(((SpecWorkflow)entity)::setStrategy);
+
                     SpecTrigger trigger = new SpecTrigger();
                     trigger.setType(TriggerType.MANUAL);
                     ((SpecWorkflow)entity).setTrigger(trigger);

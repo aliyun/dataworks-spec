@@ -141,6 +141,59 @@ public class DataWorksSpecNodeConverterTest {
     }
 
     @Test
+    public void testHandleNodeSpec_with_flowDepends() throws Exception {
+        String specStr
+            = "{\n\t\"version\":\"1.1.0\",\n\t\"kind\":\"CycleWorkflow\","
+            + "\n\t\"spec\":{\n\t\t\"nodes\":[\n\t\t\t{\n\t\t\t\t\"recurrence\":\"Normal\",\n\t\t\t\t\"id\":\"503518779\",\n\t\t\t\t\"timeout\":0,"
+            + "\n\t\t\t\t\"timeoutUnit\":\"HOURS\",\n\t\t\t\t\"instanceMode\":\"T+1\",\n\t\t\t\t\"rerunMode\":\"Allowed\","
+            + "\n\t\t\t\t\"rerunTimes\":3,\n\t\t\t\t\"rerunInterval\":120000,\n\t\t\t\t\"autoParse\":false,"
+            + "\n\t\t\t\t\"datasource\":{\n\t\t\t\t\t\"name\":\"odps_first\",\n\t\t\t\t\t\"type\":\"odps\"\n\t\t\t\t},"
+            + "\n\t\t\t\t\"script\":{\n\t\t\t\t\t\"language\":\"odps-sql\",\n\t\t\t\t\t\"path\":\"Business Flow/test/MaxCompute/Data "
+            + "Analytics/test_gsy\",\n\t\t\t\t\t\"runtime\":{\n\t\t\t\t\t\t\"command\":\"ODPS_SQL\",\n\t\t\t\t\t\t\"commandTypeId\":10,"
+            + "\n\t\t\t\t\t\t\"cu\":\"0.25\"\n\t\t\t\t\t},\n\t\t\t\t\t\"id\":\"7092729864736820322\","
+            + "\n\t\t\t\t\t\"parameters\":[\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"artifactType\":\"Variable\",\n\t\t\t\t\t\t\t\"name\":\"bizdate\","
+            + "\n\t\t\t\t\t\t\t\"scope\":\"NodeParameter\",\n\t\t\t\t\t\t\t\"type\":\"System\","
+            + "\n\t\t\t\t\t\t\t\"value\":\"$[yyyymmdd-1]\"\n\t\t\t\t\t\t}\n\t\t\t\t\t]\n\t\t\t\t},"
+            + "\n\t\t\t\t\"trigger\":{\n\t\t\t\t\t\"type\":\"Scheduler\",\n\t\t\t\t\t\"cron\":\"00 19 00 * * ?\","
+            + "\n\t\t\t\t\t\"cycleType\":\"Daily\",\n\t\t\t\t\t\"startTime\":\"1970-01-01 00:00:00\",\n\t\t\t\t\t\"endTime\":\"9999-01-01 "
+            + "00:00:00\",\n\t\t\t\t\t\"timezone\":\"Asia/Shanghai\",\n\t\t\t\t\t\"delaySeconds\":0\n\t\t\t\t},"
+            + "\n\t\t\t\t\"runtimeResource\":{\n\t\t\t\t\t\"resourceGroup\":\"S_res_group_260001692002369_1626331667442\","
+            + "\n\t\t\t\t\t\"resourceGroupId\":\"210013803139\"\n\t\t\t\t},\n\t\t\t\t\"name\":\"test_gsy\","
+            + "\n\t\t\t\t\"owner\":\"208589349007202706\",\n\t\t\t\t\"metadata\":{\n\t\t\t\t\t\"owner\":\"208589349007202706\","
+            + "\n\t\t\t\t\t\"ownerName\":\"gushiyi@xdf.cn\",\n\t\t\t\t\t\"createTime\":\"2025-10-13 17:35:20\","
+            + "\n\t\t\t\t\t\"tenantId\":\"260001692002369\",\n\t\t\t\t\t\"project\":{\n\t\t\t\t\t\t\"projectIdentifier\":\"C_DataTest\","
+            + "\n\t\t\t\t\t\t\"projectName\":\"C_DataTest\",\n\t\t\t\t\t\t\"projectId\":\"73457\"\n\t\t\t\t\t},"
+            + "\n\t\t\t\t\t\"projectId\":\"73457\"\n\t\t\t\t},\n\t\t\t\t\"inputs\":{},"
+            + "\n\t\t\t\t\"outputs\":{\n\t\t\t\t\t\"nodeOutputs\":[\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"data\":\"C_DataTest.503518779_out\","
+            + "\n\t\t\t\t\t\t\t\"artifactType\":\"NodeOutput\",\n\t\t\t\t\t\t\t\"sourceType\":\"System\","
+            + "\n\t\t\t\t\t\t\t\"refTableName\":\"C_DataTest.ads_userprofile_scrm_opp_score_userprofile_features\","
+            + "\n\t\t\t\t\t\t\t\"isDefault\":true\n\t\t\t\t\t\t},\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"data\":\"C_DataTest"
+            + ".ads_userprofile_scrm_opp_score_userprofile_features\",\n\t\t\t\t\t\t\t\"artifactType\":\"NodeOutput\","
+            + "\n\t\t\t\t\t\t\t\"sourceType\":\"CodeParse\",\n\t\t\t\t\t\t\t\"refTableName\":\"C_DataTest"
+            + ".ads_userprofile_scrm_opp_score_userprofile_features\"\n\t\t\t\t\t\t},\n\t\t\t\t\t\t{\n\t\t\t\t\t\t\t\"data\":\"C_DataTest"
+            + ".v_dws_profile_puser_userprofile_feature_learning_status\",\n\t\t\t\t\t\t\t\"artifactType\":\"NodeOutput\","
+            + "\n\t\t\t\t\t\t\t\"sourceType\":\"CodeParse\",\n\t\t\t\t\t\t\t\"refTableName\":\"C_DataTest"
+            + ".v_dws_profile_puser_userprofile_feature_learning_status\"\n\t\t\t\t\t\t}\n\t\t\t\t\t]\n\t\t\t\t}\n\t\t\t}\n\t\t],"
+            + "\n\t\t\"flow\":[\n\t\t\t{\n\t\t\t\t\"nodeId\":\"503518779\",\n\t\t\t\t\"depends\":[\n\t\t\t\t\t{\n\t\t\t\t\t\t\"type\":\"Normal\","
+            + "\n\t\t\t\t\t\t\"output\":\"user_profile.odps_ads_userprofile_scrm_opp_score_users\","
+            + "\n\t\t\t\t\t\t\"sourceType\":\"Manual\"\n\t\t\t\t\t},\n\t\t\t\t\t{\n\t\t\t\t\t\t\"type\":\"Normal\","
+            + "\n\t\t\t\t\t\t\"output\":\"C_DataTEnv1.odps_dwd_uc_student_da\",\n\t\t\t\t\t\t\"sourceType\":\"Manual\"\n\t\t\t\t\t},"
+            + "\n\t\t\t\t\t{\n\t\t\t\t\t\t\"type\":\"Normal\",\n\t\t\t\t\t\t\"output\":\"C_DataTEnv1.odps_dwd_crm_crm_student_da\","
+            + "\n\t\t\t\t\t\t\"sourceType\":\"Manual\"\n\t\t\t\t\t},\n\t\t\t\t\t{\n\t\t\t\t\t\t\"type\":\"Normal\","
+            + "\n\t\t\t\t\t\t\"output\":\"C_DataTest_root\",\n\t\t\t\t\t\t\"sourceType\":\"Manual\"\n\t\t\t\t\t}\n\t\t\t\t]\n\t\t\t}\n\t\t]\n\t},"
+            + "\n\t\"metadata\":{\n\t\t\"gmtModified\":1763221777000,\n\t\t\"uuid\":\"503518779\"\n\t}\n}";
+        Specification<DataWorksWorkflowSpec> spec = SpecUtil.parseToDomain(specStr);
+        FileDetail result = DataWorksSpecNodeConverter.nodeSpecToFileDetail(spec);
+        Assert.assertNotNull(result);
+        Assert.assertNotNull(result.getFile());
+        Assert.assertNotNull(result.getNodeCfg());
+        Assert.assertEquals(NodeUseType.SCHEDULED.getValue(), (int)result.getFile().getUseType());
+        Assert.assertNotNull(result.getNodeCfg().getInputList());
+        System.out.println(JSON.toJSONString(result.getNodeCfg().getInputList()));
+        Assert.assertEquals(4, result.getNodeCfg().getInputList().size());
+    }
+
+    @Test
     public void testHandleNodeSpecManualNode() throws Exception {
         String specStr = "{\n"
             + "\t\"version\":\"1.1.0\",\n"

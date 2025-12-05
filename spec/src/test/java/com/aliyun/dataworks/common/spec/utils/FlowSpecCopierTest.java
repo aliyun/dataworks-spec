@@ -18,6 +18,7 @@ package com.aliyun.dataworks.common.spec.utils;
 import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.regex.Pattern;
 
 import com.alibaba.fastjson2.JSONArray;
 import com.alibaba.fastjson2.JSONObject;
@@ -210,5 +211,56 @@ public class FlowSpecCopierTest {
         assertNotNull(newSpecB);
         assertTrue(StringUtils.indexOf((String)newSpecB.getByPath("$.spec.workflows[0].nodes[0].script.content"), "6181565218970946826") < 0);
         assertTrue(StringUtils.indexOf((String)newSpecB.getByPath("$.spec.workflows[0].nodes[0].script.content"), "5075273744222348485") < 0);
+    }
+
+    @Test
+    public void testTriggerWorkflowWithBranchCopy() throws IOException {
+        String spec = FileUtils.readFileToString(
+            new File(FlowSpecCopierTest.class.getClassLoader().getResource("copier/trigger_workflow_with_branch.json").getFile()),
+            StandardCharsets.UTF_8);
+        Specification<Spec> srcSpec = SpecUtil.parseToDomain(spec);
+        FlowSpecCopier copier = new FlowSpecCopier();
+        Specification<Spec> copiedSpec = copier.copy(srcSpec);
+
+        JSONObject oldSpecA = (JSONObject)SpecUtil.write(srcSpec, new SpecWriterContext());
+        JSONObject newSpecB = (JSONObject)SpecUtil.write(copiedSpec, new SpecWriterContext());
+
+        assertNotNull(oldSpecA);
+        assertNotNull(newSpecB);
+        assertNotEquals("wl_test_0317_01.bbbb_true_1", newSpecB.getByPath("$.spec.workflows[0].nodes[2].branches[0].output.data"));
+        assertNotEquals("wl_test_0317_01.bbb_false_1", newSpecB.getByPath("$.spec.workflows[0].nodes[2].outputs.nodeOutputs[1].data"));
+        assertNotEquals("wl_test_0317_01.bbb_false_1", newSpecB.getByPath("$.spec.workflows[0].nodes[2].branches[1].output.data"));
+        assertNotEquals("wl_test_0317_01.bbbb_true_1", newSpecB.getByPath("$.spec.workflows[0].nodes[2].outputs.nodeOutputs[2].data"));
+
+        assertNotEquals("wl_test_0317_01.bbb_false_1", newSpecB.getByPath("$.spec.workflows[0].dependencies[0].depends[0].output"));
+        assertNotEquals("wl_test_0317_01.bbbb_true_1", newSpecB.getByPath("$.spec.workflows[0].dependencies[0].depends[1].output"));
+    }
+
+    @Test
+    public void testCopiedTriggerWorkflowWithBranchCopy() throws IOException {
+        String spec = FileUtils.readFileToString(
+            new File(FlowSpecCopierTest.class.getClassLoader().getResource("copier/copied_trigger_workflow_with_branch.json").getFile()),
+            StandardCharsets.UTF_8);
+        Specification<Spec> srcSpec = SpecUtil.parseToDomain(spec);
+        FlowSpecCopier copier = new FlowSpecCopier();
+        Specification<Spec> copiedSpec = copier.copy(srcSpec);
+
+        JSONObject oldSpecA = (JSONObject)SpecUtil.write(srcSpec, new SpecWriterContext());
+        JSONObject newSpecB = (JSONObject)SpecUtil.write(copiedSpec, new SpecWriterContext());
+
+        assertNotNull(oldSpecA);
+        assertNotNull(newSpecB);
+        assertNotEquals("wl_test_0317_01.bbbb_true_1_CPSinrD30CPE", newSpecB.getByPath("$.spec.workflows[0].nodes[2].branches[0].output.data"));
+        assertNotEquals("wl_test_0317_01.bbb_false_1_CPSsJ9gSDCPE", newSpecB.getByPath("$.spec.workflows[0].nodes[2].outputs.nodeOutputs[1].data"));
+        assertNotEquals("wl_test_0317_01.bbb_false_1_CPSsJ9gSDCPE", newSpecB.getByPath("$.spec.workflows[0].nodes[2].branches[1].output.data"));
+        assertNotEquals("wl_test_0317_01.bbbb_true_1_CPSinrD30CPE", newSpecB.getByPath("$.spec.workflows[0].nodes[2].outputs.nodeOutputs[2].data"));
+
+        assertNotEquals("wl_test_0317_01.bbb_false_1_CPSsJ9gSDCPE", newSpecB.getByPath("$.spec.workflows[0].dependencies[0].depends[0].output"));
+        assertNotEquals("wl_test_0317_01.bbbb_true_1_CPSinrD30CPE", newSpecB.getByPath("$.spec.workflows[0].dependencies[0].depends[1].output"));
+
+        assertTrue(Pattern.compile("wl_test_0317_01.bbb_false_1_" + FlowSpecCopier.COPY_SUFFIX_PATTERN.pattern()).matcher(newSpecB.toJSONString())
+            .find());
+        assertTrue(Pattern.compile("wl_test_0317_01.bbbb_true_1_" + FlowSpecCopier.COPY_SUFFIX_PATTERN.pattern()).matcher(newSpecB.toJSONString())
+            .find());
     }
 }

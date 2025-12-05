@@ -22,7 +22,9 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Scanner;
@@ -2557,5 +2559,60 @@ public class SpecUtilTest {
         log.info("inputs: {}", adapter.getInputs());
         assertNotNull(adapter.getInputs());
         assertTrue(adapter.getInputs().stream().map(i -> (SpecNodeOutput)i).anyMatch(i -> SourceType.CODE_PARSE.equals(i.getSourceType())));
+    }
+
+    @Test
+    public void testMetadataSerializationAndFieldOrder() {
+        Specification<DataWorksWorkflowSpec> sp1 = new Specification<>();
+        sp1.setKind(SpecKind.CYCLE_WORKFLOW.getLabel());
+        sp1.setVersion(SpecVersion.V_2_0_0.getLabel());
+        sp1.setSpec(new DataWorksWorkflowSpec());
+
+        Map<String, Object> meta1 = new HashMap<>();
+        meta1.put("owner", "1223");
+        meta1.put("ownerName", "2222");
+        Map<String, Object> project1 = new HashMap<>();
+        project1.put("projectId", "111");
+        project1.put("projectName", "name");
+        meta1.put("projectId", "111");
+        meta1.put("project", project1);
+        meta1.put("aaa", 1212);
+
+        sp1.getSpec().setMetadata(meta1);
+        sp1.getSpec().setId("1111");
+        sp1.getSpec().setName("name");
+        String s1 = SpecUtil.writeToSpec(sp1);
+        log.info("s1: {}", s1);
+
+        Specification<DataWorksWorkflowSpec> sp2 = new Specification<>();
+        sp2.setKind(SpecKind.CYCLE_WORKFLOW.getLabel());
+        sp2.setVersion(SpecVersion.V_2_0_0.getLabel());
+        sp2.setSpec(new DataWorksWorkflowSpec());
+
+        Map<String, Object> meta2 = new HashMap<>();
+        meta2.put("owner", "1223");
+        meta2.put("ownerName", "2222");
+
+        Map<String, Object> project2 = new HashMap<>();
+        project2.put("projectId", "111");
+        project2.put("projectName", "name");
+        meta2.put("projectId", "111");
+        meta2.put("project", project2);
+
+        meta2.put("ownerName", "2222");
+        meta2.put("schedulerNodeId", "123123");
+        meta2.put("qqqq", "111");
+        meta2.put("rr", "11");
+        sp2.getSpec().setMetadata(meta2);
+        sp2.getSpec().setId("1111");
+        sp2.getSpec().setName("name1");
+        String s2 = SpecUtil.writeToSpec(sp2);
+        log.info("s2: {}", s2);
+
+        // assert field orders
+        assertTrue(StringUtils.indexOf(s2, "\"projectId\":\"111\",\n"
+            + "\t\t\t\"qqqq\":\"111\",\n"
+            + "\t\t\t\"rr\":\"11\",\n"
+            + "\t\t\t\"schedulerNodeId\":\"123123\"") > 0);
     }
 }

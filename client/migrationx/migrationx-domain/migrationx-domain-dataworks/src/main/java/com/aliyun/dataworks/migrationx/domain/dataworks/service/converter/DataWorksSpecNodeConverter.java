@@ -16,10 +16,12 @@ import com.aliyun.dataworks.common.spec.domain.dw.nodemodel.DwNodeDependentTypeI
 import com.aliyun.dataworks.common.spec.domain.dw.nodemodel.OutputContext;
 import com.aliyun.dataworks.common.spec.domain.dw.types.CodeProgramType;
 import com.aliyun.dataworks.common.spec.domain.enums.ArtifactType;
+import com.aliyun.dataworks.common.spec.domain.enums.DependencyType;
 import com.aliyun.dataworks.common.spec.domain.enums.NodeInstanceModeType;
 import com.aliyun.dataworks.common.spec.domain.enums.NodeRerunModeType;
 import com.aliyun.dataworks.common.spec.domain.enums.SpecKind;
 import com.aliyun.dataworks.common.spec.domain.interfaces.LabelEnum;
+import com.aliyun.dataworks.common.spec.domain.noref.SpecFlowDepend;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecArtifact;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecDatasource;
 import com.aliyun.dataworks.common.spec.domain.ref.SpecFile;
@@ -438,7 +440,7 @@ public class DataWorksSpecNodeConverter {
             nodeCfg.setTaskRerunTime(specNode.getRerunTimes());
 
             setRerunMode(specNode, nodeCfg);
-            setInputOutputList(specNode, nodeCfg);
+            setInputOutputList(dataWorksWorkflowSpec, specNode, nodeCfg);
             setByAdaptor(spec, specNode, nodeCfg);
             return nodeCfg;
         }).orElse(null);
@@ -454,7 +456,7 @@ public class DataWorksSpecNodeConverter {
         }
     }
 
-    private static void setInputOutputList(SpecNode specNode, FileNodeCfg nodeCfg) {
+    private static void setInputOutputList(DataWorksWorkflowSpec dataWorksWorkflowSpec, SpecNode specNode, FileNodeCfg nodeCfg) {
         nodeCfg.setInputList(ListUtils.emptyIfNull(specNode.getInputs()).stream()
             .filter(SpecArtifact.class::isInstance)
             .map(io -> (SpecArtifact)io)
@@ -467,6 +469,26 @@ public class DataWorksSpecNodeConverter {
                 in.setRefTableName(io.getRefTableName());
                 return in;
             }).collect(Collectors.toList()));
+
+        ListUtils.emptyIfNull(dataWorksWorkflowSpec.getFlow()).stream()
+            .filter(specFlowDepend -> null != specFlowDepend.getNodeId()
+                && StringUtils.equals(specFlowDepend.getNodeId().getId(), specNode.getId()))
+            .map(SpecFlowDepend::getDepends)
+            .flatMap(List::stream)
+            .filter(specDepend -> specDepend.getType() == DependencyType.NORMAL)
+            .map(specDepend -> {
+                FileNodeInputOutput nodeInputOutput = new FileNodeInputOutput();
+                nodeInputOutput.setParseType(IoParseType.MANUAL.getCode());
+                if (specDepend.getNodeId() != null) {
+                    nodeInputOutput.setStr(specDepend.getNodeId().getId());
+                    nodeInputOutput.setRefTableName(specDepend.getNodeId().getName());
+                } else if (specDepend.getOutput() != null) {
+                    nodeInputOutput.setStr(specDepend.getOutput().getData());
+                    nodeInputOutput.setRefTableName(specDepend.getOutput().getRefTableName());
+                }
+                return nodeInputOutput;
+            }).forEach(nodeInputOutput -> nodeCfg.getInputList().add(nodeInputOutput));
+
         nodeCfg.setInputByInputList();
 
         nodeCfg.setOutputList(ListUtils.emptyIfNull(specNode.getOutputs()).stream()

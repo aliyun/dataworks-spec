@@ -71,6 +71,8 @@ public class DataWorksNodeAdapter implements DataWorksNode, DataWorksNodeAdapter
     public static final String LOOP_COUNT = "loopCount";
     public static final String PARALLELISM = "parallelism";
     public static final String STREAM_LAUNCH_MODE = "streamLaunchMode";
+    public static final String SETTINGS_JSON_LINKED_ROLE_ARN = "linkedRoleArn";
+    public static final String SETTINGS_JSON_DATASET_INFO = "datasetInfo";
     public static final Integer NODE_TYPE_NORMAL = 0;
     public static final Integer NODE_TYPE_MANUAL = 1;
     public static final Integer NODE_TYPE_PAUSE = 2;
@@ -371,6 +373,22 @@ public class DataWorksNodeAdapter implements DataWorksNode, DataWorksNodeAdapter
         Optional.ofNullable(delegate.getScript()).map(SpecScript::getRuntime).map(SpecScriptRuntime::getSparkConf)
             .filter(MapUtils::isNotEmpty)
             .ifPresent(settings::putAll);
+        return MapUtils.isEmpty(settings) ? null : JSON.toJSONString(settings);
+    }
+
+    @Override
+    public String getSettingsJson() {
+        Map<String, Object> settings = new HashMap<>();
+        Optional.ofNullable(delegate.getScript()).map(SpecScript::getRuntime).map(SpecScriptRuntime::getLinkedRoleArn)
+            .filter(StringUtils::isNotBlank)
+            .ifPresent(x -> settings.put(SETTINGS_JSON_LINKED_ROLE_ARN, x));
+
+        Optional.ofNullable(delegate.getObject())
+            .filter(x -> x instanceof SpecNode)
+            .map(x -> (SpecNode)x)
+            .map(SpecNode::getDatasets)
+            .ifPresent(x -> settings.put(SETTINGS_JSON_DATASET_INFO, JSON.toJSONString(x)));
+
         return MapUtils.isEmpty(settings) ? null : JSON.toJSONString(settings);
     }
 

@@ -57,6 +57,7 @@ public enum CodeProgramType {
     OSS_INSPECT(239, "OSS_INSPECT", CalcEngineType.GENERAL, null, ".json"),
     CROSS_TENANTS(1089, "CROSS_TENANTS", CalcEngineType.GENERAL, null, ".json"),
     PYTHON(1322, "PYTHON", CalcEngineType.GENERAL, null, ".py"),
+    DATA_SYNCHRONIZATION_QUALITY_CHECK(1331, "DATA_SYNCHRONIZATION_QUALITY_CHECK", CalcEngineType.GENERAL, null, ".json"),
     DATA_PUSH(1332, "DATA_PUSH", CalcEngineType.GENERAL, null, ".json"),
     DATA_QUALITY_MONITOR(1333, "DATA_QUALITY_MONITOR", CalcEngineType.GENERAL, null, ".json"),
 
@@ -75,6 +76,7 @@ public enum CodeProgramType {
     PYODPS(221, "PY_ODPS", CalcEngineType.ODPS, LabelType.DATA_PROCESS, ".py"),
     ODPS_SHARK(223, "ODPS_SHARK", CalcEngineType.ODPS, LabelType.DATA_PROCESS, ".mc.shark.json"),
     ODPS_SPARK(225, "ODPS_SPARK", CalcEngineType.ODPS, LabelType.DATA_PROCESS, ".mc.spark.json"),
+    SHARK_RESOURCE(224, "SHARK_RESOURCE", CalcEngineType.ODPS, LabelType.RESOURCE, ".json"),
     COMPONENT_SQL(1010, "COMPONENT_SQL", CalcEngineType.ODPS, LabelType.DATA_PROCESS, ".sql"),
     SQL_COMPONENT(3010, "SQL_COMPONENT", CalcEngineType.ODPS, LabelType.DATA_PROCESS, ".sql"),
     ODPS_PYTHON(12, "ODPS_PYTHON", CalcEngineType.ODPS, LabelType.RESOURCE, ".json"),
@@ -168,10 +170,10 @@ public enum CodeProgramType {
     ADB_for_MySQL(1317, "ADB for MySQL", CalcEngineType.DATABASE, LabelType.DATA_PROCESS, ".sql"),
     ADB_SPARK(1990, "ADB Spark", CalcEngineType.ADB_SPARK, LabelType.DATA_PROCESS, ".adb.spark.json"),
     ADB_SPARK_SQL(1991, "ADB Spark SQL", CalcEngineType.ADB_SPARK, LabelType.DATA_PROCESS, ".adb.spark.sql"),
-    SERVERLESS_SPARK_BATCH(2100, "SERVERLESS_SPARK_BATCH", CalcEngineType.EMR, LabelType.DATA_PROCESS,".sh"),
+    SERVERLESS_SPARK_BATCH(2100, "SERVERLESS_SPARK_BATCH", CalcEngineType.EMR, LabelType.DATA_PROCESS, ".sh"),
     SERVERLESS_SPARK_SQL(2101, "SERVERLESS_SPARK_SQL", CalcEngineType.EMR, LabelType.DATA_PROCESS, ".sql"),
-    SERVERLESS_SPARK_STREAMING(2102, "SERVERLESS_SPARK_STREAMING", CalcEngineType.EMR,LabelType.DATA_PROCESS,".sh" ),
-    SERVERLESS_KYUUBI(2103, "SERVERLESS_KYUUBI", CalcEngineType.EMR,LabelType. DATA_PROCESS, ".sql"),
+    SERVERLESS_SPARK_STREAMING(2102, "SERVERLESS_SPARK_STREAMING", CalcEngineType.EMR, LabelType.DATA_PROCESS, ".sh"),
+    SERVERLESS_KYUUBI(2103, "SERVERLESS_KYUUBI", CalcEngineType.EMR, LabelType.DATA_PROCESS, ".sql"),
 
     //only for temp
     CUSTOM(9999, "CUSTOM", CalcEngineType.CUSTOM, LabelType.DATA_PROCESS, ".json");

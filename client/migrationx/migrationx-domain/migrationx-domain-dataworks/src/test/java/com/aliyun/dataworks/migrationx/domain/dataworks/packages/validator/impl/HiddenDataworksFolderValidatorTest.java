@@ -15,6 +15,11 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import static com.aliyun.dataworks.migrationx.domain.dataworks.packages.enums.PackageValidateErrorCode.ANY_FOLDER_NOT_ALLOW_IN_FOLDER;
+import static com.aliyun.dataworks.migrationx.domain.dataworks.packages.enums.PackageValidateErrorCode.DATAWORKS_HIDDEN_FOLDER_MISSING_METADATA_FILE;
+import static com.aliyun.dataworks.migrationx.domain.dataworks.packages.enums.PackageValidateErrorCode.DATAWORKS_HIDDEN_FOLDER_MISSING_TYPE_FILE;
+import static com.aliyun.dataworks.migrationx.domain.dataworks.packages.enums.PackageValidateErrorCode.DATAWORKS_HIDDEN_FOLDER_MULTIPLE_TYPE_FILES;
+import static com.aliyun.dataworks.migrationx.domain.dataworks.packages.enums.PackageValidateErrorCode.ONLY_SPECIFIC_FILE_ALLOWED_IN_FOLDER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -71,8 +76,8 @@ public class HiddenDataworksFolderValidatorTest {
         // Empty directory should report missing required files
         assertFalse("Empty directory should report missing required files", results.isEmpty());
         assertTrue("Should have results marked as missing required files",
-            results.stream().anyMatch(result -> "DATAWORKS_HIDDEN_FOLDER_MISSING_METADATA_FILE".equals(result.getErrorCode()) ||
-                "DATAWORKS_HIDDEN_FOLDER_MISSING_TYPE_FILE".equals(result.getErrorCode())));
+            results.stream().anyMatch(result -> DATAWORKS_HIDDEN_FOLDER_MISSING_METADATA_FILE.getErrorCode().equals(result.getErrorCode()) ||
+                DATAWORKS_HIDDEN_FOLDER_MISSING_TYPE_FILE.getErrorCode().equals(result.getErrorCode())));
     }
 
     @Test
@@ -91,7 +96,7 @@ public class HiddenDataworksFolderValidatorTest {
         assertNotNull(results);
         // Only metadata.json file should report missing .type file
         assertTrue("Should report missing .type file",
-            results.stream().anyMatch(result -> "DATAWORKS_HIDDEN_FOLDER_MISSING_TYPE_FILE".equals(result.getErrorCode())));
+            results.stream().anyMatch(result -> DATAWORKS_HIDDEN_FOLDER_MISSING_TYPE_FILE.getErrorCode().equals(result.getErrorCode())));
     }
 
     @Test
@@ -110,7 +115,7 @@ public class HiddenDataworksFolderValidatorTest {
         assertNotNull(results);
         // Only .type file should report missing metadata.json file
         assertTrue("Should report missing metadata.json file",
-            results.stream().anyMatch(result -> "DATAWORKS_HIDDEN_FOLDER_MISSING_METADATA_FILE".equals(result.getErrorCode())));
+            results.stream().anyMatch(result -> DATAWORKS_HIDDEN_FOLDER_MISSING_METADATA_FILE.getErrorCode().equals(result.getErrorCode())));
     }
 
     @Test
@@ -166,8 +171,8 @@ public class HiddenDataworksFolderValidatorTest {
         // Subfolders are not allowed in .dataworks folder
         assertTrue("Should have results marked as not allowed folder",
             results.stream()
-                .anyMatch(result -> result.getValid() != null && !result.getValid() && "ANY_FOLDER_NOT_ALLOW_IN_FOLDER".equals(
-                    result.getErrorCode())));
+                .anyMatch(result -> result.getValid() != null && !result.getValid()
+                    && ANY_FOLDER_NOT_ALLOW_IN_FOLDER.getErrorCode().equals(result.getErrorCode())));
     }
 
     @Test
@@ -186,8 +191,8 @@ public class HiddenDataworksFolderValidatorTest {
         assertNotNull(results);
         // Only metadata.json and .type files are allowed in .dataworks folder
         assertTrue("Should have results marked as not allowed file",
-            results.stream().anyMatch(result -> result.getValid() != null && !result.getValid() && "ONLY_SPECIFIC_FILE_ALLOWED_IN_FOLDER".equals(
-                result.getErrorCode())));
+            results.stream().anyMatch(result -> result.getValid() != null && !result.getValid()
+                && ONLY_SPECIFIC_FILE_ALLOWED_IN_FOLDER.getErrorCode().equals(result.getErrorCode())));
     }
 
     @Test
@@ -208,7 +213,7 @@ public class HiddenDataworksFolderValidatorTest {
         assertNotNull(results);
         // Check if there are results marked as not allowed files (metadata2.json will be marked as not allowed file)
         boolean hasNotAllowedFile = results.stream().anyMatch(result ->
-            result.getValid() != null && !result.getValid() && "ONLY_SPECIFIC_FILE_ALLOWED_IN_FOLDER".equals(result.getErrorCode()));
+            result.getValid() != null && !result.getValid() && ONLY_SPECIFIC_FILE_ALLOWED_IN_FOLDER.getErrorCode().equals(result.getErrorCode()));
         assertTrue("Should have results marked as not allowed files", hasNotAllowedFile);
     }
 
@@ -229,7 +234,8 @@ public class HiddenDataworksFolderValidatorTest {
         assertNotNull(results);
         assertTrue("Should have validation failure results", results.stream().anyMatch(result -> result.getValid() != null && !result.getValid()));
         assertTrue("Should report multiple .type files exist", results.stream().anyMatch(result ->
-            result.getValid() != null && !result.getValid() && "DATAWORKS_HIDDEN_FOLDER_MULTIPLE_TYPE_FILES".equals(result.getErrorCode())));
+            result.getValid() != null && !result.getValid() && DATAWORKS_HIDDEN_FOLDER_MULTIPLE_TYPE_FILES.getErrorCode()
+                .equals(result.getErrorCode())));
     }
 
     @Test
@@ -323,7 +329,8 @@ public class HiddenDataworksFolderValidatorTest {
         assertNotNull(results);
         assertTrue("Should have validation failure results", results.stream().anyMatch(result -> result.getValid() != null && !result.getValid()));
         assertTrue("Should report missing metadata.json file", results.stream().anyMatch(result ->
-            result.getValid() != null && !result.getValid() && "DATAWORKS_HIDDEN_FOLDER_MISSING_METADATA_FILE".equals(result.getErrorCode())));
+            result.getValid() != null && !result.getValid() && DATAWORKS_HIDDEN_FOLDER_MISSING_METADATA_FILE.getErrorCode()
+                .equals(result.getErrorCode())));
     }
 
     @Test
@@ -342,7 +349,8 @@ public class HiddenDataworksFolderValidatorTest {
         assertNotNull(results);
         assertTrue("Should have validation failure results", results.stream().anyMatch(result -> result.getValid() != null && !result.getValid()));
         assertTrue("Should report missing .type file", results.stream().anyMatch(result ->
-            result.getValid() != null && !result.getValid() && "DATAWORKS_HIDDEN_FOLDER_MISSING_TYPE_FILE".equals(result.getErrorCode())));
+            result.getValid() != null && !result.getValid() && DATAWORKS_HIDDEN_FOLDER_MISSING_TYPE_FILE.getErrorCode()
+                .equals(result.getErrorCode())));
     }
 
     @Test
@@ -364,8 +372,8 @@ public class HiddenDataworksFolderValidatorTest {
 
         // Extract all not allowed file error messages, deduplicate
         Set<String> uniqueNotAllowedFiles = results.stream()
-            .filter(
-                result -> result.getValid() != null && !result.getValid() && "ONLY_SPECIFIC_FILE_ALLOWED_IN_FOLDER".equals(result.getErrorCode()))
+            .filter(result -> result.getValid() != null && !result.getValid()
+                && ONLY_SPECIFIC_FILE_ALLOWED_IN_FOLDER.getErrorCode().equals(result.getErrorCode()))
             .map(PackageValidatorResult::getErrorMessage)
             .collect(Collectors.toSet());
 

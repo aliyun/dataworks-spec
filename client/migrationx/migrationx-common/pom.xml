@@ -22,7 +22,7 @@
     <parent>
         <artifactId>migrationx</artifactId>
         <groupId>com.aliyun.dataworks</groupId>
-        <version>2.0.0-1</version>
+        <version>2.0.2-3</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 

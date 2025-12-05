@@ -6,6 +6,11 @@
     "id": "6853333959175030943",
     "type": "ManualWorkflow",
     "owner": "1107550004253538",
+    "strategy": {
+      "priority": 1,
+      "priorityWeightStrategy": "Disabled",
+      "maxInternalConcurrency": 0
+    },
     "nodes": [
       {
         "id": "6204757833136829927",

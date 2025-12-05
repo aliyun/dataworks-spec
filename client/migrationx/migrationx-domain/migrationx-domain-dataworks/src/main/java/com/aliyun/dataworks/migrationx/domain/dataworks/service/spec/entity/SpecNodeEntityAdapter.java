@@ -359,6 +359,7 @@ public class SpecNodeEntityAdapter implements DwNodeEntity {
         }
         nodeIos = new ArrayList<>(ListUtils.emptyIfNull(nodeIos));
         ListUtils.emptyIfNull(specDepends).stream()
+            .filter(x -> Optional.ofNullable(x.getType()).orElse(DependencyType.NORMAL) == DependencyType.NORMAL)
             .map(specDepend -> {
                 NodeIo nodeInputOutput = new NodeIo();
                 nodeInputOutput.setParseType(1);
@@ -491,6 +492,7 @@ public class SpecNodeEntityAdapter implements DwNodeEntity {
             return null;
         }
         return ListUtils.emptyIfNull(specDepends).stream()
+            .filter(depend -> depend != null && depend.getType() != null && depend.getType() != DependencyType.NORMAL)
             .map(depend -> Optional.ofNullable(depend.getOutput()).map(SpecNodeOutput::getData).orElse(null))
             .filter(Objects::nonNull)
             .collect(Collectors.joining(","));
