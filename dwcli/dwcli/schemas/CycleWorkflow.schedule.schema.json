@@ -1,0 +1,136 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "CycleWorkflow Schema",
+  "description": "Schema for DataWorks CycleWorkflow specification",
+  "required": ["version", "kind", "spec"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Spec version",
+      "pattern": "^\\d+\\.\\d+(\\.\\d+)?$"
+    },
+    "kind": {
+      "type": "string",
+      "description": "Workflow type",
+      "enum": ["CycleWorkflow"]
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Workflow name"
+        },
+        "owner": {
+          "type": "string",
+          "description": "Workflow owner"
+        },
+        "description": {
+          "type": "string",
+          "description": "Workflow description"
+        }
+      }
+    },
+    "spec": {
+      "type": "object",
+      "required": ["nodes"],
+      "properties": {
+        "nodes": {
+          "type": "array",
+          "description": "List of workflow nodes",
+          "items": {
+            "type": "object",
+            "required": ["id", "name", "type"],
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Node ID"
+              },
+              "name": {
+                "type": "string",
+                "description": "Node name"
+              },
+              "type": {
+                "type": "string",
+                "description": "Node type",
+                "enum": [
+                  "ODPS_SQL",
+                  "SHELL",
+                  "PYTHON",
+                  "SPARK",
+                  "FLINK",
+                  "EMR_HIVE",
+                  "EMR_SPARK",
+                  "VIRTUAL"
+                ]
+              },
+              "timeout": {
+                "type": "integer",
+                "description": "Timeout in seconds",
+                "minimum": 0,
+                "maximum": 86400
+              },
+              "recurrence": {
+                "type": "string",
+                "description": "Recurrence pattern"
+              },
+              "script": {
+                "type": "object",
+                "required": ["path"],
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "description": "Script file path"
+                  },
+                  "runtime": {
+                    "type": "object",
+                    "description": "Runtime configuration"
+                  }
+                }
+              },
+              "runtime": {
+                "type": "object",
+                "description": "Node runtime settings"
+              }
+            }
+          }
+        },
+        "flow": {
+          "type": "array",
+          "description": "Node dependencies",
+          "items": {
+            "type": "object",
+            "properties": {
+              "nodeId": {
+                "type": "string",
+                "description": "Target node ID"
+              },
+              "depends": {
+                "type": "array",
+                "description": "Dependency node IDs",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "trigger": {
+          "type": "object",
+          "description": "Workflow trigger configuration",
+          "properties": {
+            "type": {
+              "type": "string",
+              "enum": ["Scheduler", "Manual"]
+            },
+            "cron": {
+              "type": "string",
+              "description": "Cron expression"
+            }
+          }
+        }
+      }
+    }
+  }
+}

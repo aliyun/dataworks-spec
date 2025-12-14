@@ -1,0 +1,3 @@
+include dwcli/templates/*.template.json
+include dwcli/schemas/*.schema.json
+include dwcli/schemas/README.md

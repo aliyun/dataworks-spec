@@ -1,0 +1,308 @@
+import sys
+import click
+from pathlib import Path
+from rich.console import Console
+
+from dwcli.pkg.domain.directory import DirectoryManager
+from dwcli.pkg.jsonpath.manager import JSONPathManager, JSONPathError
+from dwcli.pkg.schema.validator import SchemaValidator
+from dwcli.pkg.template.manager import TemplateManager
+from dwcli.pkg.fileops.code import CodeFileManager
+
+
+console = Console()
+
+
+@click.group()
+@click.version_option(version="1.0.0")
+def cli():
+    pass
+
+
+@cli.group()
+def node():
+    pass
+
+
+@node.command()
+@click.argument('dirpath', type=click.Path())
+@click.option('--name', required=True, help='Object name/ID')
+@click.option('--template', default='odps-sql-daily', help='Template name')
+@click.option('--owner', default='admin', help='Owner name')
+def create(dirpath: str, name: str, template: str, owner: str):
+    try:
+        from pathlib import Path
+        parent_path = Path(dirpath)
+        object_path = parent_path / name
+        
+        path = DirectoryManager.create_directory(str(object_path), force=False)
+        
+        context = {'name': name, 'owner': owner}
+        
+        spec_data = TemplateManager.render_spec(template, context)
+        
+        spec_file = path / f"{name}.schedule.json"
+        JSONPathManager.write_json(spec_file, spec_data)
+        
+        ext, code_content = TemplateManager.render_code(template, context)
+        code_file = CodeFileManager.create_code_file(path, f"{name}.{ext}", code_content)
+        
+        validator = SchemaValidator()
+        is_valid, errors = validator.validate(spec_data, spec_file)
+        
+        if not is_valid:
+            console.print("[yellow]Warning: Generated spec has validation errors[/yellow]")
+            validator.print_errors(errors)
+        
+        console.print(f"[green]✓[/green] Created object directory: {object_path}")
+        console.print(f"  Node directory: {name}/")
+        console.print(f"  Spec file: {spec_file.name}")
+        console.print(f"  Code file: {code_file.name}")
+        
+    except Exception as e:
+        console.print(f"[red]Error:[/red] {e}", style="bold red")
+        sys.exit(1)
+
+
+@node.command()
+@click.argument('dirpath', type=click.Path(exists=True))
+@click.argument('assignments', nargs=-1, required=True)
+@click.option('--type', 'value_type', help='Value type (string|int|float|bool|json)')
+@click.option('--dry-run', is_flag=True, help='Show changes without applying')
+def set(dirpath: str, assignments: tuple, value_type: str, dry_run: bool):
+    try:
+        obj_dir = DirectoryManager.validate_directory(dirpath)
+        
+        data = JSONPathManager.read_json(obj_dir.spec_file)
+        
+        original_data = data.copy()
+        backup_path = None
+        
+        if not dry_run:
+            backup_path = DirectoryManager.backup_file(obj_dir.spec_file)
+        
+        try:
+            for assignment in assignments:
+                if '=' not in assignment:
+                    raise ValueError(f"Invalid assignment format: {assignment}. Expected 'path=value'")
+                
+                path, value = assignment.split('=', 1)
+                data = JSONPathManager.set_value(data, path, value, value_type)
+                
+                console.print(f"[cyan]Set[/cyan] {path} = {value}")
+            
+            if dry_run:
+                console.print("\n[yellow]DRY RUN - No changes applied[/yellow]")
+                console.print("\nResulting spec:")
+                import json
+                console.print(json.dumps(data, indent=2))
+                return
+            
+            JSONPathManager.write_json(obj_dir.spec_file, data)
+            
+            validator = SchemaValidator()
+            is_valid, errors = validator.validate(data, obj_dir.spec_file)
+            
+            if not is_valid:
+                DirectoryManager.restore_backup(backup_path, obj_dir.spec_file)
+                validator.print_errors(errors)
+                sys.exit(1)
+            
+            DirectoryManager.remove_backup(backup_path)
+            console.print("\n[green]✓ Changes applied successfully[/green]")
+            
+        except Exception as e:
+            if backup_path:
+                DirectoryManager.restore_backup(backup_path, obj_dir.spec_file)
+            raise e
+            
+    except Exception as e:
+        console.print(f"[red]Error:[/red] {e}", style="bold red")
+        sys.exit(1)
+
+
+@node.command()
+@click.argument('dirpath', type=click.Path(exists=True))
+@click.argument('paths', nargs=-1, required=True)
+@click.option('--dry-run', is_flag=True, help='Show changes without applying')
+def unset(dirpath: str, paths: tuple, dry_run: bool):
+    try:
+        obj_dir = DirectoryManager.validate_directory(dirpath)
+        
+        data = JSONPathManager.read_json(obj_dir.spec_file)
+        
+        backup_path = None
+        
+        if not dry_run:
+            backup_path = DirectoryManager.backup_file(obj_dir.spec_file)
+        
+        try:
+            for path in paths:
+                data = JSONPathManager.unset_value(data, path)
+                console.print(f"[cyan]Unset[/cyan] {path}")
+            
+            if dry_run:
+                console.print("\n[yellow]DRY RUN - No changes applied[/yellow]")
+                import json
+                console.print(json.dumps(data, indent=2))
+                return
+            
+            JSONPathManager.write_json(obj_dir.spec_file, data)
+            
+            validator = SchemaValidator()
+            is_valid, errors = validator.validate(data, obj_dir.spec_file)
+            
+            if not is_valid:
+                DirectoryManager.restore_backup(backup_path, obj_dir.spec_file)
+                validator.print_errors(errors)
+                sys.exit(1)
+            
+            DirectoryManager.remove_backup(backup_path)
+            console.print("\n[green]✓ Changes applied successfully[/green]")
+            
+        except Exception as e:
+            if backup_path:
+                DirectoryManager.restore_backup(backup_path, obj_dir.spec_file)
+            raise e
+            
+    except Exception as e:
+        console.print(f"[red]Error:[/red] {e}", style="bold red")
+        sys.exit(1)
+
+
+@node.command()
+@click.argument('dirpath', type=click.Path(exists=True))
+@click.argument('paths', nargs=-1)
+@click.option('--output', '-o', type=click.Choice(['json', 'yaml', 'raw']), default='raw')
+def inspect(dirpath: str, paths: tuple, output: str):
+    try:
+        obj_dir = DirectoryManager.validate_directory(dirpath)
+        
+        data = JSONPathManager.read_json(obj_dir.spec_file)
+        
+        if not paths:
+            paths = ('',)
+        
+        import json
+        
+        for path in paths:
+            if path:
+                value = JSONPathManager.get_value(data, path)
+            else:
+                value = data
+            
+            if output == 'json':
+                console.print(json.dumps(value, indent=2, ensure_ascii=False))
+            elif output == 'yaml':
+                import yaml
+                console.print(yaml.dump(value, allow_unicode=True))
+            else:
+                if isinstance(value, (dict, list)):
+                    console.print(json.dumps(value, indent=2, ensure_ascii=False))
+                else:
+                    console.print(str(value))
+            
+    except Exception as e:
+        console.print(f"[red]Error:[/red] {e}", style="bold red")
+        sys.exit(1)
+
+
+@node.command()
+@click.argument('dirpath', type=click.Path(exists=True))
+def validate(dirpath: str):
+    try:
+        obj_dir = DirectoryManager.validate_directory(dirpath)
+        
+        data = JSONPathManager.read_json(obj_dir.spec_file)
+        
+        validator = SchemaValidator()
+        is_valid, errors = validator.validate(data, obj_dir.spec_file)
+        
+        if is_valid:
+            console.print("[green]✓ Validation passed[/green]")
+        else:
+            validator.print_errors(errors)
+            sys.exit(1)
+            
+    except Exception as e:
+        console.print(f"[red]Error:[/red] {e}", style="bold red")
+        sys.exit(1)
+
+
+@node.group()
+def code():
+    pass
+
+
+@code.command()
+@click.argument('dirpath', type=click.Path(exists=True))
+def edit(dirpath: str):
+    try:
+        obj_dir = DirectoryManager.validate_directory(dirpath)
+        
+        if obj_dir.code_file is None:
+            console.print("[red]Error:[/red] No code file found in directory", style="bold red")
+            sys.exit(1)
+        
+        CodeFileManager.edit_code(obj_dir.code_file)
+        console.print(f"[green]✓[/green] Editor closed")
+        
+    except Exception as e:
+        console.print(f"[red]Error:[/red] {e}", style="bold red")
+        sys.exit(1)
+
+
+@code.command('set')
+@click.argument('dirpath', type=click.Path(exists=True))
+@click.option('--file', '-f', 'input_file', type=click.Path(exists=True), help='Read content from file')
+@click.option('--content', '-c', help='Content string')
+def code_set(dirpath: str, input_file: str, content: str):
+    try:
+        obj_dir = DirectoryManager.validate_directory(dirpath)
+        
+        if obj_dir.code_file is None:
+            console.print("[red]Error:[/red] No code file found in directory", style="bold red")
+            sys.exit(1)
+        
+        if input_file:
+            with open(input_file, 'r', encoding='utf-8') as f:
+                content = f.read()
+        elif content is None:
+            if not sys.stdin.isatty():
+                content = sys.stdin.read()
+            else:
+                console.print("[red]Error:[/red] No content provided. Use --file, --content, or pipe to stdin", style="bold red")
+                sys.exit(1)
+        
+        CodeFileManager.write_code(obj_dir.code_file, content)
+        console.print(f"[green]✓[/green] Code file updated")
+        
+    except Exception as e:
+        console.print(f"[red]Error:[/red] {e}", style="bold red")
+        sys.exit(1)
+
+
+@code.command('get')
+@click.argument('dirpath', type=click.Path(exists=True))
+def code_get(dirpath: str):
+    try:
+        obj_dir = DirectoryManager.validate_directory(dirpath)
+        
+        if obj_dir.code_file is None:
+            console.print("[red]Error:[/red] No code file found in directory", style="bold red")
+            sys.exit(1)
+        
+        content = CodeFileManager.read_code(obj_dir.code_file)
+        click.echo(content, nl=False)
+        
+    except Exception as e:
+        console.print(f"[red]Error:[/red] {e}", style="bold red")
+        sys.exit(1)
+
+
+def main():
+    cli()
+
+
+if __name__ == '__main__':
+    main()

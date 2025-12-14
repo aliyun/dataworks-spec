@@ -1,0 +1,27 @@
+{
+  "spec": {
+    "version": "1.0",
+    "kind": "ManualWorkflow",
+    "metadata": {
+      "name": "{{ name }}",
+      "owner": "{{ owner | default('admin') }}"
+    },
+    "spec": {
+      "nodes": [
+        {
+          "id": "{{ name }}",
+          "name": "{{ name }}",
+          "type": "SHELL",
+          "script": {
+            "path": "{{ name }}.sh"
+          }
+        }
+      ],
+      "flow": []
+    }
+  },
+  "code": {
+    "extension": "sh",
+    "content": "#!/bin/bash\n# Manual workflow script for {{ name }}\n\necho \"Executing {{ name }}\"\n"
+  }
+}

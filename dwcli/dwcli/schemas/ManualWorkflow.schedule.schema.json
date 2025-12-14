@@ -1,0 +1,102 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "object",
+  "title": "ManualWorkflow Schema",
+  "description": "Schema for DataWorks ManualWorkflow specification",
+  "required": ["version", "kind", "spec"],
+  "properties": {
+    "version": {
+      "type": "string",
+      "description": "Spec version",
+      "pattern": "^\\d+\\.\\d+(\\.\\d+)?$"
+    },
+    "kind": {
+      "type": "string",
+      "description": "Workflow type",
+      "enum": ["ManualWorkflow"]
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Workflow name"
+        },
+        "owner": {
+          "type": "string",
+          "description": "Workflow owner"
+        },
+        "description": {
+          "type": "string",
+          "description": "Workflow description"
+        }
+      }
+    },
+    "spec": {
+      "type": "object",
+      "required": ["nodes"],
+      "properties": {
+        "nodes": {
+          "type": "array",
+          "description": "List of workflow nodes",
+          "items": {
+            "type": "object",
+            "required": ["id", "name", "type"],
+            "properties": {
+              "id": {
+                "type": "string",
+                "description": "Node ID"
+              },
+              "name": {
+                "type": "string",
+                "description": "Node name"
+              },
+              "type": {
+                "type": "string",
+                "description": "Node type",
+                "enum": [
+                  "ODPS_SQL",
+                  "SHELL",
+                  "PYTHON",
+                  "SPARK",
+                  "FLINK",
+                  "EMR_HIVE",
+                  "EMR_SPARK",
+                  "VIRTUAL"
+                ]
+              },
+              "script": {
+                "type": "object",
+                "required": ["path"],
+                "properties": {
+                  "path": {
+                    "type": "string",
+                    "description": "Script file path"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "flow": {
+          "type": "array",
+          "description": "Node dependencies",
+          "items": {
+            "type": "object",
+            "properties": {
+              "nodeId": {
+                "type": "string"
+              },
+              "depends": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

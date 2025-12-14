@@ -1,0 +1,28 @@
+{
+  "spec": {
+    "version": "1.0",
+    "kind": "CycleWorkflow",
+    "metadata": {
+      "name": "{{ name }}",
+      "owner": "{{ owner | default('admin') }}"
+    },
+    "spec": {
+      "nodes": [
+        {
+          "id": "{{ name }}",
+          "name": "{{ name }}",
+          "type": "PYTHON",
+          "timeout": 3600,
+          "script": {
+            "path": "{{ name }}.py"
+          }
+        }
+      ],
+      "flow": []
+    }
+  },
+  "code": {
+    "extension": "py",
+    "content": "# Python Script for {{ name }}\n# TODO: Add your Python logic here\n\nif __name__ == \"__main__\":\n    print(\"Hello from {{ name }}\")\n"
+  }
+}

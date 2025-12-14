@@ -1,0 +1,22 @@
+{
+  "version": "1.0",
+  "kind": "CycleWorkflow",
+  "metadata": {
+    "name": "test_node",
+    "owner": "admin"
+  },
+  "spec": {
+    "nodes": [
+      {
+        "id": "test_node",
+        "name": "test_node",
+        "type": "ODPS_SQL",
+        "timeout": "111",
+        "script": {
+          "path": "test_node.sql"
+        }
+      }
+    ],
+    "flow": []
+  }
+}

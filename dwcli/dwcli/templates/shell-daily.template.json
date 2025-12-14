@@ -1,0 +1,28 @@
+{
+  "spec": {
+    "version": "1.0",
+    "kind": "CycleWorkflow",
+    "metadata": {
+      "name": "{{ name }}",
+      "owner": "{{ owner | default('admin') }}"
+    },
+    "spec": {
+      "nodes": [
+        {
+          "id": "{{ name }}",
+          "name": "{{ name }}",
+          "type": "SHELL",
+          "timeout": 3600,
+          "script": {
+            "path": "{{ name }}.sh"
+          }
+        }
+      ],
+      "flow": []
+    }
+  },
+  "code": {
+    "extension": "sh",
+    "content": "#!/bin/bash\n# Shell Script for {{ name }}\n# TODO: Add your shell logic here\n\necho \"Hello from {{ name }}\"\n"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "spec": {
+    "version": "1.0",
+    "kind": "CycleWorkflow",
+    "metadata": {
+      "name": "{{ name }}",
+      "owner": "{{ owner | default('admin') }}"
+    },
+    "spec": {
+      "nodes": [
+        {
+          "id": "{{ name }}",
+          "name": "{{ name }}",
+          "type": "ODPS_SQL",
+          "timeout": 3600,
+          "script": {
+             "path": "{{ name }}.sql"
+          }
+        }
+      ],
+      "flow": []
+    }
+  },
+  "code": {
+    "extension": "sql",
+    "content": "-- SQL Script for {{ name }}\n-- TODO: Add your SQL logic here\n\nSELECT 1;\n"
+  }
+}

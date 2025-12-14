@@ -1,0 +1,9 @@
+click>=8.1.0
+jsonpath-ng>=1.6.0
+jsonschema>=4.20.0
+jinja2>=3.1.0
+colorama>=0.4.6
+rich>=13.7.0
+pyyaml>=6.0
+pytest>=7.4.0
+pytest-cov>=4.1.0
