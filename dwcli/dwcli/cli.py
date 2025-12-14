@@ -48,11 +48,12 @@ def create(dirpath: str, name: str, template: str, owner: str):
         code_file = CodeFileManager.create_code_file(path, f"{name}.{ext}", code_content)
         
         validator = SchemaValidator()
-        is_valid, errors = validator.validate(spec_data, spec_file)
+        is_valid, errors, schema_key = validator.validate(spec_data, spec_file)
         
         if not is_valid:
             console.print("[yellow]Warning: Generated spec has validation errors[/yellow]")
-            validator.print_errors(errors)
+            schema_file = f"{schema_key}.schema.json" if schema_key else None
+            validator.print_errors(errors, schema_file)
         
         console.print(f"[green]✓[/green] Created object directory: {object_path}")
         console.print(f"  Node directory: {name}/")
@@ -101,11 +102,12 @@ def set(dirpath: str, assignments: tuple, value_type: str, dry_run: bool):
             JSONPathManager.write_json(obj_dir.spec_file, data)
             
             validator = SchemaValidator()
-            is_valid, errors = validator.validate(data, obj_dir.spec_file)
+            is_valid, errors, schema_key = validator.validate(data, obj_dir.spec_file)
             
             if not is_valid:
                 DirectoryManager.restore_backup(backup_path, obj_dir.spec_file)
-                validator.print_errors(errors)
+                schema_file = f"{schema_key}.schema.json" if schema_key else None
+                validator.print_errors(errors, schema_file)
                 sys.exit(1)
             
             DirectoryManager.remove_backup(backup_path)
@@ -150,11 +152,12 @@ def unset(dirpath: str, paths: tuple, dry_run: bool):
             JSONPathManager.write_json(obj_dir.spec_file, data)
             
             validator = SchemaValidator()
-            is_valid, errors = validator.validate(data, obj_dir.spec_file)
+            is_valid, errors, schema_key = validator.validate(data, obj_dir.spec_file)
             
             if not is_valid:
                 DirectoryManager.restore_backup(backup_path, obj_dir.spec_file)
-                validator.print_errors(errors)
+                schema_file = f"{schema_key}.schema.json" if schema_key else None
+                validator.print_errors(errors, schema_file)
                 sys.exit(1)
             
             DirectoryManager.remove_backup(backup_path)
@@ -216,12 +219,13 @@ def validate(dirpath: str):
         data = JSONPathManager.read_json(obj_dir.spec_file)
         
         validator = SchemaValidator()
-        is_valid, errors = validator.validate(data, obj_dir.spec_file)
+        is_valid, errors, schema_key = validator.validate(data, obj_dir.spec_file)
         
         if is_valid:
             console.print("[green]✓ Validation passed[/green]")
         else:
-            validator.print_errors(errors)
+            schema_file = f"{schema_key}.schema.json" if schema_key else None
+            validator.print_errors(errors, schema_file)
             sys.exit(1)
             
     except Exception as e:

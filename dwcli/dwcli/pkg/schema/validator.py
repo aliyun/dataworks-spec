@@ -58,7 +58,7 @@ class SchemaValidator:
             except Exception as e:
                 print(f"Warning: Failed to load schema {schema_file}: {e}")
 
-    def validate(self, data: Dict[str, Any], spec_file: Path) -> Tuple[bool, List[ValidationErrorDetail]]:
+    def validate(self, data: Dict[str, Any], spec_file: Path) -> Tuple[bool, List[ValidationErrorDetail], Optional[str]]:
         kind = data.get('kind', 'unknown')
         
         schema_key = f"{kind}.schedule"
@@ -67,7 +67,7 @@ class SchemaValidator:
             schema_key = kind
         
         if schema_key not in self.schemas:
-            return True, []
+            return True, [], None
         
         schema = self.schemas[schema_key]
         validator = Draft7Validator(schema)
@@ -76,10 +76,10 @@ class SchemaValidator:
         line_map = self._build_line_map(spec_file)
         
         for error in validator.iter_errors(data):
-            detail = self._build_error_detail(error, line_map, spec_file)
+            detail = self._build_error_detail(error, line_map, spec_file, schema_key)
             errors.append(detail)
         
-        return len(errors) == 0, errors
+        return len(errors) == 0, errors, schema_key
 
     def _build_line_map(self, filepath: Path) -> Dict[str, int]:
         line_map = {}
@@ -109,7 +109,7 @@ class SchemaValidator:
         
         return line_map
 
-    def _build_error_detail(self, error: ValidationError, line_map: Dict[str, int], spec_file: Path) -> ValidationErrorDetail:
+    def _build_error_detail(self, error: ValidationError, line_map: Dict[str, int], spec_file: Path, schema_key: str) -> ValidationErrorDetail:
         # Build JSON Path in standard format: $.field[0].subfield
         json_path = self._build_json_path(error.path) if error.path else '$'
         
@@ -119,11 +119,14 @@ class SchemaValidator:
         
         fix_command = self._generate_fix_command(error, json_path, spec_file)
         
+        # Add schema file info to error message
+        message = f"[Schema: {schema_key}.schema.json] {error.message}"
+        
         return ValidationErrorDetail(
             error_type=error_type,
             path=json_path,
             line_number=line_number,
-            message=error.message,
+            message=message,
             fix_command=fix_command
         )
     
@@ -203,11 +206,13 @@ class SchemaValidator:
         
         return None
 
-    def print_errors(self, errors: List[ValidationErrorDetail]):
+    def print_errors(self, errors: List[ValidationErrorDetail], schema_file: Optional[str] = None):
         console = Console()
         
         console.print("\n")
         console.print("❌ [bold red]VALIDATION FAILED: Changes Reverted![/bold red]")
+        if schema_file:
+            console.print(f"[yellow]Schema:[/yellow] {schema_file}")
         console.print("-" * 74)
         
         for i, error in enumerate(errors, start=1):
