@@ -1,0 +1,118 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "DataWorksWorkflowSpec json schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string"
+    },
+    "strategy": {
+      "$ref": "classpath:spec/schema/SpecScheduleStrategy.schema.json"
+    },
+    "owner": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "variables": {
+      "type": "array",
+      "items": {
+        "$ref": "classpath:spec/schema/SpecVariable.schema.json"
+      }
+    },
+    "triggers": {
+      "type": "array",
+      "items": {
+        "$ref": "classpath:spec/schema/SpecTrigger.schema.json"
+      },
+      "minItems": 1
+    },
+    "scripts": {
+      "type": "array",
+      "items": {
+        "$ref": "classpath:spec/schema/SpecScript.schema.json"
+      },
+      "minItems": 1
+    },
+    "files": {
+      "type": "array",
+      "minItems": 1
+    },
+    "artifacts": {
+      "$ref": "classpath:spec/schema/SpecArtifact.schema.json"
+    },
+    "datasources": {
+      "type": "array",
+      "items": {
+        "$ref": "classpath:spec/schema/SpecDatasource.schema.json"
+      },
+      "minItems": 1
+    },
+    "dqcRules": {
+      "type": "array"
+    },
+    "runtimeResources": {
+      "type": "array",
+      "items": {
+        "$ref": "classpath:spec/schema/SpecRuntimeResource.schema.json"
+      },
+      "minItems": 1
+    },
+    "fileResources": {
+      "type": "array",
+      "items": {
+        "$ref": "classpath:spec/schema/SpecFileResource.schema.json"
+      },
+      "minItems": 1
+    },
+    "functions": {
+      "type": "array",
+      "items": {
+        "$ref": "classpath:spec/schema/SpecFunction.schema.json"
+      },
+      "minItems": 1
+    },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "$ref": "classpath:spec/schema/SpecNode.schema.json"
+      },
+      "minItems": 1
+    },
+    "workflows": {
+      "type": "array",
+      "items": {
+        "$ref": "classpath:spec/schema/SpecWorkflow.schema.json"
+      },
+      "minItems": 1
+    },
+    "components": {
+      "type": "array",
+      "items": {
+        "$ref": "classpath:spec/schema/SpecComponent.schema.json"
+      },
+      "minItems": 1
+    },
+    "flow": {
+      "type": "array",
+      "items": {
+        "$ref": "classpath:spec/schema/SpecFlowDepend.schema.json"
+      },
+      "minItems": 1
+    },
+    "tables": {
+      "type": "array",
+      "items": {
+        "$ref": "SpecTable.schema.json"
+      },
+      "minItems": 1
+    }
+  }
+}

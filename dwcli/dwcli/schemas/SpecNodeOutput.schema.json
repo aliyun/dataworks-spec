@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SpecNode json schema",
+  "type": "object",
+  "properties": {
+    "nodeId": {
+      "type": "string"
+    },
+    "data": {
+      "type": "string"
+    },
+    "artifactType": {
+      "type": "string",
+      "enum": [
+        "NodeOutput"
+      ]
+    },
+    "sourceType": {
+      "type": "string"
+    },
+    "refTableName": {
+      "type": "string"
+    },
+    "isDefault": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "artifactType"
+  ],
+  "anyOf": [
+    {
+      "required": [
+        "data"
+      ]
+    },
+    {
+      "required": [
+        "nodeId"
+      ]
+    }
+  ]
+}

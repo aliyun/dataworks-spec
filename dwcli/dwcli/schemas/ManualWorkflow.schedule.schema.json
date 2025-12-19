@@ -57,6 +57,7 @@
                 "enum": [
                   "ODPS_SQL",
                   "SHELL",
+                  "DIDE_SHELL",
                   "PYTHON",
                   "SPARK",
                   "FLINK",

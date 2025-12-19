@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SpecDataset json schema",
+  "type": "object",
+  "properties": {
+    "identifier": {
+      "type": "string"
+    },
+    "version": {
+      "type": "integer"
+    },
+    "mountPath": {
+      "type": "string"
+    },
+    "readOnly": {
+      "type": "boolean"
+    },
+    "extOptions": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "identifier",
+    "version",
+    "mountPath"
+  ]
+}

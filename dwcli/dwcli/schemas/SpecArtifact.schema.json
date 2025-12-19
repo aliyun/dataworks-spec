@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SpecArtifact json schema",
+  "type": "object",
+  "properties": {
+    "nodeOutputs": {
+      "type": "array",
+      "items": {
+        "$ref": "classpath:spec/schema/SpecNodeOutput.schema.json"
+      }
+    },
+    "variables": {
+      "type": "array",
+      "items": {
+        "$ref": "classpath:spec/schema/SpecVariable.schema.json"
+      }
+    },
+    "tables": {
+      "type": "array",
+      "items": {
+        "$ref": "classpath:spec/schema/SpecTable.schema.json"
+      }
+    }
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SpecSubFlow json schema",
+  "type": "object",
+  "properties": {
+    "output": {
+      "type": "string"
+    },
+    "id": {
+      "type": "string"
+    },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "$ref": "classpath:spec/schema/SpecNode.schema.json"
+      },
+      "minItems": 1
+    }
+  },
+  "anyOf": [
+    {
+      "required": [
+        "id"
+      ]
+    },
+    {
+      "required": [
+        "output"
+      ]
+    },
+    {
+      "required": [
+        "nodes"
+      ]
+    }
+  ]
+}

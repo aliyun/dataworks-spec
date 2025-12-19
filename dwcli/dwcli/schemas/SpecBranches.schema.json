@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SpecBranches json schema",
+  "type": "object",
+  "properties": {
+    "when": {
+      "type": "string"
+    },
+    "valueType": {
+      "type": "string",
+      "description": "Type of the variable used in condition.",
+      "enum": [
+        "NoKvVariableExpression",
+        "System",
+        "Constant",
+        "NodeOutput",
+        "PaiOutput",
+        "PassThrough"
+      ]
+    },
+    "desc": {
+      "type": "string"
+    },
+    "fromVariable": {
+      "type": "string"
+    },
+    "output": {
+      "$ref": "classpath:spec/schema/SpecNodeOutput.schema.json"
+    }
+  },
+  "required": [
+    "when",
+    "output"
+  ]
+}

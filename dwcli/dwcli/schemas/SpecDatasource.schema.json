@@ -1,0 +1,25 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SpecDatasource json schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string"
+    },
+    "subType": {
+      "type": "string"
+    },
+    "config": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SpecVariableFlowDepend json schema",
+  "type": "object",
+  "properties": {
+    "variableName": {
+      "type": "string"
+    },
+    "depends": {
+      "type": "array",
+      "items": {
+        "$ref": "classpath:spec/schema/SpecVariableDepend.schema.json"
+      }
+    }
+  },
+  "required": [
+    "variableName"
+  ]
+}

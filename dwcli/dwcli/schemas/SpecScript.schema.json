@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SpecScript json schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "path": {
+      "type": "string"
+    },
+    "extension": {
+      "type": "string"
+    },
+    "language": {
+      "type": "string"
+    },
+    "runtime": {
+      "$ref": "classpath:spec/schema/SpecScriptRuntime.schema.json"
+    },
+    "parameters": {
+      "type": "array",
+      "items": {
+        "$ref": "classpath:spec/schema/SpecVariable.schema.json"
+      }
+    },
+    "content": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "runtime"
+  ]
+}

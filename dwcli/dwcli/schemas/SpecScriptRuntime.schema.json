@@ -1,0 +1,74 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SpecScriptRuntime json schema",
+  "type": "object",
+  "properties": {
+    "engine": {
+      "type": "string"
+    },
+    "command": {
+      "type": "string"
+    },
+    "commandTypeId": {
+      "type": "integer"
+    },
+    "template": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "emrJobConfig": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "cdhJobConfig": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "adbJobConfig": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "lindormJobConfig": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "sparkConf": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "flinkConf": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "streamJobConfig": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "paiflowConf": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "maxComputeConf": {
+      "type": "object",
+      "additionalProperties": true
+    },
+    "container": {
+      "$ref": "classpath:spec/schema/SpecContainer.schema.json"
+    },
+    "cu": {
+      "type": "string"
+    }
+  },
+  "anyOf": [
+    {
+      "required": [
+        "command"
+      ]
+    },
+    {
+      "required": [
+        "commandTypeId"
+      ]
+    }
+  ]
+}

@@ -44,21 +44,38 @@ def create(dirpath: str, name: str, template: str, owner: str):
         spec_file = path / f"{name}.schedule.json"
         JSONPathManager.write_json(spec_file, spec_data)
         
-        ext, code_content = TemplateManager.render_code(template, context)
-        code_file = CodeFileManager.create_code_file(path, f"{name}.{ext}", code_content)
+        code_result = TemplateManager.render_code(template, context)
         
-        validator = SchemaValidator()
-        is_valid, errors, schema_key = validator.validate(spec_data, spec_file)
-        
-        if not is_valid:
-            console.print("[yellow]Warning: Generated spec has validation errors[/yellow]")
-            schema_file = f"{schema_key}.schema.json" if schema_key else None
-            validator.print_errors(errors, schema_file)
-        
-        console.print(f"[green]✓[/green] Created object directory: {object_path}")
-        console.print(f"  Node directory: {name}/")
-        console.print(f"  Spec file: {spec_file.name}")
-        console.print(f"  Code file: {code_file.name}")
+        # Support for multiple code files (dictionary format)
+        if isinstance(code_result, dict):
+            code_files = []
+            for file_path, (ext, code_content) in code_result.items():
+                # Handle subdirectories in file path
+                full_path = path / file_path
+                if '/' in file_path or '\\' in file_path:
+                    # Create subdirectory if needed
+                    subdir = full_path.parent
+                    subdir.mkdir(parents=True, exist_ok=True)
+                code_file = CodeFileManager.create_code_file(full_path.parent, full_path.name, code_content)
+                code_files.append(code_file)
+            
+            console.print(f"[green]✓[/green] Created object directory: {object_path}")
+            console.print(f"  Node directory: {name}/")
+            console.print(f"  Spec file: {spec_file.name}")
+            console.print(f"  Code files: {len(code_files)} file(s)")
+            for code_file in code_files[:3]:  # Show first 3
+                console.print(f"    - {code_file.relative_to(path)}")
+            if len(code_files) > 3:
+                console.print(f"    ... and {len(code_files) - 3} more")
+        else:
+            # Original single file format
+            ext, code_content = code_result
+            code_file = CodeFileManager.create_code_file(path, f"{name}.{ext}", code_content)
+            
+            console.print(f"[green]✓[/green] Created object directory: {object_path}")
+            console.print(f"  Node directory: {name}/")
+            console.print(f"  Spec file: {spec_file.name}")
+            console.print(f"  Code file: {code_file.name}")
         
     except Exception as e:
         console.print(f"[red]Error:[/red] {e}", style="bold red")

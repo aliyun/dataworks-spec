@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SpecScheduleStrategy json schema",
+  "type": "object",
+  "properties": {
+    "priority": {
+      "type": "integer"
+    },
+    "priorityWeightStrategy": {
+      "type": "string",
+      "description": "The strategy for weighting priorities."
+    },
+    "maxInternalConcurrency": {
+      "type": "integer",
+      "description": "Maximum internal node instance concurrency."
+    },
+    "timeout": {
+      "type": "integer"
+    },
+    "instanceMode": {
+      "type": "string",
+      "description": "Node instance mode type."
+    },
+    "rerunMode": {
+      "type": "string",
+      "description": "Node rerun mode type."
+    },
+    "rerunTimes": {
+      "type": "integer"
+    },
+    "rerunInterval": {
+      "type": "integer"
+    },
+    "ignoreBranchConditionSkip": {
+      "type": "boolean",
+      "description": "Whether to ignore branch condition skip."
+    },
+    "failureStrategy": {
+      "type": "string",
+      "description": "Failure strategy for the node."
+    },
+    "recurrenceType": {
+      "type": "string",
+      "description": "Recurrence type of the node."
+    }
+  }
+}

@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SpecWorkflow json schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "script": {
+      "$ref": "classpath:spec/schema/SpecScript.schema.json"
+    },
+    "trigger": {
+      "$ref": "classpath:spec/schema/SpecTrigger.schema.json"
+    },
+    "inputs": {
+      "$ref": "classpath:spec/schema/SpecArtifact.schema.json"
+    },
+    "outputs": {
+      "$ref": "classpath:spec/schema/SpecArtifact.schema.json"
+    },
+    "strategy": {
+      "$ref": "classpath:spec/schema/SpecScheduleStrategy.schema.json"
+    },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "$ref": "classpath:spec/schema/SpecNode.schema.json"
+      }
+    },
+    "dependencies": {
+      "type": "array",
+      "items": {
+        "$ref": "classpath:spec/schema/SpecFlowDepend.schema.json"
+      }
+    },
+    "type": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "owner": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "citable": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "name",
+    "script"
+  ]
+}

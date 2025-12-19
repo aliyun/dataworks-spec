@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SpecBranch json schema",
+  "type": "object",
+  "properties": {
+    "branches": {
+      "type": "array",
+      "items": {
+        "$ref": "classpath:spec/schema/SpecBranches.schema.json"
+      },
+      "minItems": 1
+    }
+  }
+}

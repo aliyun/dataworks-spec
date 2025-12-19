@@ -110,13 +110,39 @@ class TemplateManager:
         return json.loads(rendered_str)
 
     @staticmethod
-    def render_code(template_name: str, context: Dict[str, Any]) -> tuple[str, str]:
+    def render_code(template_name: str, context: Dict[str, Any]):
         template_def = TemplateManager.get_template(template_name)
         
         if template_def is None:
             raise ValueError(f"Template '{template_name}' not found")
         
         code_def = template_def['code']
+        
+        # Support for multiple code files in nested 'files' structure
+        if isinstance(code_def, dict) and 'files' in code_def:
+            result = {}
+            files_def = code_def['files']
+            for file_path, file_def in files_def.items():
+                # Render the file path itself (to handle {{ name }} etc. in paths)
+                path_template = Template(file_path)
+                rendered_path = path_template.render(**context)
+                # Render the content
+                template = Template(file_def['content'])
+                rendered_content = template.render(**context)
+                result[rendered_path] = (file_def['extension'], rendered_content)
+            return result
+        
+        # Support for multiple code files (flat dictionary format)
+        if isinstance(code_def, dict) and 'content' not in code_def:
+            # Dictionary of file paths to code definitions
+            result = {}
+            for file_path, file_def in code_def.items():
+                template = Template(file_def['content'])
+                rendered_content = template.render(**context)
+                result[file_path] = (file_def['extension'], rendered_content)
+            return result
+        
+        # Original single file format
         template = Template(code_def['content'])
         rendered_content = template.render(**context)
         

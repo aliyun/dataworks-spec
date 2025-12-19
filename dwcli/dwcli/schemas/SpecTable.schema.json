@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SpecTable json schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "artifactType": {
+      "type": "string",
+      "enum": [
+        "Table"
+      ],
+      "description": "Artifact type, fixed to TABLE."
+    },
+    "name": {
+      "type": "string"
+    },
+    "guid": {
+      "type": "string"
+    },
+    "ddl": {
+      "type": "string"
+    },
+    "hasPartition": {
+      "type": "boolean"
+    },
+    "isVisible": {
+      "type": "boolean"
+    },
+    "calcEngine": {
+      "$ref": "classpath:spec/schema/SpecCalcEngine.schema.json"
+    },
+    "engineType": {
+      "type": "string"
+    },
+    "entityType": {
+      "type": "string"
+    },
+    "logicTableUuid": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "artifactType",
+    "guid"
+  ]
+}
+
+

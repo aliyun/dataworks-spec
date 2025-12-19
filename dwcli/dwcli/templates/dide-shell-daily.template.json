@@ -1,0 +1,33 @@
+{
+  "spec": {
+    "version": "1.0",
+    "kind": "CycleWorkflow",
+    "metadata": {
+      "name": "{{ name }}",
+      "owner": "{{ owner | default('admin') }}"
+    },
+    "spec": {
+      "nodes": [
+        {
+          "id": "{{ name }}",
+          "name": "{{ name }}",
+          "type": "DIDE_SHELL",
+          "timeout": 3600,
+          "script": {
+            "path": "{{ name }}.sh",
+            "language": "odps",
+            "runtime": {
+              "engine": "MaxCompute",
+              "command": "DIDE_SHELL"
+            }
+          }
+        }
+      ],
+      "flow": []
+    }
+  },
+  "code": {
+    "extension": "sh",
+    "content": "#!/bin/bash\n# DIDE Shell Script for {{ name }}\n# This script runs in DataWorks DIDE environment\n\necho \"Hello from DIDE_SHELL node: {{ name }}\"\necho \"Current date: $(date)\"\n\n# TODO: Add your DIDE shell logic here\n"
+  }
+}

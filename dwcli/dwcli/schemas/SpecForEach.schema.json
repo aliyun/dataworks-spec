@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SpecForEach json schema",
+  "type": "object",
+  "properties": {
+    "nodes": {
+      "type": "array",
+      "items": {
+        "$ref": "classpath:spec/schema/SpecNode.schema.json"
+      },
+      "minItems": 1
+    },
+    "array": {
+      "$ref": "classpath:spec/schema/SpecVariable.schema.json"
+    },
+    "flow": {
+      "type": "array",
+      "items": {
+        "$ref": "classpath:spec/schema/SpecFlowDepend.schema.json"
+      }
+    },
+    "maxIterations": {
+      "type": "integer"
+    }
+  },
+  "required": [
+    "nodes"
+  ]
+}

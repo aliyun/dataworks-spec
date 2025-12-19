@@ -57,6 +57,7 @@
                 "enum": [
                   "ODPS_SQL",
                   "SHELL",
+                  "DIDE_SHELL",
                   "PYTHON",
                   "SPARK",
                   "FLINK",
@@ -85,7 +86,18 @@
                   },
                   "runtime": {
                     "type": "object",
-                    "description": "Runtime configuration"
+                    "description": "Runtime configuration",
+                    "properties": {
+                      "command": {
+                        "type": "string",
+                        "description": "Runtime command"
+                      },
+                      "engine": {
+                        "type": "string",
+                        "description": "Runtime engine"
+                      }
+                    },
+                    "required": ["command"]
                   }
                 }
               },

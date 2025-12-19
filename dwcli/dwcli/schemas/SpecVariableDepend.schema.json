@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SpecVariableDepend json schema",
+  "type": "object",
+  "properties": {
+    "variableName": {
+      "type": "string"
+    },
+    "nodeId": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string"
+    },
+    "output": {
+      "type": "string"
+    },
+    "sourceType": {
+      "type": "string"
+    }
+  },
+  "anyOf": [
+    {
+      "required": [
+        "nodeId"
+      ]
+    },
+    {
+      "required": [
+        "output"
+      ]
+    },
+    {
+      "required": [
+        "variableName"
+      ]
+    }
+  ]
+}

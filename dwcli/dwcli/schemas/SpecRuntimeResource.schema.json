@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SpecRuntimeResource json schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "resourceGroup": {
+      "type": "string",
+      "description": "Runtime resource group name."
+    },
+    "resourceGroupId": {
+      "type": "string",
+      "description": "ID of the runtime resource group."
+    },
+    "cu": {
+      "type": "string",
+      "description": "Deprecated. Use other configurations for CU settings.",
+      "deprecated": true
+    }
+  },
+  "required": [
+    "resourceGroup"
+  ]
+}

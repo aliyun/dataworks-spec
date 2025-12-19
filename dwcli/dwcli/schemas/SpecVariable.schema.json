@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SpecVariable json schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "artifactType": {
+      "type": "string",
+      "enum": [
+        "Variable"
+      ],
+      "description": "Artifact type, fixed to 'VARIABLE'."
+    },
+    "inputName": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string",
+      "description": "Name of the variable."
+    },
+    "scope": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string"
+    },
+    "value": {
+      "type": "string",
+      "description": "Value of the variable."
+    },
+    "description": {
+      "type": "string",
+      "description": "Description of the variable."
+    },
+    "referenceVariable": {
+      "$ref": "classpath:spec/schema/SpecVariable.schema.json",
+      "description": "Reference to another variable."
+    },
+    "node": {
+      "$ref": "classpath:spec/schema/SpecDepend.schema.json",
+      "description": "Node dependency information."
+    }
+  },
+  "required": [
+    "name",
+    "type",
+    "scope",
+    "artifactType"
+  ]
+}

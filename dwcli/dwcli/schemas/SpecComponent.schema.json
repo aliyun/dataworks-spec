@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SpecComponent json schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "owner": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "script": {
+      "$ref": "classpath:spec/schema/SpecScript.schema.json"
+    },
+    "inputs": {
+      "type": "array",
+      "items": {
+        "$ref": "classpath:spec/schema/SpecComponentParameter.schema.json"
+      }
+    },
+    "outputs": {
+      "type": "array",
+      "items": {
+        "$ref": "classpath:spec/schema/SpecComponentParameter.schema.json"
+      }
+    }
+  },
+  "required": [
+    "name",
+    "script"
+  ]
+}

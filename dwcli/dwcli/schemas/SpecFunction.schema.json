@@ -1,0 +1,83 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SpecFunction json schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "script": {
+      "$ref": "classpath:spec/schema/SpecScript.schema.json"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "math",
+        "aggregate",
+        "string",
+        "date",
+        "analytic",
+        "other"
+      ]
+    },
+    "className": {
+      "type": "string"
+    },
+    "datasource": {
+      "$ref": "classpath:spec/schema/SpecDatasource.schema.json"
+    },
+    "runtimeResource": {
+      "$ref": "classpath:spec/schema/SpecRuntimeResource.schema.json"
+    },
+    "fileResources": {
+      "type": "array",
+      "items": {
+        "$ref": "classpath:spec/schema/SpecFileResource.schema.json"
+      }
+    },
+    "armResource": {
+      "type": "string"
+    },
+    "usageDescription": {
+      "type": "string"
+    },
+    "argumentsDescription": {
+      "type": "string"
+    },
+    "returnValueDescription": {
+      "type": "string"
+    },
+    "usageExample": {
+      "type": "string"
+    },
+    "embeddedCodeType": {
+      "type": "string",
+      "description": "Embedded code type, e.g., python2, java8.",
+      "enum": [
+        "python2",
+        "python3",
+        "java8",
+        "java11",
+        "java17"
+      ]
+    },
+    "resourceType": {
+      "type": "string",
+      "description": "Resource type, e.g., file, embedded.",
+      "enum": [
+        "file",
+        "embedded"
+      ]
+    },
+    "embeddedCode": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "script"
+  ]
+}

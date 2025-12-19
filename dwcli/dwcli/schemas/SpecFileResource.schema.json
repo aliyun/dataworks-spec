@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SpecFileResource json schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string",
+      "description": "Resource name."
+    },
+    "script": {
+      "$ref": "classpath:spec/schema/SpecScript.schema.json"
+    },
+    "runtimeResource": {
+      "$ref": "classpath:spec/schema/SpecRuntimeResource.schema.json"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "python",
+        "jar",
+        "archive",
+        "file"
+      ]
+    },
+    "file": {
+      "$ref": "classpath:spec/schema/SpecObjectStorageFile.schema.json"
+    },
+    "datasource": {
+      "$ref": "classpath:spec/schema/SpecDatasource.schema.json"
+    }
+  },
+  "required": [
+    "name",
+    "type",
+    "script"
+  ]
+}

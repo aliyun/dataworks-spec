@@ -1,0 +1,50 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SpecTrigger json schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string"
+    },
+    "cron": {
+      "type": "string",
+      "description": "Cron expression for scheduled triggers."
+    },
+    "recurrence": {
+      "type": "string"
+    },
+    "startTime": {
+      "type": "string"
+    },
+    "endTime": {
+      "type": "string"
+    },
+    "timezone": {
+      "type": "string"
+    },
+    "delaySeconds": {
+      "type": "integer"
+    },
+    "calendarId": {
+      "type": "integer"
+    },
+    "identifier": {
+      "type": "string"
+    }
+  },
+  "anyOf": [
+    {
+      "required": [
+        "type"
+      ]
+    },
+    {
+      "required": [
+        "recurrence"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SpecVariable json schema",
+  "type": "object",
+  "properties": {
+    "nodeId": {
+      "type": "string"
+    },
+    "type": {
+      "type": "string",
+      "enum": [
+        "Normal",
+        "CrossCycleDependsOnSelf",
+        "CrossCycleDependsOnChildren",
+        "CrossCycleDependsOnOtherNode"
+      ]
+    },
+    "output": {
+      "type": "string"
+    },
+    "sourceType": {
+      "type": "string"
+    }
+  },
+  "if": {
+    "properties": {
+      "type": {
+        "enum": [
+          "CrossCycleDependsOnSelf",
+          "CrossCycleDependsOnChildren"
+        ]
+      }
+    },
+    "required": [
+      "type"
+    ]
+  },
+  "else": {
+    "anyOf": [
+      {
+        "required": [
+          "nodeId"
+        ]
+      },
+      {
+        "required": [
+          "output"
+        ]
+      }
+    ]
+  }
+}
