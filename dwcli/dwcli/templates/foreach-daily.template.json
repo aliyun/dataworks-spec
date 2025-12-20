@@ -15,7 +15,7 @@
           "script": {
             "path": "{{ name }}",
             "runtime": {
-              "command": "CONTROLLER_FOREACH"
+              "command": "CONTROLLER_TRAVERSE"
             }
           },
           "for-each": {
