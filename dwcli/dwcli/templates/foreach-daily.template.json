@@ -114,7 +114,7 @@
         "extension": "sh",
         "content": "#!/bin/bash\n# Traverse start controller for {{ name }}\n# This script marks the beginning of each iteration\n\necho \"[{{ name }}_start] Starting iteration: ${loop_index}\"\necho \"[{{ name }}_start] Current item: ${item}\"\n"
       },
-      "{{ name }}_start/schedule.json": {
+      "{{ name }}_start/{{ name }}_start.schedule.json": {
         "extension": "json",
         "content": "{\n  // Inner node: {{ name }}_start\n  // Type: VIRTUAL (CONTROLLER_TRAVERSE_START)\n  // Parent: {{ name }} (FOREACH)\n  \"id\": \"{{ name }}_start\",\n  \"name\": \"{{ name }}_start\",\n  \"type\": \"VIRTUAL\",\n  \"script\": {\n    \"path\": \"{{ name }}_start/{{ name }}_start.sh\",\n    \"runtime\": {\n      \"command\": \"CONTROLLER_TRAVERSE_START\"\n    }\n  }\n}"
       },
@@ -122,7 +122,7 @@
         "extension": "sql",
         "content": "-- SQL script for {{ name }}_sql\n-- This SQL runs for each item in the loop\n\nSELECT '${item}' as loop_item, \n       '${loop_index}' as loop_index,\n       CURRENT_TIMESTAMP as exec_time;\n"
       },
-      "{{ name }}_sql/schedule.json": {
+      "{{ name }}_sql/{{ name }}_sql.schedule.json": {
         "extension": "json",
         "content": "{\n  // Inner node: {{ name }}_sql\n  // Type: ODPS_SQL\n  // Parent: {{ name }} (FOREACH)\n  \"id\": \"{{ name }}_sql\",\n  \"name\": \"{{ name }}_sql\",\n  \"type\": \"ODPS_SQL\",\n  \"script\": {\n    \"path\": \"{{ name }}_sql/{{ name }}_sql.sql\",\n    \"runtime\": {\n      \"command\": \"ODPS_SQL\"\n    }\n  }\n}"
       },
@@ -130,7 +130,7 @@
         "extension": "sh",
         "content": "#!/bin/bash\n# Shell script for {{ name }}_shell\n# This shell script runs for each item in the loop\n\necho \"==========================================\"\necho \"Processing item: ${item}\"\necho \"Loop index: ${loop_index}\"\necho \"Current time: $(date)\"\necho \"==========================================\"\n\n# TODO: Add your loop processing logic here\necho \"Hello from foreach iteration ${loop_index}\"\n"
       },
-      "{{ name }}_shell/schedule.json": {
+      "{{ name }}_shell/{{ name }}_shell.schedule.json": {
         "extension": "json",
         "content": "{\n  // Inner node: {{ name }}_shell\n  // Type: DIDE_SHELL\n  // Parent: {{ name }} (FOREACH)\n  \"id\": \"{{ name }}_shell\",\n  \"name\": \"{{ name }}_shell\",\n  \"type\": \"DIDE_SHELL\",\n  \"script\": {\n    \"path\": \"{{ name }}_shell/{{ name }}_shell.sh\",\n    \"runtime\": {\n      \"command\": \"DIDE_SHELL\"\n    }\n  }\n}"
       },
@@ -138,9 +138,9 @@
         "extension": "sh",
         "content": "#!/bin/bash\n# Traverse end controller for {{ name }}_end\n# This script marks the end of each iteration\n\necho \"[{{ name }}_end] Completed iteration: ${loop_index}\"\necho \"[{{ name }}_end] Processed item: ${item}\"\n"
       },
-      "{{ name }}_end/schedule.json": {
+      "{{ name }}_end/{{ name }}_end.schedule.json": {
         "extension": "json",
-        "content": "{\n  // Inner node: {{ name }}_end\n  // Type: VIRTUAL (CONTROLLER_TRAVERSE_END)\n  // Parent: {{ name }} (FOREACH)\n  \"id\": \"{{ name }}_end\",\n  \"name\": \"{{ name }}_end\",\n  \"type\": \"VIRTUAL\",\n  \"script\": {\n    \"path\": \"{{ name }}_end/{{ name }}_end.sh\",\n    \"runtime\": {\n      \"command\": \"CONTROLLER_TRAVERSE_END\"\n    }\n  }\n}"
+        "content": "{\n  // Inner node: {{ name }}_end\n  // Type: VIRTUAL (CONTROLLER_TRAVERSE_END)\n  // Parent: {{ name }} (FOREACH)\n  \"id\": \"{{ name }}_end\",\n  \"name\": \"{{ name }}_end\",\n  \"type\": \"VIRTUAL\",\n  \"recurrence\": \"Normal\",\n  \"timeout\": 3600,\n  \"instanceMode\": \"T+1\",\n  \"rerunMode\": \"Allowed\",\n  \"rerunTimes\": 3,\n  \"rerunInterval\": 180000,\n  \"script\": {\n    \"path\": \"{{ name }}_end/{{ name }}_end.sh\",\n    \"runtime\": {\n      \"command\": \"CONTROLLER_TRAVERSE_END\"\n    }\n  }\n}"
       }
     }
   }
