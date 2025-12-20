@@ -1,0 +1,14 @@
+{
+  // Inner node: foreach_test_start
+  // Type: VIRTUAL (CONTROLLER_TRAVERSE_START)
+  // Parent: foreach_test (FOREACH)
+  "id": "foreach_test_start",
+  "name": "foreach_test_start",
+  "type": "VIRTUAL",
+  "script": {
+    "path": "foreach_test_start/foreach_test_start.sh",
+    "runtime": {
+      "command": "CONTROLLER_TRAVERSE_START"
+    }
+  }
+}

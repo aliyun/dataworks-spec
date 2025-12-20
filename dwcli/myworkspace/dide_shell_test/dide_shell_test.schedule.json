@@ -1,0 +1,27 @@
+{
+  "version": "1.0",
+  "kind": "CycleWorkflow",
+  "metadata": {
+    "name": "dide_shell_test",
+    "owner": "test_user"
+  },
+  "spec": {
+    "nodes": [
+      {
+        "id": "dide_shell_test",
+        "name": "dide_shell_test",
+        "type": "DIDE_SHELL",
+        "timeout": 3600,
+        "script": {
+          "path": "dide_shell_test.sh",
+          "language": "odps",
+          "runtime": {
+            "engine": "MaxCompute",
+            "command": "DIDE_SHELL"
+          }
+        }
+      }
+    ],
+    "flow": []
+  }
+}

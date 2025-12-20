@@ -1,0 +1,14 @@
+{
+  // Inner node: foreach_test_shell
+  // Type: DIDE_SHELL
+  // Parent: foreach_test (FOREACH)
+  "id": "foreach_test_shell",
+  "name": "foreach_test_shell",
+  "type": "DIDE_SHELL",
+  "script": {
+    "path": "foreach_test_shell/foreach_test_shell.sh",
+    "runtime": {
+      "command": "DIDE_SHELL"
+    }
+  }
+}

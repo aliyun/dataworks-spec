@@ -1,0 +1,20 @@
+{
+  // Inner node: foreach_test_end
+  // Type: VIRTUAL (CONTROLLER_TRAVERSE_END)
+  // Parent: foreach_test (FOREACH)
+  "id": "foreach_test_end",
+  "name": "foreach_test_end",
+  "type": "VIRTUAL",
+  "recurrence": "Normal",
+  "timeout": 3600,
+  "instanceMode": "T+1",
+  "rerunMode": "Allowed",
+  "rerunTimes": 3,
+  "rerunInterval": 180000,
+  "script": {
+    "path": "foreach_test_end/foreach_test_end.sh",
+    "runtime": {
+      "command": "CONTROLLER_TRAVERSE_END"
+    }
+  }
+}

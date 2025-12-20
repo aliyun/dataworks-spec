@@ -1,0 +1,9 @@
+{
+  // Foreach node: foreach_test
+  // This node contains inner nodes that will be executed for each item in the loop
+  // Inner nodes:
+  // - foreach_test_start: Traverse start controller
+  // - foreach_test_sql: SQL node that runs for each iteration
+  // - foreach_test_shell: Shell node that runs for each iteration
+  // - foreach_test_end: Traverse end controller
+}

@@ -1,0 +1,22 @@
+{
+  "version": "1.0",
+  "kind": "CycleWorkflow",
+  "metadata": {
+    "name": "simple_shell",
+    "owner": "test_user"
+  },
+  "spec": {
+    "nodes": [
+      {
+        "id": "simple_shell",
+        "name": "simple_shell",
+        "type": "SHELL",
+        "timeout": 3600,
+        "script": {
+          "path": "simple_shell.sh"
+        }
+      }
+    ],
+    "flow": []
+  }
+}
