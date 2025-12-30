@@ -1,0 +1,33 @@
+{
+  "version": "1.0",
+  "kind": "CycleWorkflow",
+  "metadata": {
+    "name": "test_odps_sql25122902",
+    "owner": "admin"
+  },
+  "spec": {
+    "nodes": [
+      {
+        "id": "test_odps_sql25122902",
+        "name": "test_odps_sql25122902",
+        "type": "ODPS_SQL",
+        "timeout": 3600,
+        "script": {
+          "path": "test_odps_sql25122902.sql"
+        },
+        "trigger": {
+          "type": "Scheduler",
+          "cron": "0 50 2 * * ?"
+        }
+      }
+    ],
+    "flow": [
+      {
+        "nodeId": "test_odps_sql25122902",
+        "depends": [
+          "autotest_root"
+        ]
+      }
+    ]
+  }
+}

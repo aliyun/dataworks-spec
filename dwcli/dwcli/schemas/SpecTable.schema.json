@@ -1,5 +1,5 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "SpecTable json schema",
   "type": "object",
   "properties": {
@@ -29,7 +29,7 @@
       "type": "boolean"
     },
     "calcEngine": {
-      "$ref": "classpath:spec/schema/SpecCalcEngine.schema.json"
+      "type": "object"
     },
     "engineType": {
       "type": "string"
@@ -44,7 +44,6 @@
   "required": [
     "artifactType",
     "guid"
-  ]
+  ],
+  "additionalProperties": false
 }
-
-

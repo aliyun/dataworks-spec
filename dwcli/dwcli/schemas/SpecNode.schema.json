@@ -1,5 +1,5 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "SpecNode json schema",
   "type": "object",
   "properties": {
@@ -34,58 +34,80 @@
       "type": "boolean"
     },
     "datasource": {
-      "$ref": "classpath:spec/schema/SpecDatasource.schema.json"
+      "type": "object"
     },
     "datasets": {
       "type": "array",
       "items": {
-        "$ref": "classpath:spec/schema/SpecDataset.schema.json"
+        "type": "object"
       }
     },
     "script": {
-      "$ref": "classpath:spec/schema/SpecScript.schema.json"
+      "type": "object",
+      "properties": {
+        "path": {
+          "type": "string"
+        },
+        "runtime": {
+          "type": "object",
+          "properties": {
+            "command": {
+              "type": "string"
+            },
+            "engine": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "command"
+          ]
+        }
+      },
+      "required": [
+        "path"
+      ]
     },
     "trigger": {
-      "$ref": "classpath:spec/schema/SpecTrigger.schema.json"
+      "type": "object"
     },
     "runtimeResource": {
-      "$ref": "classpath:spec/schema/SpecRuntimeResource.schema.json"
+      "type": "object"
     },
     "fileResources": {
       "type": "array",
       "items": {
-        "$ref": "classpath:spec/schema/SpecFileResource.schema.json"
+        "type": "object"
       }
     },
     "functions": {
       "type": "array",
       "items": {
-        "$ref": "classpath:spec/schema/SpecFunction.schema.json"
+        "type": "object"
       }
     },
     "inputs": {
-      "$ref": "classpath:spec/schema/SpecArtifact.schema.json"
+      "type": "object"
     },
     "outputs": {
-      "$ref": "classpath:spec/schema/SpecArtifact.schema.json"
+      "type": "object"
     },
     "branch": {
-      "$ref": "classpath:spec/schema/SpecBranch.schema.json"
+      "type": "object"
     },
     "join": {
-      "$ref": "classpath:spec/schema/SpecJoin.schema.json"
+      "type": "object"
     },
     "doWhile": {
-      "$ref": "classpath:spec/schema/SpecDoWhile.schema.json"
+      "type": "object"
     },
     "foreach": {
-      "$ref": "classpath:spec/schema/SpecForEach.schema.json"
+      "type": "object"
     },
     "combined": {
-      "$ref": "classpath:spec/schema/SpecSubFlow.schema.json"
+      "type": "object"
     },
     "paramHub": {
-      "$ref": "classpath:spec/schema/SpecParamHub.schema.json"
+      "type": "object"
     },
     "name": {
       "type": "string"
@@ -97,17 +119,18 @@
       "type": "string"
     },
     "strategy": {
-      "$ref": "classpath:spec/schema/SpecScheduleStrategy.schema.json"
+      "type": "object"
     },
     "subflow": {
-      "$ref": "classpath:spec/schema/SpecSubFlow.schema.json"
+      "type": "object"
     },
     "paiflow": {
-      "$ref": "classpath:spec/schema/SpecPaiflow.schema.json"
+      "type": "object"
     }
   },
   "required": [
     "name",
     "script"
-  ]
+  ],
+  "additionalProperties": false
 }

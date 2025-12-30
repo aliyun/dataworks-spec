@@ -1,5 +1,5 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "SpecTrigger json schema",
   "type": "object",
   "properties": {
@@ -12,6 +12,9 @@
     "cron": {
       "type": "string",
       "description": "Cron expression for scheduled triggers."
+    },
+    "cycleType": {
+      "type": "string"
     },
     "recurrence": {
       "type": "string"
@@ -46,5 +49,6 @@
         "recurrence"
       ]
     }
-  ]
+  ],
+  "additionalProperties": false
 }

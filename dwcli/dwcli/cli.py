@@ -4,6 +4,7 @@ from pathlib import Path
 from rich.console import Console
 
 from dwcli.pkg.domain.directory import DirectoryManager
+from dwcli.pkg.domain.workspace import WorkspaceManager
 from dwcli.pkg.jsonpath.manager import JSONPathManager, JSONPathError
 from dwcli.pkg.schema.validator import SchemaValidator
 from dwcli.pkg.template.manager import TemplateManager
@@ -239,11 +240,55 @@ def validate(dirpath: str):
         is_valid, errors, schema_key = validator.validate(data, obj_dir.spec_file)
         
         if is_valid:
-            console.print("[green]✓ Validation passed[/green]")
+            console.print(f"[green]✓ Validation passed:[/green] {dirpath}")
         else:
             schema_file = f"{schema_key}.schema.json" if schema_key else None
             validator.print_errors(errors, schema_file)
             sys.exit(1)
+            
+    except Exception as e:
+        console.print(f"[red]Error:[/red] {e}", style="bold red")
+        sys.exit(1)
+
+
+@node.command()
+@click.argument('dirpath', type=click.Path(exists=True))
+def compile(dirpath: str):
+    """
+    Compile (validate) a node, a workflow, or a whole workspace recursively.
+    """
+    try:
+        path = Path(dirpath).resolve()
+        console.print(f"[cyan]Compiling:[/cyan] {dirpath}")
+        
+        results = WorkspaceManager.validate_recursive(path)
+        
+        if not results:
+            console.print(f"[yellow]No DataWorks objects or workspace found in {dirpath}[/yellow]")
+            return
+
+        failed = False
+        for obj_path, is_valid, errors in results:
+            try:
+                rel_path = obj_path.relative_to(path)
+                if str(rel_path) == ".":
+                    rel_path = obj_path.name
+            except ValueError:
+                rel_path = obj_path
+                
+            if is_valid:
+                console.print(f"[green]✓[/green] {rel_path}")
+            else:
+                console.print(f"[red]✗[/red] {rel_path}")
+                for error in errors:
+                    console.print(f"  - [red]{error.error_type}:[/red] {error.message} (Path: {error.path})")
+                failed = True
+        
+        if failed:
+            console.print("\n[red]Compilation failed.[/red]")
+            sys.exit(1)
+        else:
+            console.print("\n[green]Compilation successful.[/green]")
             
     except Exception as e:
         console.print(f"[red]Error:[/red] {e}", style="bold red")
@@ -316,6 +361,57 @@ def code_get(dirpath: str):
         content = CodeFileManager.read_code(obj_dir.code_file)
         click.echo(content, nl=False)
         
+    except Exception as e:
+        console.print(f"[red]Error:[/red] {e}", style="bold red")
+        sys.exit(1)
+
+
+@cli.group()
+def workspace():
+    pass
+
+
+@workspace.command()
+@click.argument('dirpath', type=click.Path())
+@click.option('--name', required=True, help='Workspace name')
+@click.option('--owner', default='admin', help='Owner name')
+def create(dirpath: str, name: str, owner: str):
+    try:
+        WorkspaceManager.create_workspace(dirpath, name, owner)
+        console.print(f"[green]✓[/green] Created workspace: {dirpath}")
+        console.print(f"  Project file: dw-project.json")
+        console.print(f"  Directories: node/, workflow/")
+    except Exception as e:
+        console.print(f"[red]Error:[/red] {e}", style="bold red")
+        sys.exit(1)
+
+
+@workspace.command()
+@click.argument('dirpath', type=click.Path(exists=True))
+def validate(dirpath: str):
+    try:
+        path = Path(dirpath).resolve()
+        results = WorkspaceManager.validate_recursive(path)
+        
+        failed = False
+        for obj_path, is_valid, errors in results:
+            try:
+                rel_path = obj_path.relative_to(path)
+                if str(rel_path) == ".":
+                    rel_path = obj_path.name
+            except ValueError:
+                rel_path = obj_path
+                
+            if is_valid:
+                console.print(f"[green]✓[/green] {rel_path}")
+            else:
+                console.print(f"[red]✗[/red] {rel_path}")
+                for error in errors:
+                    console.print(f"  - [red]{error.error_type}:[/red] {error.message} (Path: {error.path})")
+                failed = True
+        
+        if failed:
+            sys.exit(1)
     except Exception as e:
         console.print(f"[red]Error:[/red] {e}", style="bold red")
         sys.exit(1)

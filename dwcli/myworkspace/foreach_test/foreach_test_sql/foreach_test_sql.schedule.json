@@ -1,14 +1,20 @@
 {
-  // Inner node: foreach_test_sql
-  // Type: ODPS_SQL
-  // Parent: foreach_test (FOREACH)
-  "id": "foreach_test_sql",
-  "name": "foreach_test_sql",
-  "type": "ODPS_SQL",
-  "script": {
-    "path": "foreach_test_sql/foreach_test_sql.sql",
-    "runtime": {
-      "command": "ODPS_SQL"
-    }
+  "version": "2.0.0",
+  "kind": "Node",
+  "spec": {
+    "nodes": [
+      {
+        "id": "foreach_test_sql",
+        "name": "foreach_test_sql",
+        "type": "ODPS_SQL",
+        "script": {
+          "path": "foreach_test_sql/foreach_test_sql.sql",
+          "runtime": {
+            "command": "ODPS_SQL"
+          }
+        }
+      }
+    ],
+    "flow": []
   }
 }

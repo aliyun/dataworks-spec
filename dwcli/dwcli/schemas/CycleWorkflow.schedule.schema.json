@@ -13,7 +13,7 @@
     "kind": {
       "type": "string",
       "description": "Workflow type",
-      "enum": ["CycleWorkflow"]
+      "enum": ["CycleWorkflow", "Node"]
     },
     "metadata": {
       "type": "object",
@@ -35,6 +35,7 @@
     "spec": {
       "type": "object",
       "required": ["nodes"],
+      "additionalProperties": false,
       "properties": {
         "nodes": {
           "type": "array",
@@ -66,15 +67,45 @@
                   "VIRTUAL"
                 ]
               },
+              "recurrence": {
+                "type": "string",
+                "description": "Recurrence pattern"
+              },
+              "priority": {
+                "type": "integer"
+              },
               "timeout": {
                 "type": "integer",
                 "description": "Timeout in seconds",
                 "minimum": 0,
                 "maximum": 86400
               },
-              "recurrence": {
-                "type": "string",
-                "description": "Recurrence pattern"
+              "instanceMode": {
+                "type": "string"
+              },
+              "rerunMode": {
+                "type": "string"
+              },
+              "rerunTimes": {
+                "type": "integer"
+              },
+              "rerunInterval": {
+                "type": "integer"
+              },
+              "ignoreBranchConditionSkip": {
+                "type": "boolean"
+              },
+              "autoParse": {
+                "type": "boolean"
+              },
+              "datasource": {
+                "type": "object"
+              },
+              "datasets": {
+                "type": "array",
+                "items": {
+                  "type": "object"
+                }
               },
               "script": {
                 "type": "object",
@@ -101,11 +132,115 @@
                   }
                 }
               },
-              "runtime": {
+              "trigger": {
                 "type": "object",
-                "description": "Node runtime settings"
+                "description": "Node trigger configuration",
+                "properties": {
+                  "id": {
+                    "type": "string"
+                  },
+                  "type": {
+                    "type": "string"
+                  },
+                  "cron": {
+                    "type": "string",
+                    "description": "Cron expression for scheduled triggers"
+                  },
+                  "cycleType": {
+                    "type": "string"
+                  },
+                  "recurrence": {
+                    "type": "string"
+                  },
+                  "startTime": {
+                    "type": "string"
+                  },
+                  "endTime": {
+                    "type": "string"
+                  },
+                  "timezone": {
+                    "type": "string"
+                  },
+                  "delaySeconds": {
+                    "type": "integer"
+                  },
+                  "calendarId": {
+                    "type": "integer"
+                  },
+                  "identifier": {
+                    "type": "string"
+                  }
+                },
+                "anyOf": [
+                  {
+                    "required": [
+                      "type"
+                    ]
+                  },
+                  {
+                    "required": [
+                      "recurrence"
+                    ]
+                  }
+                ],
+                "additionalProperties": false
+              },
+              "runtimeResource": {
+                "type": "object"
+              },
+              "fileResources": {
+                "type": "array",
+                "items": {
+                  "type": "object"
+                }
+              },
+              "functions": {
+                "type": "array",
+                "items": {
+                  "type": "object"
+                }
+              },
+              "inputs": {
+                "type": "object"
+              },
+              "outputs": {
+                "type": "object"
+              },
+              "branch": {
+                "type": "object"
+              },
+              "join": {
+                "type": "object"
+              },
+              "doWhile": {
+                "type": "object"
+              },
+              "foreach": {
+                "type": "object"
+              },
+              "combined": {
+                "type": "object"
+              },
+              "paramHub": {
+                "type": "object"
+              },
+              "owner": {
+                "type": "string"
+              },
+              "description": {
+                "type": "string"
+              },
+              "strategy": {
+                "type": "object"
+              },
+              "subflow": {
+                "type": "object"
+              },
+              "paiflow": {
+                "type": "object"
               }
-            }
+            },
+            "additionalProperties": false
           }
         },
         "flow": {
@@ -125,21 +260,64 @@
                   "type": "string"
                 }
               }
-            }
+            },
+            "additionalProperties": false
           }
         },
-        "trigger": {
-          "type": "object",
-          "description": "Workflow trigger configuration",
-          "properties": {
-            "type": {
-              "type": "string",
-              "enum": ["Scheduler", "Manual"]
+        "dependencies": {
+          "type": "array",
+          "description": "Workflow dependencies",
+          "items": {
+            "type": "object",
+            "properties": {
+              "nodeId": {
+                "type": "string",
+                "description": "Target node ID"
+              },
+              "depends": {
+                "type": "array",
+                "description": "Dependency node IDs",
+                "items": {
+                  "type": "string"
+                }
+              }
             },
-            "cron": {
-              "type": "string",
-              "description": "Cron expression"
-            }
+            "additionalProperties": false
+          }
+        },
+        "workflows": {
+          "type": "array",
+          "description": "List of sub-workflows",
+          "items": {
+            "type": "object"
+          }
+        },
+        "fileResources": {
+          "type": "array",
+          "description": "List of file resources",
+          "items": {
+            "type": "object"
+          }
+        },
+        "functions": {
+          "type": "array",
+          "description": "List of functions",
+          "items": {
+            "type": "object"
+          }
+        },
+        "components": {
+          "type": "array",
+          "description": "List of components",
+          "items": {
+            "type": "object"
+          }
+        },
+        "variables": {
+          "type": "array",
+          "description": "List of variables",
+          "items": {
+            "type": "object"
           }
         }
       }

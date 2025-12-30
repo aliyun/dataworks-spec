@@ -1,5 +1,5 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "SpecWorkflow json schema",
   "type": "object",
   "properties": {
@@ -7,30 +7,102 @@
       "type": "string"
     },
     "script": {
-      "$ref": "classpath:spec/schema/SpecScript.schema.json"
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "extension": {
+          "type": "string"
+        },
+        "language": {
+          "type": "string"
+        },
+        "runtime": {
+          "type": "object",
+          "properties": {
+            "command": {
+              "type": "string"
+            },
+            "engine": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "command"
+          ]
+        },
+        "parameters": {
+          "type": "array",
+          "items": {
+            "type": "object"
+          }
+        },
+        "content": {
+          "type": "string"
+        }
+      }
     },
     "trigger": {
-      "$ref": "classpath:spec/schema/SpecTrigger.schema.json"
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "type": "string"
+        },
+        "cron": {
+          "type": "string"
+        },
+        "cycleType": {
+          "type": "string"
+        },
+        "recurrence": {
+          "type": "string"
+        },
+        "startTime": {
+          "type": "string"
+        },
+        "endTime": {
+          "type": "string"
+        },
+        "timezone": {
+          "type": "string"
+        },
+        "delaySeconds": {
+          "type": "integer"
+        },
+        "calendarId": {
+          "type": "integer"
+        },
+        "identifier": {
+          "type": "string"
+        }
+      }
     },
     "inputs": {
-      "$ref": "classpath:spec/schema/SpecArtifact.schema.json"
+      "type": "object"
     },
     "outputs": {
-      "$ref": "classpath:spec/schema/SpecArtifact.schema.json"
+      "type": "object"
     },
     "strategy": {
-      "$ref": "classpath:spec/schema/SpecScheduleStrategy.schema.json"
+      "type": "object"
     },
     "nodes": {
       "type": "array",
       "items": {
-        "$ref": "classpath:spec/schema/SpecNode.schema.json"
+        "type": "object"
       }
     },
     "dependencies": {
       "type": "array",
       "items": {
-        "$ref": "classpath:spec/schema/SpecFlowDepend.schema.json"
+        "type": "object"
       }
     },
     "type": {
@@ -52,5 +124,6 @@
   "required": [
     "name",
     "script"
-  ]
+  ],
+  "additionalProperties": false
 }

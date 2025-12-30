@@ -1,19 +1,15 @@
 {
   "version": "1.0",
   "kind": "CycleWorkflow",
-  "metadata": {
-    "name": "test_node",
-    "owner": "admin"
-  },
   "spec": {
     "nodes": [
       {
-        "id": "test_node",
-        "name": "test_node",
+        "id": "test_no_metadata",
+        "name": "test_no_metadata",
         "type": "ODPS_SQL",
         "timeout": 3600,
         "script": {
-          "path": "test_node.sql"
+          "path": "test_no_metadata.sql"
         }
       }
     ],

@@ -1,5 +1,5 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "SpecRuntimeResource json schema",
   "type": "object",
   "properties": {
@@ -22,5 +22,6 @@
   },
   "required": [
     "resourceGroup"
-  ]
+  ],
+  "additionalProperties": false
 }

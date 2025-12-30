@@ -1,5 +1,5 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "SpecBranches json schema",
   "type": "object",
   "properties": {
@@ -25,11 +25,12 @@
       "type": "string"
     },
     "output": {
-      "$ref": "classpath:spec/schema/SpecNodeOutput.schema.json"
+      "type": "object"
     }
   },
   "required": [
     "when",
     "output"
-  ]
+  ],
+  "additionalProperties": false
 }

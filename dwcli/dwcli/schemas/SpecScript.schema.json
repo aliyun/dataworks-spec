@@ -1,5 +1,5 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "SpecScript json schema",
   "type": "object",
   "properties": {
@@ -16,19 +16,28 @@
       "type": "string"
     },
     "runtime": {
-      "$ref": "classpath:spec/schema/SpecScriptRuntime.schema.json"
+      "type": "object",
+      "properties": {
+        "command": {
+          "type": "string"
+        },
+        "engine": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "command"
+      ]
     },
     "parameters": {
       "type": "array",
       "items": {
-        "$ref": "classpath:spec/schema/SpecVariable.schema.json"
+        "type": "object"
       }
     },
     "content": {
       "type": "string"
     }
   },
-  "required": [
-    "runtime"
-  ]
+  "additionalProperties": false
 }

@@ -1,25 +1,26 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "SpecArtifact json schema",
   "type": "object",
   "properties": {
     "nodeOutputs": {
       "type": "array",
       "items": {
-        "$ref": "classpath:spec/schema/SpecNodeOutput.schema.json"
+        "type": "object"
       }
     },
     "variables": {
       "type": "array",
       "items": {
-        "$ref": "classpath:spec/schema/SpecVariable.schema.json"
+        "type": "object"
       }
     },
     "tables": {
       "type": "array",
       "items": {
-        "$ref": "classpath:spec/schema/SpecTable.schema.json"
+        "type": "object"
       }
     }
-  }
+  },
+  "additionalProperties": false
 }

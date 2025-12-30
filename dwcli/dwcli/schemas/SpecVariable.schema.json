@@ -1,5 +1,5 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "SpecVariable json schema",
   "type": "object",
   "properties": {
@@ -35,12 +35,10 @@
       "description": "Description of the variable."
     },
     "referenceVariable": {
-      "$ref": "classpath:spec/schema/SpecVariable.schema.json",
-      "description": "Reference to another variable."
+      "type": "object"
     },
     "node": {
-      "$ref": "classpath:spec/schema/SpecDepend.schema.json",
-      "description": "Node dependency information."
+      "type": "object"
     }
   },
   "required": [
@@ -48,5 +46,6 @@
     "type",
     "scope",
     "artifactType"
-  ]
+  ],
+  "additionalProperties": false
 }

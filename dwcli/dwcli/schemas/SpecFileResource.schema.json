@@ -1,5 +1,5 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "SpecFileResource json schema",
   "type": "object",
   "properties": {
@@ -11,10 +11,10 @@
       "description": "Resource name."
     },
     "script": {
-      "$ref": "classpath:spec/schema/SpecScript.schema.json"
+      "type": "object"
     },
     "runtimeResource": {
-      "$ref": "classpath:spec/schema/SpecRuntimeResource.schema.json"
+      "type": "object"
     },
     "type": {
       "type": "string",
@@ -26,15 +26,16 @@
       ]
     },
     "file": {
-      "$ref": "classpath:spec/schema/SpecObjectStorageFile.schema.json"
+      "type": "object"
     },
     "datasource": {
-      "$ref": "classpath:spec/schema/SpecDatasource.schema.json"
+      "type": "object"
     }
   },
   "required": [
     "name",
     "type",
     "script"
-  ]
+  ],
+  "additionalProperties": false
 }

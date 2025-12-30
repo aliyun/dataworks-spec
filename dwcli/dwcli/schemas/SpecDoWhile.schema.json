@@ -1,5 +1,5 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "SpecDoWhile json schema",
   "type": "object",
   "properties": {
@@ -11,7 +11,7 @@
       "minItems": 1
     },
     "specWhile": {
-      "$ref": "classpath:spec/schema/SpecNode.schema.json"
+      "type": "object"
     },
     "flow": {
       "type": "array",
@@ -26,5 +26,6 @@
   "required": [
     "nodes",
     "specWhile"
-  ]
+  ],
+  "additionalProperties": false
 }
