@@ -255,12 +255,39 @@
               },
               "depends": {
                 "type": "array",
-                "description": "Dependency node IDs",
+                "description": "Dependency configurations",
                 "items": {
-                  "type": "string"
+                  "oneOf": [
+                    {
+                      "type": "string",
+                      "description": "Dependency node ID (legacy format)"
+                    },
+                    {
+                      "type": "object",
+                      "properties": {
+                        "type": {
+                          "type": "string",
+                          "description": "Dependency type",
+                          "enum": [
+                            "Normal",
+                            "CrossCycleDependsOnSelf",
+                            "CrossCycleDependsOnChildren",
+                            "CrossCycleDependsOnOtherNode"
+                          ]
+                        },
+                        "output": {
+                          "type": "string",
+                          "description": "Output node data from upstream node's outputs.nodeOutputs.data field"
+                        }
+                      },
+                      "required": ["type", "output"],
+                      "additionalProperties": false
+                    }
+                  ]
                 }
               }
             },
+            "required": ["nodeId"],
             "additionalProperties": false
           }
         },

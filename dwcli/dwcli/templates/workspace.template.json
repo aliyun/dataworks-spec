@@ -1,12 +1,7 @@
 {
     "spec": {
         "version": "1.0.0",
-        "kind": "Workspace",
-        "metadata": {
-            "name": "{{name}}",
-            "owner": "{{owner}}",
-            "description": "DataWorks Workspace project"
-        }
+        "kind": "Workspace"
     },
     "code": {
         "extension": "txt",
