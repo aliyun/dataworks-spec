@@ -10,7 +10,10 @@
           "type": "SHELL",
           "timeout": 3600,
           "script": {
-            "path": "{{ name }}.sh"
+            "path": "{{ name }}.sh",
+            "runtime": {
+              "command": "SHELL"
+            }
           }
         }
       ],

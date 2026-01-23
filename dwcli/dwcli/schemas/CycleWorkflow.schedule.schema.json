@@ -109,7 +109,7 @@
               },
               "script": {
                 "type": "object",
-                "required": ["path"],
+                "required": ["path", "runtime"],
                 "properties": {
                   "path": {
                     "type": "string",
@@ -121,7 +121,41 @@
                     "properties": {
                       "command": {
                         "type": "string",
-                        "description": "Runtime command"
+                        "description": "Runtime command - must be a valid CodeProgramType enum value",
+                        "enum": [
+                          "SHELL", "DIDE_SHELL", "PERL", "SUB_PROCESS", "VIRTUAL_WORKFLOW", 
+                          "WORKFLOW", "COMBINED_NODE", "VIRTUAL", "CONTROLLER_ASSIGNMENT",
+                          "CONTROLLER_BRANCH", "CONTROLLER_JOIN", "CONTROLLER_CYCLE",
+                          "CONTROLLER_CYCLE_START", "CONTROLLER_CYCLE_END", "CONTROLLER_TRAVERSE",
+                          "CONTROLLER_TRAVERSE_START", "CONTROLLER_TRAVERSE_END", "CONTROLLER_WAIT",
+                          "SCHEDULER_TRIGGER", "PARAM_HUB", "FTP_CHECK", "SSH", "CHECK",
+                          "CHECK_NODE", "OSS_INSPECT", "CROSS_TENANTS", "PYTHON",
+                          "DATA_SYNCHRONIZATION_QUALITY_CHECK", "DATA_PUSH", "DATA_QUALITY_MONITOR",
+                          "HIVE", "YSF_DESEN", "ODPS_XLIB", "ODPS_PERL", "ODPS_SQL",
+                          "LIGHTNING_SQL", "EXTREME_STORAGE", "ODPS_SPARK_SQL", "ODPS_MR",
+                          "PYODPS3", "ODPS_SCRIPT", "PYODPS", "ODPS_SHARK", "ODPS_SPARK",
+                          "SHARK_RESOURCE", "COMPONENT_SQL", "SQL_COMPONENT", "ODPS_PYTHON",
+                          "ODPS_JAR", "ODPS_ARCHIVE", "ODPS_FILE", "ODPS_DDL", "ODPS_TABLE",
+                          "ODPS_FUNCTION", "DATASERVICE_STUDIO", "DATAX", "DATAX2", "DT",
+                          "CDP", "DI", "RI", "DD_MERGE", "TT_MERGE", "EMR_HIVE",
+                          "EMR_SPARK", "EMR_SPARK_SQL", "EMR_MR", "EMR_SHELL", "EMR_SPARK_SHELL",
+                          "EMR_PRESTO", "EMR_IMPALA", "EMR_SCOOP", "EMR_SPARK_STREAMING",
+                          "EMR_HIVE_CLI", "EMR_STREAMING_SQL", "EMR_TRINO", "EMR_KYUUBI",
+                          "EMR_JAR", "EMR_FILE", "EMR_TABLE", "EMR_FUNCTION", "CDH_HIVE",
+                          "CDH_SPARK", "CDH_SPARK_SQL", "CDH_MR", "CDH_SHELL", "CDH_SPARK_SHELL",
+                          "CDH_PRESTO", "CDH_IMPALA", "CDH_JAR", "CDH_FILE", "CDH_TABLE",
+                          "CDH_FUNCTION", "PAI", "PAI_STUDIO", "RECOMMEND_PLUS", "PAI_DLC",
+                          "ALINK", "XLAB", "PAI_FLOW", "HOLOGRES_DEVELOP", "HOLOGRES_SYNC",
+                          "HOLOGRES_SQL", "HOLOGRES_SYNC_DDL", "HOLOGRES_SYNC_DATA",
+                          "HOLOGRES_SYNC_DATA_TO_MC", "BLINK_SQL", "FLINK_SQL_BATCH",
+                          "FLINK_SQL_STREAM", "BLINK_BATCH_SQL", "BLINK_DATASTREAM",
+                          "CLICK_SQL", "POSTGRESQL", "MYSQL", "SQLSERVER", "Oracle",
+                          "StarRocks", "DRDS", "Doris", "Mariadb", "Selectdb", "Redshift",
+                          "Saphana", "Vertica", "OceanBase", "DB2", "ADB_for_PostgreSQL",
+                          "ADB_for_MySQL", "ADB_SPARK", "ADB_SPARK_SQL", "SERVERLESS_SPARK_BATCH",
+                          "SERVERLESS_SPARK_SQL", "SERVERLESS_SPARK_STREAMING", "SERVERLESS_KYUUBI",
+                          "CUSTOM"
+                        ]
                       },
                       "engine": {
                         "type": "string",

@@ -1,2 +1,3 @@
 [console_scripts]
 dwcli = dwcli.cli:main
+

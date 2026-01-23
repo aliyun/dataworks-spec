@@ -1,0 +1,21 @@
+{
+  "version": "2.0.0",
+  "kind": "Node",
+  "spec": {
+    "nodes": [
+      {
+        "id": "test_new_node",
+        "name": "test_new_node",
+        "type": "ODPS_SQL",
+        "timeout": 3600,
+        "script": {
+          "path": "test_new_node.sql",
+          "runtime": {
+            "command": "ODPS_SQL"
+          }
+        }
+      }
+    ],
+    "flow": []
+  }
+}

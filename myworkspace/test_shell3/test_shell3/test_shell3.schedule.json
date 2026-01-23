@@ -1,0 +1,21 @@
+{
+  "version": "2.0.0",
+  "kind": "Node",
+  "spec": {
+    "nodes": [
+      {
+        "id": "test_shell3",
+        "name": "test_shell3",
+        "type": "SHELL",
+        "timeout": 3600,
+        "script": {
+          "path": "test_shell3.sh",
+          "runtime": {
+            "command": "SHELL"
+          }
+        }
+      }
+    ],
+    "flow": []
+  }
+}

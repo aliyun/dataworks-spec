@@ -10,7 +10,10 @@
           "type": "ODPS_SQL",
           "timeout": 3600,
           "script": {
-            "path": "{{ name }}.sql"
+            "path": "{{ name }}.sql",
+            "runtime": {
+              "command": "ODPS_SQL"
+            }
           }
         }
       ],

@@ -10,7 +10,10 @@
           "type": "PYTHON",
           "timeout": 3600,
           "script": {
-            "path": "{{ name }}.py"
+            "path": "{{ name }}.py",
+            "runtime": {
+              "command": "PYTHON"
+            }
           }
         }
       ],

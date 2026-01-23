@@ -1,23 +1,17 @@
-Metadata-Version: 2.4
+Metadata-Version: 2.1
 Name: dwcli
 Version: 1.0.0
 Summary: DataWorks CLI - Configuration-as-Code management tool for FlowSpec
+Home-page: UNKNOWN
 Author: Aliyun DataWorks
+License: UNKNOWN
+Platform: UNKNOWN
 Classifier: Development Status :: 4 - Beta
 Classifier: Intended Audience :: Developers
 Classifier: Programming Language :: Python :: 3.10
 Classifier: Programming Language :: Python :: 3.11
 Classifier: Programming Language :: Python :: 3.12
 Requires-Python: >=3.8
-Requires-Dist: click>=8.1.0
-Requires-Dist: jsonpath-ng>=1.6.0
-Requires-Dist: jsonschema>=4.20.0
-Requires-Dist: jinja2>=3.1.0
-Requires-Dist: colorama>=0.4.6
-Requires-Dist: rich>=13.7.0
-Requires-Dist: pyyaml>=6.0
-Dynamic: author
-Dynamic: classifier
-Dynamic: requires-dist
-Dynamic: requires-python
-Dynamic: summary
+
+UNKNOWN
+

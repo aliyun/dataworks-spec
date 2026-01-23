@@ -1,0 +1,47 @@
+{
+  "version": "2.0.0",
+  "kind": "CycleWorkflow",
+  "metadata": {
+    "name": "daily_odps_sql",
+    "owner": "admin"
+  },
+  "spec": {
+    "nodes": [
+      {
+        "id": "daily_odps_sql",
+        "name": "daily_odps_sql",
+        "type": "ODPS_SQL",
+        "timeout": 3600,
+        "script": {
+          "path": "daily_odps_sql.sql",
+          "runtime": {
+            "command": "ODPS_SQL"
+          }
+        },
+        "priority": 10,
+        "trigger": {
+          "type": "Scheduler",
+          "cron": "0 10 2 * * ?"
+        },
+        "rerunMode": "FailureAllowed",
+        "rerunTimes": 3,
+        "rerunInterval": 180000
+      }
+    ],
+    "flow": [
+      {
+        "nodeId": "daily_odps_sql",
+        "depends": [
+          {
+            "type": "Normal",
+            "output": "autotest_root"
+          },
+          {
+            "type": "Normal",
+            "output": "ods.tbitem_usr1"
+          }
+        ]
+      }
+    ]
+  }
+}
